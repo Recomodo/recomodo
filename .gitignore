@@ -1,7 +1,45 @@
-docs/cahier_des_charges.synctex.gz
-docs/cahier_des_charges.toc
-docs/cahier_des_charges.out
-docs/cahier_des_charges.log
-docs/cahier_des_charges.fls
-docs/cahier_des_charges.fdb_latexmk
-docs/cahier_des_charges.aux
+# Temp laTEx files
+docs/*.synctex.gz
+docs/*.toc
+docs/*.out
+docs/*.log
+docs/*.fls
+docs/*.fdb_latexmk
+docs/*.aux
+
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+
+/cypress/videos/
+/cypress/screenshots/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+*.tsbuildinfo
+
+# amplify
+.amplify
+amplify_outputs*
+amplifyconfiguration*
