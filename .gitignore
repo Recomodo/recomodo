@@ -6,6 +6,11 @@ docs/*.log
 docs/*.fls
 docs/*.fdb_latexmk
 docs/*.aux
+# Environnement Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
 
 
 # Logs
