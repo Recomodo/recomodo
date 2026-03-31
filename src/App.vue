@@ -6,13 +6,16 @@ import "@aws-amplify/ui-vue/styles.css";
 import Todos from './components/Todos.vue'
 import { AuthenticateCognitoAction } from 'aws-cdk-lib/aws-elasticloadbalancingv2-actions';
 
+// Définition du type de la réponse de l'API REST
 type DateResponse = {
   date: string;
 };
 
+// Référence pour stocker la date actuelle
 const currentDate = ref("Chargement");
 const errorMessage = ref("");
 
+// Fonction pour charger la date à partir de l'API REST
 async function loadDate(){
   try {
     const restOperation = get({
@@ -29,6 +32,7 @@ async function loadDate(){
   }
 }
 
+// Charger la date lorsque le composant est monté
 onMounted(() => {
   loadDate();
 });
