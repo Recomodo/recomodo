@@ -36,6 +36,7 @@ const schema = a.schema({
       genreId: a.integer().required(), // ID unique du genre
       name: a.string().required(), // nom du genre
     })
+    .authorization((allow) => [allow.authenticated().to(["read"])]),//les utilisateurs authentifiés peuvent lire les genres, mais pas les modifier
     // Table des profils d'utilisateurs qui stocke les informations du profil utilisateur qui ne sont pas gérées par Cognito 
     UserProfile: a
     .model({
