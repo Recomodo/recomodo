@@ -6,4 +6,10 @@ import outputs from "../amplify_outputs.json";
 import router from './router/router'
 Amplify.configure(outputs);
 
-createApp(App).use(router).mount("#app");
+import {library} from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faMagnifyingGlass, faCircleUser } from "@fortawesome/free-solid-svg-icons";
+
+library.add(faMagnifyingGlass,faCircleUser);
+
+createApp(App).use(router).component("font-awesome-icon", FontAwesomeIcon).mount("#app");
