@@ -1,12 +1,12 @@
 import pandas as pd # pour lire les CSV
 import boto3 # pour se connecter à AWS DynamoDB
-import os # pour accéder aux variables d'environnement AWS_ACCESS_KEY_ID et AWS_SECRET_ACCESS_KEY
+#import os pour accéder aux variables d'environnement AWS_ACCESS_KEY_ID et AWS_SECRET_ACCESS_KEY
 import ast # pour convertir les strings de listes en vraies listes
 from decimal import Decimal # pour convertir les floats en Decimal (DynamoDB n'accepte pas les floats)
 
-# ============================================
+
 # CONNEXION À AWS DYNAMODB
-# ============================================
+
 
 print("Connexion à AWS...")
 #dynamodb = boto3.resource(
@@ -20,25 +20,64 @@ dynamodb = session.resource('dynamodb', region_name='eu-west-3')
 
 
 NOM_TABLE_MOVIE = 'Movie-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table DynamoDB pour les films
-NOM_TABLE_GENRE = 'Genre-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table DynamoDB pour les genres
+#NOM_TABLE_GENRE = 'Genre-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table DynamoDB pour les genres
 
 table_movie = dynamodb.Table(NOM_TABLE_MOVIE)
 
-# ============================================
-# IMPORT DE LA TABLE GENRE
-# ============================================
+#Supression de la table Movie (pour repartir de zéro à chaque fois, pour éviter les doublons à chaque import)
+print(f"Suppression de la table {NOM_TABLE_MOVIE} (si elle existe)...")
+scan = table_movie.scan(ProjectionExpression="id")
 
-# BUCKET = 'amplify-recomodo-nganzu-s-amplifydataamplifycodege-ans5kerozkaz'
+with table_movie.batch_writer() as batch:
+    for item in scan["Items"]:
+        batch.delete_item(Key={"id": item["id"]})
 
-# ============================================
+print("Table vidée.")
+
+#IMPORT TABLE GENRE
+# Lecture du fichier des genres
+#genres = pd.read_csv(f'scripts/dataset/genres_clean.csv')
+
+# print("\nImport des genres...")
+
+# Compteur d'erreurs pour le rapport final
+# errors_genres = 0
+
+# On parcourt chaque ligne du CSV des genres
+# for index, row in genres.iterrows():
+#     try:
+#         # put_item envoie un enregistrement dans DynamoDB
+#         table_genre.put_item(
+#             Item={
+#                 # 'id' est la clé principale générée par Amplify
+#                 # elle doit être unique pour chaque genre
+#                 'id': str(row['genreId']),
+
+#                 # genreId : l'ID du genre depuis le dataset TMDB
+#                 # ex: 28 pour Action, 16 pour Animation
+#                 'genreId': int(row['genreId']),
+
+#                 # name : le nom du genre
+#                 # ex: "Action", "Animation", "Comedy"
+#                 'name': str(row['name']),
+#             }
+#         )
+#     except Exception as e:
+#         # Si une erreur arrive on l'affiche et on continue
+#         # print(f" Erreur sur le genre {row['name']} : {e}")
+#         # errors_genres += 1
+
+# print(f" Genres importés : {len(genres) - errors_genres}")
+
+
+
 # IMPORT DE LA TABLE MOVIE
-# ============================================
+
 
 print("\nImport des films...")
 
 print(f"Lecture du fichier des films depuis le CSV")
-#movies = pd.read_csv(f's3://{BUCKET}/dataset/movies_clean.csv') #pour lire depuis S3, sinon : "scripts/dataset/movies_clean.csv"
-movies = pd.read_csv('scripts/dataset/movies_clean.csv')#pour lire depuis S3, sinon : "scripts/dataset/movies_clean.csv"
+movies = pd.read_csv('scripts/dataset/movies_cleaned.csv')
 print(f"{len(movies)} films à importer")
 
 errors_movies = 0
@@ -87,10 +126,12 @@ for index, row in movies.iterrows():
         print(f" Erreur sur le film {row['title']} : {e}")
         errors_movies += 1
 
-# ============================================
+
 # RÉSULTAT FINAL
-# ============================================
+
 
 print(f"\n Import terminé !")
 print(f" Films importés  : {len(movies) - errors_movies}")
+#print(f" Genres importés : {len(genres) - errors_genres}")
 print(f" Erreurs films   : {errors_movies}")
+#print(f" Erreurs genres  : {errors_genres}")
