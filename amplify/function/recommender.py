@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 import pandas as pd
 import pyarrow as pa
-import pyarrow.parquet as pq
+import ast
 
 # #Configuration de la session boto3 pour accéder à DynamoDB 
 # # ATTENTION : NE PAS UTILISER CETTE CONFIGURATION EN PRODUCTION, ELLE EST UNIQUEMENT DESTINÉE À DES FINS DE TESTS LOCAUX
@@ -28,6 +28,51 @@ import pyarrow.parquet as pq
 #         if isinstance(obj, Decimal):
 #             return float(obj)
 #         return super().default(obj)
+
+
+#lecture des fichiers movies_clean.parquet et genres_clean.parquet
+movies = pd.read_parquet("movies_clean.parquet")
+genres = pd.read_parquet("genres_clean.parquet")
+
+#création d'un dictionnaire avec les id des genres en clé et les noms des genres en valeur
+genres_dict = dict(zip(genres["genreId"], genres["name"]))
+
+#récupération de la colonne title, qui contient les titres des films
+titles = movies['title'].tolist()
+#création d'une série avec les titres des films en index et les indices des films en valeur, pour pouvoir récupérer l'indice d'un film à partir de son titre
+indices = pd.Series(movies.index, index=movies['title'])
+
+#récupération de la colonne genres, qui sont les id des genres associés à chaque film
+movies_genre = movies['genres'].fillna('[]').apply(ast.literal_eval).tolist()
+
+#transformation de la liste de liste d'id des genres en liste de strings de noms des genres
+#nécéssaire que ce soit des string pour le TfidfVectorizer
+genres_n = []
+for i in genres:
+    temp = []
+    for j in i:
+        if j in genres_dict:
+            temp.append(genres_dict[j])
+    genres_n.append(' '.join(temp))
+
+
+#création de la matrice TF-IDF à partir des genres des films
+tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=0, stop_words='english')
+tfidf_matrix = tf.fit_transform(genres_n)
+
+#calcul de la similarité cosinus entre les films à partir de la matrice TF-IDF
+def genre_recommendations(title):
+    idx = indices[title]
+
+    sim_scores = linear_kernel(tfidf_matrix[idx:idx+1], tfidf_matrix).flatten()
+    sim_scores = list(enumerate(sim_scores))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+    sim_scores = sim_scores[1:21]
+    movie_indices = [i[0] for i in sim_scores]
+    return [titles[i] for i in movie_indices]
+
+
 
 def handler(event, context):
     # #Récupération de tous les films depuis la table DynamoDB
@@ -49,25 +94,3 @@ def handler(event, context):
 if __name__ == "__main__":
     print(handler({}, None))
 
-
-
-# # Break up the big genre string into a string array
-# movies['genres'] = movies['genres'].str.split('|')
-# # Convert genres to string value
-# movies['genres'] = movies['genres'].fillna("").astype('str')
-# tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=0, stop_words='english')
-# tfidf_matrix = tf.fit_transform(movies['genres'])
-# tfidf_matrix.shape
-# cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
-# cosine_sim[:4, :4]
-# titles = movies['title']
-# indices = pd.Series(movies.index, index=movies['title'])
-
-# # Function that get movie recommendations based on the cosine similarity score of movie genres
-# def genre_recommendations(title):
-#     idx = indices[title]
-#     sim_scores = list(enumerate(cosine_sim[idx]))
-#     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-#     sim_scores = sim_scores[1:21]
-#     movie_indices = [i[0] for i in sim_scores]
-#     return titles.iloc[movie_indices]
