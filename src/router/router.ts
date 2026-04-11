@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory} from "vue-router"
-import RecommandationPage from "../views/RecommandationPage.vue"
+import HomeView from "../views/HomeView.vue"
 
 const routes = [
     {
@@ -11,16 +11,22 @@ const routes = [
         path:"/details/:id?",
         name:"details",
         component: () => import("../views/DetailsPage.vue"),
+        props: true,
     },
     {
-        path:"/",
+        path:"/Recommendations",
         name:"recommendations",
-        component: RecommandationPage,
+        component: () => import("../views/RecommandationPage.vue"),
     },
     {
         path:"/first-sign-in",
         name:"first-sign-in",
         component: () => import("../views/FirstSigninPage.vue"),
+    },
+    {
+        path:"/",
+        name:"home",
+        component: HomeView,
     }
 ]
 
