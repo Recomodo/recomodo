@@ -25,14 +25,28 @@ NOM_TABLE_MOVIE = 'Movie-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table Dynamo
 table_movie = dynamodb.Table(NOM_TABLE_MOVIE)
 
 #Supression de la table Movie (pour repartir de zéro à chaque fois, pour éviter les doublons à chaque import)
-print(f"Suppression de la table {NOM_TABLE_MOVIE} (si elle existe)...")
-scan = table_movie.scan(ProjectionExpression="id")
+print("\nSuppression de tous les films existants...")
 
-with table_movie.batch_writer() as batch:
-    for item in scan["Items"]:
-        batch.delete_item(Key={"id": item["id"]})
+items_to_delete = []
+response = table_movie.scan(ProjectionExpression="id")#on ne récupère que les id pour gagner du temps et éviter de dépasser la limite de 1 MB par scan
+items_to_delete.extend(response["Items"])
 
-print("Table vidée.")
+# DynamoDB renvoie MAX 1 MB par scan.
+# S'il y a plus de films, il faut boucler avec LastEvaluatedKey.
+while "LastEvaluatedKey" in response:
+    response = table_movie.scan(
+        ProjectionExpression="id",
+        ExclusiveStartKey=response["LastEvaluatedKey"]
+    )
+    items_to_delete.extend(response["Items"])
+
+print(f"  {len(items_to_delete)} film(s) trouvé(s) à supprimer.")
+
+with table_movie.batch_writer() as batch:#batch_writer permet de faire des suppressions en lot, plus rapide que de supprimer un par un
+    for item in items_to_delete:
+        batch.delete_item(Key={"id": item["id"]})#on supprime chaque film en utilisant son id comme clé
+
+print("  Table vidée.")
 
 #IMPORT TABLE GENRE
 # Lecture du fichier des genres
@@ -82,7 +96,7 @@ print(f"{len(movies)} films à importer")
 
 errors_movies = 0
 
-for index, row in movies.iterrows():
+for index, row in movies.iterrows():#iterrows() permet de parcourir chaque ligne du DataFrame movies, index est le numéro de la ligne et row est un objet contenant les données de cette ligne (ex: row['title'] pour le titre du film)
     try:
         table_movie.put_item(
             Item={
