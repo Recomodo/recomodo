@@ -19,4 +19,3 @@ import { AuthenticateCognitoAction } from 'aws-cdk-lib/aws-elasticloadbalancingv
     </authenticator>
   </main>
 </template>
-

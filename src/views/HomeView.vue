@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {ref , computed} from 'vue';
+import Pagination from '../components/Pagination.vue';
+
+const currentPage = ref(1);
+const itemsPerPage = 18;
+
 const movies=[
     {
         movieId: 1,
@@ -113,14 +119,27 @@ const movies=[
         posterPath:"https://image.tmdb.org/t/p/w500"
     }
 ];
+
+const totalPages = computed(() => Math.ceil(movies.length / itemsPerPage));
+
+const paginatedMovies = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    return movies.slice(start, start + itemsPerPage);
+});
+
+function handlePageChange(page: number) {
+    currentPage.value = page;
+}
 </script>
 
 
 <template>
+<div class="page">
     <h1>Bienvenue sur Recomodo</h1>
+<div class="content">
 <div class="container">
     <RouterLink
-        v-for="(movie) in movies"
+        v-for="(movie) in paginatedMovies"
         :key="movie.movieId"
         :to=" { name: 'details', params: { id: movie.movieId },state: { movie} }"
         class="movie"
@@ -133,9 +152,42 @@ const movies=[
         </div>
     </RouterLink>
 </div>
+<div class="pagination-wrapper">
+    <Pagination
+        :totalPages="totalPages" 
+        :currentPage="currentPage" 
+        @page-changed="handlePageChange"/>
+</div>
+</div>
+</div>
 </template>
 
 <style scoped>
+.page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    
+}
+
+.pagination-wrapper {
+    margin-top: auto;
+    padding: 2rem 0;
+
+    
+    bottom: 20px;
+    left:0;
+    right:0;
+    display: flex;
+    justify-content: center;
+    
+    
+}
+
+html, body {
+    height: 100%;
+}
+
 h1{
     color: white;
     margin: 0;
@@ -144,7 +196,7 @@ h1{
 }
 
 .movie {
-    text-decoration: none; /* enlève le soulignement */
+  text-decoration: none; /* enlève le soulignement */
   color: inherit;        /* garde le texte blanc */
   display: block;
   cursor: pointer;
@@ -174,13 +226,28 @@ img{
     padding-top: 15px;
     margin-top: 15px;
 }
-.container{
+/*.container{
     display: flex;
     flex-wrap: wrap;
-    justify-content:flex-start;
+    /*justify-content:flex-start;*/
+   /* justify-content: center;
     gap: 2rem;
-    padding-block: 2rem;
-    padding-inline: 4rem;
+   padding: 2rem 2rem 2rem 2rem;
+   
    
 }
+*/
+.container{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 150px);
+    gap: 2rem;
+    padding: 2rem 2rem;
+    box-sizing: border-box;
+    justify-content: start;
+    margin-left: 1rem ;
+    flex-grow: 1;
+    align-self: start;
+}
+
+
 </style>

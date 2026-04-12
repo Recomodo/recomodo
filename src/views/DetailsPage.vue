@@ -28,6 +28,11 @@
             :alt="movie.title"
             class="movie-poster"
           />
+          <div>
+            <h1>Votre note</h1>
+            <Notation v-model="userRating" />
+            <p class="UserRatingValue">{{ userRating }}/5</p>
+          </div>
           <!-- Badge note sur le poster 
           <div class="rating-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -118,10 +123,14 @@
         </div>
       </div>
     </div>
+
+    
+
   </div>
 </template>
 
 <script setup>
+import Notation from '@/components/Notation.vue';
 import { ref } from 'vue';
 import { useRoute , useRouter } from 'vue-router';
 
