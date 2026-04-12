@@ -123,9 +123,9 @@ a {
 .recommendationsContainer{
     display: flex;
     flex-wrap: wrap;
-    justify-content:center;
+    justify-content:space-between;
     gap: 20px;
-    padding-block: 2rem;
+    padding: 2rem;
 }
 footer {
     background-color: #15001d;

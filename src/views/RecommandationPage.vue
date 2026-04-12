@@ -119,7 +119,3 @@ function filmDetails(movieId:number): void {
 </div>
 </div>
 </template>
-
-<style scoped>
-
-</style>

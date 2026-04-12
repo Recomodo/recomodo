@@ -17,7 +17,7 @@ async function handleDeleteUser() {
 }
 </script>
 
-<template>
+<template v-slot="{user}">
   <div style="display: flex; flex-direction:row; justify-content:space-around; gap: 20px;padding-block: 2rem;">
     <div style="border: 1px solid #ccc; padding: 10px;border-radius: 12px; width:55%; display:flex; flex-direction: column; align-items: center;">
       <h1>Profile Page</h1>
@@ -27,7 +27,8 @@ async function handleDeleteUser() {
       <FirstSigninPage/>
     </div>
 
-    <div style="border: 1px solid #ccc;border-radius: 12px; padding: 10px; width:35%; display:flex; flex-direction:column;">
+    <div class="userFonctions">
+      <h5>{{}}name of the user</h5>
      <button  @click="signout()">Sign Out</button>
      <button @click="handleDeleteUser()">Delete account</button>
   </div>
@@ -35,5 +36,15 @@ async function handleDeleteUser() {
 </template>
 
 <style scoped>
+.userFonctions{
+border: 1px solid #ccc;
+border-radius: 12px;
+padding: 10px;
+width:35%; 
+height:max-content;
+display:flex;
+flex-direction:column;
+}
+
 
 </style>
