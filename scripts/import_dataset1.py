@@ -1,6 +1,6 @@
 import pandas as pd # pour lire les CSV
 import boto3 # pour se connecter à AWS DynamoDB
-#import os pour accéder aux variables d'environnement AWS_ACCESS_KEY_ID et AWS_SECRET_ACCESS_KEY
+import os #pour accéder aux variables d'environnement AWS_ACCESS_KEY_ID et AWS_SECRET_ACCESS_KEY
 import ast # pour convertir les strings de listes en vraies listes
 from decimal import Decimal # pour convertir les floats en Decimal (DynamoDB n'accepte pas les floats)
 
@@ -10,19 +10,20 @@ from decimal import Decimal # pour convertir les floats en Decimal (DynamoDB n'a
 
 print("Connexion à AWS...")
 #dynamodb = boto3.resource(
-#    'dynamodb',
-#    region_name='eu-west-3',
-#    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-#    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+#   'dynamodb',
+#   region_name='eu-west-3',
+#   aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+#   aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
 #)
 session = boto3.Session(profile_name='Recomodo-AdminAccess-Amplify-080941085602')
 dynamodb = session.resource('dynamodb', region_name='eu-west-3')
 
 
-NOM_TABLE_MOVIE = 'Movie-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table DynamoDB pour les films
-#NOM_TABLE_GENRE = 'Genre-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table DynamoDB pour les genres
+NOM_TABLE_MOVIE = 'Movie-plmvpye27falferla5jpy5hchi-NONE'#nom de la table DynamoDB pour les films
+NOM_TABLE_GENRE = 'Genre-plmvpye27falferla5jpy5hchi-NONE'#nom de la table DynamoDB pour les genres
 
 table_movie = dynamodb.Table(NOM_TABLE_MOVIE)
+table_genre = dynamodb.Table(NOM_TABLE_GENRE)
 
 #Supression de la table Movie (pour repartir de zéro à chaque fois, pour éviter les doublons à chaque import)
 print(f"Suppression de la table {NOM_TABLE_MOVIE} (si elle existe)...")
@@ -36,42 +37,41 @@ print("Table vidée.")
 
 #IMPORT TABLE GENRE
 # Lecture du fichier des genres
-#genres = pd.read_csv(f'scripts/dataset/genres_clean.csv')
-
-# print("\nImport des genres...")
+genres = pd.read_csv(f'scripts/dataset/genres_clean.csv')
+print("\nImport des genres...")
 
 # Compteur d'erreurs pour le rapport final
-# errors_genres = 0
+errors_genres = 0
 
 # On parcourt chaque ligne du CSV des genres
-# for index, row in genres.iterrows():
-#     try:
-#         # put_item envoie un enregistrement dans DynamoDB
-#         table_genre.put_item(
-#             Item={
-#                 # 'id' est la clé principale générée par Amplify
-#                 # elle doit être unique pour chaque genre
-#                 'id': str(row['genreId']),
+for index, row in genres.iterrows():
+    try:
+        # put_item envoie un enregistrement dans DynamoDB
+        table_genre.put_item(
+            Item={
+                # 'id' est la clé principale générée par Amplify
+                # elle doit être unique pour chaque genre
+                'id': str(row['genreId']),
 
-#                 # genreId : l'ID du genre depuis le dataset TMDB
-#                 # ex: 28 pour Action, 16 pour Animation
-#                 'genreId': int(row['genreId']),
+                # genreId : l'ID du genre depuis le dataset TMDB
+                # ex: 28 pour Action, 16 pour Animation
+                'genreId': int(row['genreId']),
 
-#                 # name : le nom du genre
-#                 # ex: "Action", "Animation", "Comedy"
-#                 'name': str(row['name']),
-#             }
-#         )
-#     except Exception as e:
-#         # Si une erreur arrive on l'affiche et on continue
-#         # print(f" Erreur sur le genre {row['name']} : {e}")
-#         # errors_genres += 1
+                # name : le nom du genre
+                # ex: "Action", "Animation", "Comedy"
+                'name': str(row['name']),
+            }
+        )
+    except Exception as e:
+        # Si une erreur arrive on l'affiche et on continue
+         print(f" Erreur sur le genre {row['name']} : {e}")
+         errors_genres += 1
 
-# print(f" Genres importés : {len(genres) - errors_genres}")
+print(f" Genres importés : {len(genres) - errors_genres}")
 
 
 
-# IMPORT DE LA TABLE MOVIE
+ #IMPORT DE LA TABLE MOVIE
 
 
 print("\nImport des films...")
@@ -132,6 +132,6 @@ for index, row in movies.iterrows():
 
 print(f"\n Import terminé !")
 print(f" Films importés  : {len(movies) - errors_movies}")
-#print(f" Genres importés : {len(genres) - errors_genres}")
+print(f" Genres importés : {len(genres) - errors_genres}")
 print(f" Erreurs films   : {errors_movies}")
-#print(f" Erreurs genres  : {errors_genres}")
+print(f" Erreurs genres  : {errors_genres}")

@@ -1,11 +1,48 @@
 <script setup lang="ts">
-import {ref , computed} from 'vue';
+import {ref , computed , onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';
 
-const currentPage = ref(1);
-const itemsPerPage = 18;
+import { generateClient } from 'aws-amplify/api';
 
-const movies=[
+const listMoviesQuery = `
+  query ListMovies {
+    listMovies {
+      items {
+        movieId
+        title
+        voteAverage
+        posterPath
+      }
+    }
+  }
+`;
+
+const client = generateClient();
+
+const movies = ref([]);
+
+const currentPage = ref(1);
+const itemsPerPage = 28;
+
+onMounted(async () => {
+    try {
+        const result = await client.graphql({
+                query: listMoviesQuery
+        });
+
+        console.log("RESULT API: ", result);
+        
+        const items = result?.data?.listMovies?.items;
+
+
+        movies.value = Array.isArray(items) ? items : [];
+
+    } catch (error) {
+        console.error("Error fetching movies:", error);
+        movies.value = [];
+    }
+});
+/*const movies=[
     {
         movieId: 1,
         title: "The Godfather",
@@ -119,12 +156,14 @@ const movies=[
         posterPath:"https://image.tmdb.org/t/p/w500"
     }
 ];
+*/
 
-const totalPages = computed(() => Math.ceil(movies.length / itemsPerPage));
+const totalPages = computed(() => Math.ceil(movies.value?.length || 0 / itemsPerPage));
 
 const paginatedMovies = computed(() => {
+    const list = Array.isArray(movies.value) ? movies.value : [];
     const start = (currentPage.value - 1) * itemsPerPage;
-    return movies.slice(start, start + itemsPerPage);
+    return list.slice(start, start + itemsPerPage);
 });
 
 function handlePageChange(page: number) {
