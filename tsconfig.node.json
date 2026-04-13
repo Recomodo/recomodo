@@ -6,7 +6,6 @@
     "cypress.config.*",
     "nightwatch.conf.*",
     "playwright.config.*",
-    "amplify/**/*.ts"
   ],
   "compilerOptions": {
     "composite": true,
