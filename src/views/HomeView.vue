@@ -181,10 +181,17 @@ function handlePageChange(page: number) {
         v-for="(movie) in paginatedMovies"
         :key="movie.movieId"
         :to=" { name: 'details', params: { id: movie.movieId },state: { movie} }"
+         
         class="movie"
     >
+        <!-- <p style="color: white;">{{ movie.posterPath }}</p> -->
         <!--<div  class="movie"v-for="(movie) in movies" :key="movie.movieId">-->
-        <img :src="movie.posterPath" :alt="movie.title">
+        <!--<img :src="movie.posterPath" :alt="movie.title">-->
+        <img
+            :src="'https://image.tmdb.org/t/p/w500' + movie.posterPath"
+           
+            :alt="movie.title"
+       />
         <div class="discription">
             <p>{{ movie.title }}</p>
             <p>{{ movie.voteAverage }}</p>
