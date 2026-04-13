@@ -4,6 +4,7 @@ import boto3
 import pandas as pd
 import ast
 
+from pathlib import Path
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -14,13 +15,15 @@ from sklearn.metrics.pairwise import linear_kernel
 #Configuration de la session boto3 pour accéder à DynamoDB 
 # ATTENTION : NE PAS UTILISER CETTE CONFIGURATION EN PRODUCTION, ELLE EST UNIQUEMENT DESTINÉE À DES FINS DE TESTS LOCAUX
 session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
-
-dynamodb = session.resource("dynamodb") #remplacer session par boto3 lors de la production
+dynamodb = session.resource("dynamodb") #remplacer session par boto3 pour le prod
 
 #variable d'environnement pour le nom de la table DynamoDB
-RATINGS_TABLE_NAME = os.environ["RATINGS_TABLE_NAME"]
+RATINGS_TABLE_NAME = os.environ.get("RATINGS_TABLE_NAME")
+RATINGS_USER_ID_INDEX = os.environ.get("RATINGS_USER_ID_INDEX")
 
 ratings_table = dynamodb.Table(RATINGS_TABLE_NAME)
+
+#ratings_table = dynamodb.Table("Rating-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE")
 
 
 #Pour transformer les Decimal en float pour le json.dumps
@@ -31,18 +34,25 @@ class DecimalEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+
+BASE_DIR = Path(__file__).resolve().parent
+
 #lecture des fichiers movies_clean.parquet et genres_clean.parquet
-movies = pd.read_parquet("movies_clean.parquet")
-genres = pd.read_parquet("genres_clean.parquet")
+movies = pd.read_parquet(BASE_DIR / "movies_clean.parquet")
+genres = pd.read_parquet(BASE_DIR / "genres_clean.parquet")
+
+
+
+#uniformisation des types
+movies['movieId'] = movies['movieId'].astype(str)
+genres['genreId'] = genres['genreId'].astype(str)
 
 #création d'un dictionnaire avec les id des genres en clé et les noms des genres en valeur
 genres_dict = dict(zip(genres["genreId"], genres["name"]))
-
 #récupération de la colonne title, qui contient les titres des films
 movie_id = movies['movieId'].tolist()
 #création d'une série avec les titres des id des films en index et les indices des films en valeur, pour pouvoir récupérer l'indice d'un film à partir de son id
 indices = pd.Series(movies.index, index=movies['movieId'])
-
 #récupération de la colonne genres, qui sont les id des genres associés à chaque film
 movies_genre = movies['genres'].fillna('[]').apply(ast.literal_eval).tolist()
 
@@ -54,6 +64,7 @@ def list_to_string(genres):
     for i in genres:
         temp = []
         for j in i:
+            j=str(j)
             if j in genres_dict:
                 temp.append(genres_dict[j])
         genres_string.append(' '.join(temp))
@@ -62,13 +73,16 @@ def list_to_string(genres):
 genres_string = list_to_string(movies_genre)
 
 #création de la matrice TF-IDF à partir des genres des films
-tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=0, stop_words='english')
+tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=0.0, stop_words='english')
 tfidf_matrix = tf.fit_transform(genres_string)
 
 
 #calcul de la similarité cosinus entre les films à partir de la matrice TF-IDF
 #retourne les 2 films les plus similaires à un film donné, en fonction de leurs genres
 def genre_recommendations(id):
+    id = str(id) #s'assure que l'id est une string pour pouvoir le chercher dans la série indices
+    if id not in indices: #si l'id n'est pas dans la série indices, on retourne une liste vide
+        return []
     idx = indices[id]
 
     sim_scores = linear_kernel(tfidf_matrix[idx:idx+1], tfidf_matrix).flatten()
@@ -103,8 +117,9 @@ def extract_user_id(event):
 #on récupère les ratings de l'utilisateur dans la table DynamoDB à partir de son userId
 #retourne une liste de dictionnaires, chaque dictionnaire représentant un rating avec les clés "movieId", "userId" et "rating" 
 def get_user_ratings(user_id):
-    response = ratings_table.query( 
-        KeyConditionExpression=Key("userId").eq(user_id) #on cherche les ratings de l'utilisateur dans la table DynamoDB en utilisant son userId comme clé de partition
+    response = ratings_table.query(
+        IndexName="byUserId",
+        KeyConditionExpression=Key("userId").eq(user_id)
     )
     return response.get("Items", [])
 
@@ -116,13 +131,13 @@ def top_rated_movies(user_ratings,limit=5):
     for i in sorted_ratings :
         movie_id = i.get("movieId")
         if movie_id is not None:
-            top_movies.append(movie_id)
+            top_movies.append(str(movie_id))
     return top_movies[:limit]
 
 #on récupère la liste finale des recommendations pour l'utilisateur
 def get_recommendations_for_user(top_movies_id, already_rated_movies):
     recommendations = []
-    seen = set(already_rated_movies) 
+    seen = {str(movie_id) for movie_id in already_rated_movies}
     for movie_id in top_movies_id:
         recs = genre_recommendations(movie_id)
 
@@ -151,7 +166,7 @@ def handler(event, context):
         }
 
     top_movies = top_rated_movies(user_ratings)
-    already_rated_movies_ids = {item.get("movieId") for item in user_ratings if item.get("movieId") is not None}
+    already_rated_movies_ids = {str(item.get("movieId")) for item in user_ratings if item.get("movieId") is not None}
     recommendations = get_recommendations_for_user(top_movies, already_rated_movies_ids)
     return {
         "statusCode": 200,
@@ -162,5 +177,6 @@ def handler(event, context):
     }
 
 if __name__ == "__main__":
-    print(handler({}, None))
+    test_event = {'userId': 'tmdb_150'}
+    print(handler(test_event, None))
 
