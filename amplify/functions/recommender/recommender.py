@@ -3,7 +3,7 @@ import os
 import boto3
 import pandas as pd
 import ast
-
+from io import BytesIO
 from pathlib import Path
 from decimal import Decimal
 from boto3.dynamodb.conditions import Key
@@ -14,16 +14,20 @@ from sklearn.metrics.pairwise import linear_kernel
 
 #Configuration de la session boto3 pour accéder à DynamoDB 
 # ATTENTION : NE PAS UTILISER CETTE CONFIGURATION EN PRODUCTION, ELLE EST UNIQUEMENT DESTINÉE À DES FINS DE TESTS LOCAUX
-session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
-dynamodb = session.resource("dynamodb") #remplacer session par boto3 pour le prod
+#session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
+
+dynamodb = boto3.resource("dynamodb") #remplacer session par boto3 pour le prod
+s3 = boto3.client("s3") #remplacer session par boto3 pour le prod
 
 #variable d'environnement pour le nom de la table DynamoDB
 RATINGS_TABLE_NAME = os.environ.get("RATINGS_TABLE_NAME")
 RATINGS_USER_ID_INDEX = os.environ.get("RATINGS_USER_ID_INDEX")
+#variable d'environnement pour le nom du bucket S3 et les clés des fichiers parquet
+DATA_BUCKET_NAME = os.environ.get("DATA_BUCKET_NAME")
+MOVIES_PARQUET_KEY = os.environ.get("MOVIES_PARQUET_KEY")
+GENRES_PARQUET_KEY = os.environ.get("GENRES_PARQUET_KEY")
 
 ratings_table = dynamodb.Table(RATINGS_TABLE_NAME)
-
-#ratings_table = dynamodb.Table("Rating-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE")
 
 
 #Pour transformer les Decimal en float pour le json.dumps
@@ -34,12 +38,14 @@ class DecimalEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+def read_parquet_from_s3(bucket_name, object_key):
+    response = s3.get_object(Bucket=bucket_name, Key=object_key)
+    return pd.read_parquet(BytesIO(response["Body"].read()))
 
-BASE_DIR = Path(__file__).resolve().parent
 
 #lecture des fichiers movies_clean.parquet et genres_clean.parquet
-movies = pd.read_parquet(BASE_DIR / "movies_clean.parquet")
-genres = pd.read_parquet(BASE_DIR / "genres_clean.parquet")
+movies = read_parquet_from_s3(DATA_BUCKET_NAME, MOVIES_PARQUET_KEY)
+genres = read_parquet_from_s3(DATA_BUCKET_NAME, GENRES_PARQUET_KEY)
 
 
 
@@ -176,7 +182,8 @@ def handler(event, context):
         }, cls=DecimalEncoder)
     }
 
-if __name__ == "__main__":
-    test_event = {'userId': 'tmdb_150'}
-    print(handler(test_event, None))
-
+# if __name__ == "__main__":
+#     test_event = {
+#     "arguments": {"userId": "tmdb_150"}
+# }
+#     print(handler(test_event, None))
