@@ -1,5 +1,6 @@
 <template>
-  <div class="movie-details-page">
+  <!--<p style="color: white;"> id : {{ movie.id }} /movieId : {{ movie.movieId }} </p>-->
+  <div  v-if="movie" class="movie-details-page">
     <!-- Background blur avec le poster -->
     <div class="backdrop-container">
       <img 
@@ -131,18 +132,54 @@
 
 <script setup>
 import Notation from '@/components/Notation.vue';
-import { ref } from 'vue';
+import { onMounted , ref } from 'vue';
+import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 
-const route = useRoute()
-
-
+const route = useRoute();
 const router = useRouter();
+const client = generateClient ();
+
+const movie = ref(undefined);
+const movieId = route.params.id;
+
+const getMovieQuery = `
+  query GetMovie($id: ID!) {
+    getMovie(id: $id) {
+      
+      movieId
+      title
+      overview
+      genres
+      posterPath
+      releaseDate
+      voteAverage
+      voteCount
+      director
+    }
+  }
+`;
+
+onMounted(async () => {
+  console.log("ROUTE PARAMS: ", route.params);
+  //const movieId = route.params.id;
+  try {
+    const result = await client.graphql({
+      query: getMovieQuery,
+      variables: { id: movieId }
+    });
+    console.log("RESULT API: ", result);
+    movie.value = result?.data?.getMovie || null;
+  } catch (error) {
+    console.error("Error fetching movie details:", error);
+    movie.value = null;
+  }
+});
 
 
 
 // Donnees statiques en attendant l'API
-const movie = ref({
+/*const movie = ref({
   id: 1,
   movieId: 862,
   title: "Toy Story",
@@ -155,6 +192,7 @@ const movie = ref({
   director: "John Lasseter",
   runtime: "1h 21min"
 });
+*/
 
 function goBack() {
   router.back();
@@ -508,3 +546,5 @@ html, body{
   }
 }
 </style>
+
+
