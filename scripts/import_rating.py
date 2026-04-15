@@ -39,7 +39,7 @@ while "LastEvaluatedKey" in response:
 
 print(f"  {len(items_to_delete)} rating(s) à supprimer.")
 
-with table_rating.batch_writer() as batch:
+with table_rating.batch_writer() as batch: #batch_writer permet de faire des suppressions en lot, plus rapide que de supprimer un par un
     for item in items_to_delete:
         batch.delete_item(Key={"id": item["id"]})
 
@@ -59,8 +59,8 @@ print(f"{len(df)} ratings à importer")
 movies = pd.read_csv('scripts/dataset/movies_cleaned.csv', usecols=['movieId']) #on ne charge que la colonne movieId pour gagner du temps et de la mémoire
 movie_ids_valides = set(movies['movieId'].astype(str))#on convertit les movieId en string pour les comparer avec ceux du fichier ratings, qui sont aussi des string (car on les a convertis en string dans le script de nettoyage et dans Amplify)
  
-df['movieId'] = df['movieId'].astype(str)
-df = df[df['movieId'].isin(movie_ids_valides)]
+df['movieId'] = df['movieId'].astype(str)#on convertit les movieId en string pour les comparer avec ceux du fichier movies_cleaned.csv, qui sont aussi des string (car on les a convertis en string dans le script de nettoyage et dans Amplify)
+df = df[df['movieId'].isin(movie_ids_valides)]#on garde uniquement les ratings dont le movieId est dans la liste des movieId valides (ceux de movies_cleaned.csv)
  
 print(f"{len(df)} ratings après filtrage sur les films existants")
  
