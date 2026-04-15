@@ -20,8 +20,7 @@ export const recommender = defineFunction((scope) => {
       RATINGS_TABLE_NAME: "Rating-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE",
       RATINGS_USER_ID_INDEX: "byUserId",
       DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
-      MOVIES_PARQUET_KEY: "recomodo/movies_clean.parquet",
-      GENRES_PARQUET_KEY: "recomodo/genres_clean.parquet",
+      MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations.json",
     },
     code: Code.fromAsset(functionDir, {
       bundling: {
@@ -29,12 +28,9 @@ export const recommender = defineFunction((scope) => {
         local: {
           tryBundle(outputDir: string) {
             execSync(
-              `python3 -m pip install -r ${path.join(functionDir, "requirements.txt")} -t ${outputDir}`,
+              `cp ${path.join(functionDir, "recommender.py")} ${outputDir}`,
               { stdio: "inherit" }
             );
-            execSync(`cp -r ${functionDir}/* ${outputDir}`, {
-              stdio: "inherit",
-            });
             return true;
           },
         },
@@ -56,8 +52,7 @@ export const recommender = defineFunction((scope) => {
     new PolicyStatement({
       actions: ["s3:GetObject"],
       resources: [
-        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movies_clean.parquet",
-        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/genres_clean.parquet",
+        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movie_recommendations.json",
       ],
     })
   );
