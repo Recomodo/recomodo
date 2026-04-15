@@ -170,12 +170,12 @@ movies = movies[[
 # ==========================================================
 
 movies.to_csv(
-    "scripts/dataset/movies_clean.csv",
+    "scripts/dataset/movies_cleaned.csv",
     index=False
 )
 
 print(f"Nombre final de films : {len(movies)}")
-print("Fichier movies_clean.csv généré avec succès.")
+print("Fichier movies_cleaned.csv généré avec succès.")
 
 
 # ==========================================================

@@ -24,7 +24,7 @@ const schema = a.schema({
     .model({
       userId: a.string().required(), // ID de l'utilisateur qui a noté le film
       movieId: a.string().required(),
-      rating: a.float().required(),//note donnée par l'utilisateur au film, entre 0.5 et 5.0
+      rating: a.float().required(),//note donnée par l'utilisateur au film, entre 0 et 10
       //isInitial:a.boolean(),//pour différencier les notes du questionnaire initial ou celle rentrez manuellement(utilisé pour la remise à zéro)
     })
 
@@ -42,7 +42,7 @@ const schema = a.schema({
     .model({
       userId: a.string().required(), // ID de l'utilisateur (généré par cognito)
       username: a.string(), // nom de l'utilisateur
-      genres: a.integer().array(), // genres préférés de l'utilisateur
+      //genres: a.integer().array(),  genres préférés de l'utilisateur
       hasCompleted: a.boolean(), // indique si l'utilisateur a complété son profil
       
     })
