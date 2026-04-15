@@ -82,6 +82,7 @@ def main() :
         recommendations[movie_id] = similar_ids
     
     #écriture des recommandations dans un fichier JSON
+    #il y a 5 recommandations par film, et chaque recommandation est l'id d'un film similaire à celui de départ
     Path(OUTPUT_PATH).write_text(
         json.dumps(recommendations, ensure_ascii=False),
         encoding="utf-8",
