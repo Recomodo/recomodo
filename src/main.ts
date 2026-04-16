@@ -8,8 +8,8 @@ Amplify.configure(outputs);
 
 import {library} from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faMagnifyingGlass, faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faCircleUser ,faStar} from "@fortawesome/free-solid-svg-icons";
 
-library.add(faMagnifyingGlass,faCircleUser);
+library.add(faMagnifyingGlass,faCircleUser,faStar);
 
 createApp(App).use(router).component("font-awesome-icon", FontAwesomeIcon).mount("#app");
