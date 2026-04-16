@@ -1,107 +1,57 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import type { Schema } from '../../amplify/data/resource';
+import { onMounted, ref } from 'vue';
+import { generateClient } from 'aws-amplify/data';
 const router = useRouter();
 
-const movies=[
-    {
-        movieId: 1,
-        title: "The Godfather",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41+eK8zBwQL._AC_.jpg"
-    },
-    {
-        movieId: 2,
-        title: "The Dark Knight",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51EbJjlL8-L._AC_.jpg"
-    },
-    {
-        movieId: 3,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 4,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 5,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-    {
-        movieId: 6,
-        title: "The Godfather",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41+eK8zBwQL._AC_.jpg"
-    },
-    {
-        movieId: 7,
-        title: "The Dark Knight",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51EbJjlL8-L._AC_.jpg"
-    },
-    {
-        movieId: 8,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 9,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-     {
-        movieId: 10,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 11,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-    {
-        movieId: 12,
-        title: "The Godfather",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41+eK8zBwQL._AC_.jpg"
-    },
-    {
-        movieId: 13,
-        title: "The Dark Knight",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51EbJjlL8-L._AC_.jpg"
-    },
-    {
-        movieId: 14,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 15,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
+const listMoviesQuery = `
+  query ListMovies {
+    listMovies(limit: 20) {
+      items {
+        movieId
+        title
+        voteAverage
+        posterPath
+      }
     }
-];
+  }
+`;
 
 
-function filmDetails(movieId:number): void {
+const client = generateClient<Schema>();
+
+
+const movies = ref<Array<Schema['Movie']["type"]>>([]);
+onMounted(async () => {
+    try{
+  const res = await client.graphql({
+    query: listMoviesQuery
+  });
+  console.log("FULL RES:", res);
+  const items = res.data?.listMovies?.items;
+  movies.value = Array.isArray(items) ? items : [];
+}catch(error){
+  console.error("Error fetching movies:", error);
+}
+});
+
+/*const movies = ref<Array<Schema['Movie']["type"]>>([]);
+
+function listMovies() {
+  client.models.Movie.observeQuery().subscribe({
+    next: ({ items, isSynced }) => {
+      movies.value = items
+     },
+  }); 
+}
+
+onMounted(
+  listMovies()
+)*/
+
+
+function filmDetails(movieId:string){
     router.push(`/movie/details/id:${movieId}`);
 }
 </script>
@@ -110,12 +60,12 @@ function filmDetails(movieId:number): void {
 <template>
 <div class="recommendationsContainer">
 <div  class="movie"v-for="(movie) in movies" :key="movie.movieId" @click="filmDetails(movie.movieId)">
-    <img :src="movie.posterPath" :alt="movie.title">
+    <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
+         :alt="movie.title ?? ''" />
     <div class="discription">
        <p>{{ movie.title }}</p>
        <p>{{ movie.voteAverage }}</p>
     </div>   
-
-</div>
+   </div>
 </div>
 </template>
