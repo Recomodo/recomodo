@@ -108,7 +108,8 @@ a {
     justify-content: space-around;
     align-items: center;
     font-size: small;
-    position:relative;
+    
+   
 }
 .movie{
     height: 200px;
@@ -121,10 +122,11 @@ a {
 .recommendationsContainer{
     display: flex;
     flex-wrap: wrap;
-    justify-content:space-between;
     gap: 20px;
     padding: 2rem;
 }
+
+/*css de mon footer*/
 footer {
     background-color: #15001d;
     color: #E8DEF8;
