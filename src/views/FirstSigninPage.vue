@@ -1,198 +1,194 @@
 <script setup lang="ts">
 //récuperer le liste des genres dans un tableau
-import { ref, onMounted } from 'vue';
-
+import { ref, onMounted ,computed} from 'vue';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 //api
 import type {Schema} from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import Rating from '@/components/Rating.vue';
 
-interface Genre {
-   id: number;
-   genreId: number;
-   name: string;
-}
-
-interface GenreSection {
-   id: number;
-   genre1: Genre;
-   genre2: Genre;
-   genre3: Genre;
-}
-const genres : Genre[] =[
-      {
-   id: 1,
-   genreId: 1,
-   name: "fantasy"
-   },
-   {
-      id: 2,
-      genreId: 2,
-      name: "action"
-   },
-   {
-      id: 3,
-      genreId: 3,
-      name: "comedy"
-   },
-   {
-      id: 4,
-      genreId: 4,
-      name: "horror"
-   },
-   {
-      id: 5,
-      genreId: 5,
-      name: "science fiction"
-   },{
-      id:6,
-      genreId:6,
-      name: "romance"
-   },
-   {
-      id:7,
-      genreId:7,
-      name: "thriller"
-   },
-   {
-      id:8,
-      genreId:8,
-      name: "animation"
-   },
-   {
-      id:9,
-      genreId:9,
-      name: "adventure"
-   },
-   {
-      id:10,
-      genreId:10,
-      name: "documentary"
-   },
-   {
-      id:11,
-      genreId:11,
-      name: "mystery"
-   },
-   {
-      id:12,
-      genreId:12,
-      name: "crime"
-   }
-
-]
-
-const genresSections: GenreSection[] = [
-   {
-      id:1,
-      genre1: genres[0],
-      genre2: genres[1],
-      genre3: genres[2]
-   },
-   {
-      id:2,
-      genre1: genres[3],
-      genre2: genres[4],
-      genre3: genres[5]
-   },
-   {
-      id:3,
-      genre1: genres[6],
-      genre2: genres[7],
-      genre3: genres[8]
-   },
-   {
-      id:4,
-      genre1: genres[9],
-      genre2: genres[10],
-      genre3: genres[11]
-   }
-];
-
-
-/*const tabFilms=[
-   {
-      id:title
-   }
-
-]*/
-
-/*
 const client = generateClient<Schema>();
-const genresSections = ref<Array<Schema['Genre']["type"]>>([]);
+const movies = ref<Array<Schema['Movie']["type"]>>([]);
+const genres=ref<Array<Schema['Genre']["type"]>>([]);
+const profile = ref<Schema['UserProfile']["type"]|null>(null);
+
+const listGenresQuery = `
+  query ListGenres {
+    listGenres{
+      items {
+        genreId
+        name
+      }
+    }
+  }
+`;
 
 
-onMounted(async()=>{
-   const{data}=await client.models.Genre.list();
-   console.log("GENRES:", data);
-   genresSections.value=data;
-})
-*/
-const maxSelection = 3;
-const selectedGenres = ref<number[]>([]);
+const listMoviesQuery = `
+  query ListMovies {
+    listMovies(limit: 18) {
+      items {
+        movieId
+        title
+        voteAverage
+        posterPath
+        genres
+      }
+    }
+  }
+`;
 
-function clickedGenreSection(genreId: number) {
-   if (selectedGenres.value.includes(genreId)) {
-      selectedGenres.value = selectedGenres.value.filter(id => id !== genreId);
-   } else if (selectedGenres.value.length < maxSelection) {
-      selectedGenres.value.push(genreId);
+onMounted(async () => {
+    try{
+  const resg = await client.graphql({
+    query: listGenresQuery
+  });
+  console.log("FULL RES:", resg);
+  const items = resg.data?.listGenres?.items;
+  genres.value = Array.isArray(items) ? items : [];
+}catch(error){
+  console.error("Error fetching genres:", error);
+}
+});
+
+onMounted(async () => {
+    try{
+  const res = await client.graphql({
+    query: listMoviesQuery
+  });
+  console.log("FULL RES:", res);
+  const items = res.data?.listMovies?.items;
+  movies.value = Array.isArray(items) ? items : [];
+}catch(error){
+  console.error("Error fetching movies:", error);
+}
+});
+
+function getGenres(id:number|null|undefined) {
+   if(!id){
+      return"";
+   }else{
+      const genre = genres.value.find(g => Number(g.genreId) === Number(id));
+      return genre ? genre.name : "";
+      
    }
 }
+//const rating = ref<number[]>([])
+const ratings = ref<Record<string, number>>({})
+const ratingsCount = computed(() =>
+  Object.values(ratings.value).filter(r => r > 0).length
+)
 
-function isSelected(genreId: number) {
-   return selectedGenres.value.includes(genreId);
+function submit() {
+  console.log("Ratings submitted:", ratings.value);
+  // envoi avec api aux base dynamodb
+  // ensuite redirection vers la page d'accueil
+  redirected();
 }
-
-function isDisabled(genreId: number) {
-   return !selectedGenres.value.includes(genreId) && selectedGenres.value.length >= maxSelection;
+function redirected(){
+   router.push('/');
 }
-
-
 </script>
 
 
 <template>
-   <h1>Première connexion</h1>
-   <div>
-      <p>veuillez sélectionner jusqu'à trois genres de films qui vous passionnent le plus. N'hésitez pas à explorer différentes catégories pour découvrir de nouveaux films et élargir vos horizons cinématographiques. Votre sélection nous permettra de vous offrir une expérience personnalisée et de vous recommander des films qui correspondent parfaitement à vos préférences.</p>
-      <div class="genresContainer">
-         <button class="genreSection" :class="{ selected: isSelected(genreSection.id), disabled: isDisabled(genreSection.id) }" v-for="genreSection in genresSections" :key="genreSection.id"  @click="clickedGenreSection(genreSection.id) ">
-            <label :for="String(genreSection.genre1.genreId)">{{ genreSection.genre1.name }}, </label>
-            <label :for="String(genreSection.genre2.genreId)">{{ genreSection.genre2.name }}, </label>
-            <label :for="String(genreSection.genre3.genreId)">{{ genreSection.genre3.name }}</label>
-         </button>
+   
+   <h4 class="genre">please rate at least 10 movies from the list for a better recommendation</h4>
+<div class="formContainer">
+  <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
+    <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
+         :alt="movie.title ?? ''" />
+         <div class="formSubContainer">
+    <div class="discriptionForm">
+       <p>{{ movie.title }}</p>
+       <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
+    </div> 
+    <div class="genres" v-if="movie.genres">
+      <div class="genre"  v-for="genreId in movie.genres" :key="genreId ?? ''">
+      {{getGenres(genreId)}}
       </div>
-   </div>
-
+    </div>
+    <div class="rating">
+     <Rating v-model="ratings[movie.movieId]" />
+     </div>
+     </div>
+  </div>
+    <p v-if="ratingsCount<10" style="color: brown;">
+      Minimum 10 films requis ({{ ratingsCount }}/10)
+    </p>
+    <button :disabled="ratingsCount<10" @click="submit">
+      Submit
+    </button>
+</div> 
 
 </template>
 
 <style scoped>
-.disabled {
-   pointer-events: none;
-   opacity: 0.5;
-}
-.selected{
-   background-color: rgba(107, 44, 134, 0.5);
-}
-.genreSection{
-   border: 1px solid black;
-   border-radius: 17px;
-   padding: 10px;
-   margin: 5px;
-   cursor: pointer;
+
+.formContainer{
    display: flex;
-   height: 300px;
-   width:500px
+   flex-direction: row;
+   flex-wrap:wrap;
+   gap:40px;
+   padding-inline: 2rem;         /*inline padding*/
+   justify-content: center;
 }
-.genresContainer{
+.blockMovie{
+   display: flex;
+   flex-direction: row;
+   justify-content: space-around;
+   background-color: rgb(61, 9, 67);
+   border-radius: 14px;
+   box-shadow: 20px 20px 20px rgba(239, 162, 239, 0.219);
+   height: 200px;
+   width : 550px;
+}
+
+.blockMovie img{
+   height: 150px;
+   width: 100px;
+   display: flex;
+   align-self: center;
+
+}
+.discriptionForm{
+   display: flex; 
+   width:100%;
+   justify-content: space-between;
+}
+
+.formSubContainer{
    display: flex;
    flex-direction: column;
-   padding-left: 2rem;
-   gap:30px;
-
+   justify-content: space-between;
+   padding-block: 1rem;
+}
+.genres{
+   display:flex;
+   flex-direction: row;
 }
 
-button:hover{
-   transform: scale(1.03);
+.genre{
+   display: inline;
+   color: rgb(239, 162, 239);
+   background-color: rgba(128, 0, 122, 0.153);
+   border-color:rgb(239, 162, 239);
+   border: 1px solid;
+   border-radius: 12px;
+   padding: 2px 6px;
 }
+
+button:disabled{
+   background-color: rgba(32, 32, 32, 0.568);
+   border: 1px solid rgba(32, 32, 32, 0.468);
+   cursor: not-allowed;
+}
+button{
+   background-color: rgb(61, 9, 67);
+   border: 1px solid rgb(61, 9, 67);
+   cursor: pointer;
+}
+
 </style>
