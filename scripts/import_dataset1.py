@@ -12,8 +12,8 @@ print("Connexion à AWS...")
 session = boto3.Session(profile_name='Recomodo-AdminAccess-Amplify-080941085602')
 dynamodb = session.resource('dynamodb', region_name='eu-west-3')
  
-NOM_TABLE_MOVIE = 'Movie-plmvpye27falferla5jpy5hchi-NONE'
-NOM_TABLE_GENRE = 'Genre-plmvpye27falferla5jpy5hchi-NONE'
+NOM_TABLE_MOVIE = 'Movie-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'
+NOM_TABLE_GENRE = 'Genre-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'
  
 table_movie = dynamodb.Table(NOM_TABLE_MOVIE)
 table_genre = dynamodb.Table(NOM_TABLE_GENRE)
@@ -143,7 +143,7 @@ for index, row in movies.iterrows():
                 # Chemin affiche
                 # URL complète = https://image.tmdb.org/t/p/w500 + posterPath
                 'posterPath': str(row['posterPath']) if pd.notna(row['posterPath']) else '',
-                
+
                 'runtime': int(row['runtime']) if pd.notna(row['runtime']) else 0,
 
                 'cast': str(row['cast']) if pd.notna(row['cast']) else '',
