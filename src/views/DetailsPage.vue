@@ -1,5 +1,4 @@
 <template>
-  <!--<p style="color: white;"> id : {{ movie.id }} /movieId : {{ movie.movieId }} </p>-->
   <div  v-if="movie" class="movie-details-page">
     <!-- Background blur avec le poster -->
     <div class="backdrop-container">
@@ -34,13 +33,6 @@
             <Notation v-model="userRating" />
             <p class="UserRatingValue">{{ userRating }}/5</p>
           </div>
-          <!-- Badge note sur le poster 
-          <div class="rating-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-            <span>{{ movie.voteAverage?.toFixed(1) }}</span>
-          </div>-->
         </div>
       </div>
 
@@ -176,24 +168,6 @@ onMounted(async () => {
   }
 });
 
-
-
-// Donnees statiques en attendant l'API
-/*const movie = ref({
-  id: 1,
-  movieId: 862,
-  title: "Toy Story",
-  overview: "Woody, un cowboy en peluche, est le jouet prefere d'Andy, un petit garcon. Mais l'arrivee de Buzz l'Eclair, un ranger de l'espace, va bouleverser sa vie. Entre jalousie et aventures, Woody va decouvrir le vrai sens de l'amitie.",
-  genres: ["Animation", "Aventure", "Comedie", "Familial"],
-  posterPath: "/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg",
-  releaseDate: "1995-10-30",
-  voteAverage: 7.9,
-  voteCount: 17849,
-  director: "John Lasseter",
-  runtime: "1h 21min"
-});
-*/
-
 function goBack() {
   router.back();
 }
@@ -269,19 +243,6 @@ html, body{
   transform-origin: top;
   opacity: 0;
 }
-
-/*.backdrop-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  background: linear-gradient(
-    to bottom,
-    rgba(10, 10, 15, 0.3) 0%,
-    rgba(10, 10, 15, 0.8) 50%,
-    rgba(10, 10, 15, 1) 100%
-  );
-}*/
-
 
 /* Bouton retour */
 .back-button {

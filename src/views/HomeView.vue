@@ -42,121 +42,6 @@ onMounted(async () => {
         movies.value = [];
     }
 });
-/*const movies=[
-    {
-        movieId: 1,
-        title: "The Godfather",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41+eK8zBwQL._AC_.jpg"
-    },
-    {
-        movieId: 2,
-        title: "The Dark Knight",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51EbJjlL8-L._AC_.jpg"
-    },
-    {
-        movieId: 3,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 5,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-    {
-        movieId: 6,
-        title: "The Godfather",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41+eK8zBwQL._AC_.jpg"
-    },
-    {
-        movieId: 4,
-        title: "The Dark Knight",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51EbJjlL8-L._AC_.jpg"
-    },
-    {
-        movieId: 7,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 8,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-    {
-        movieId: 9,
-        title: "Toy Story",
-        voteAverage: 4.2,
-        posterPath:"https://image.tmdb.org/t/p/w500"
-    },
-    {
-        movieId: 10,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 11,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-    {
-        movieId: 12,
-        title: "Toy Story",
-        voteAverage: 4.2,
-        posterPath:"https://image.tmdb.org/t/p/w500"
-    },
-        {
-        movieId: 13,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-    {
-        movieId: 14,
-        title: "Toy Story",
-        voteAverage: 4.2,
-        posterPath:"https://image.tmdb.org/t/p/w500"
-    },
-    {
-        movieId: 15,
-        title: "12 Angry Men",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/41VZ27J7J-L._AC_.jpg"
-
-    },
-    {
-        movieId: 16,
-        title: "Schindler's List",
-        voteAverage: 4.2,
-        posterPath:"https://m.media-amazon.com/images/I/51T8KQYJQ-L._AC_.jpg"
-    },
-    {
-        movieId: 17,
-        title: "Toy Story",
-        voteAverage: 4.2,
-        posterPath:"https://image.tmdb.org/t/p/w500"
-    },
-    {
-        movieId: 18,
-        title: "Toy Story",
-        voteAverage: 4.2,
-        posterPath:"https://image.tmdb.org/t/p/w500"
-    }
-];
-*/
 
 const totalPages = computed(() => Math.ceil(movies.value?.length || 0 / itemsPerPage));
 
@@ -184,9 +69,6 @@ function handlePageChange(page: number) {
          
         class="movie"
     >
-        <!-- <p style="color: white;">{{ movie.posterPath }}</p> -->
-        <!--<div  class="movie"v-for="(movie) in movies" :key="movie.movieId">-->
-        <!--<img :src="movie.posterPath" :alt="movie.title">-->
         <img
             :src="'https://image.tmdb.org/t/p/w500' + movie.posterPath"
            
@@ -272,17 +154,6 @@ img{
     padding-top: 15px;
     margin-top: 15px;
 }
-/*.container{
-    display: flex;
-    flex-wrap: wrap;
-    /*justify-content:flex-start;*/
-   /* justify-content: center;
-    gap: 2rem;
-   padding: 2rem 2rem 2rem 2rem;
-   
-   
-}
-*/
 .container{
     display: grid;
     grid-template-columns: repeat(auto-fit, 150px);
