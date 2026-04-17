@@ -3,9 +3,9 @@
 import pandas as pd
 import ast
 
-print("Chargement de movies_clean.csv...")
+print("Chargement de movies_cleaned.csv...")
 
-movies = pd.read_csv("scripts/dataset/movies_clean.csv")
+movies = pd.read_csv("scripts/dataset/movies_cleaned.csv")
 
 nombre_initial = len(movies)
 print(f"Nombre initial de films : {nombre_initial}")

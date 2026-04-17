@@ -12,8 +12,8 @@ print("Connexion à AWS...")
 session = boto3.Session(profile_name='Recomodo-AdminAccess-Amplify-080941085602')
 dynamodb = session.resource('dynamodb', region_name='eu-west-3')
  
-NOM_TABLE_MOVIE = 'Movie-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'
-NOM_TABLE_GENRE = 'Genre-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'
+NOM_TABLE_MOVIE = 'Movie-olr2lwhvwbfzzjfd437jzwjsca-NONE'
+NOM_TABLE_GENRE = 'Genre-olr2lwhvwbfzzjfd437jzwjsca-NONE'
  
 table_movie = dynamodb.Table(NOM_TABLE_MOVIE)
 table_genre = dynamodb.Table(NOM_TABLE_GENRE)
@@ -126,10 +126,10 @@ for index, row in movies.iterrows():
                 'genres': ast.literal_eval(str(row['genres'])),
  
                 # Mots clés pour TF-IDF
-                'keywords': str(row['keywords']) if pd.notna(row['keywords']) else '',
+                'keywords': str(row['keywords']),
  
                 # Date de sortie
-                'releaseDate': str(row['releaseDate']) if pd.notna(row['releaseDate']) else '',
+                'releaseDate': str(row['releaseDate']),
  
                 # Note moyenne (Decimal car DynamoDB n'accepte pas float)
                 'voteAverage': Decimal(str(row['voteAverage'])),
@@ -138,15 +138,15 @@ for index, row in movies.iterrows():
                 'voteCount': int(row['voteCount']),
  
                 # Réalisateur
-                'director': str(row['director']) if pd.notna(row['director']) else '',
+                'director': str(row['director']) ,
  
                 # Chemin affiche
                 # URL complète = https://image.tmdb.org/t/p/w500 + posterPath
-                'posterPath': str(row['posterPath']) if pd.notna(row['posterPath']) else '',
+                'posterPath': str(row['posterPath']),
 
-                'runtime': int(row['runtime']) if pd.notna(row['runtime']) else 0,
+                'runtime': int(row['runtime']),
 
-                'cast': str(row['cast']) if pd.notna(row['cast']) else '',
+                'cast': str(row['cast']),
  
                 'createdAt': now,  # ajout manuellement des timestamps
                 'updatedAt': now,  
