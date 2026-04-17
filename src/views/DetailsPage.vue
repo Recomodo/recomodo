@@ -29,9 +29,8 @@
             class="movie-poster"
           />
           <div>
-            <h1>Your note</h1>
             <Notation v-model="userRating" />
-            <p class="UserRatingValue">{{ userRating }}/5</p>
+            <p class="UserRatingValue">{{ userRating }}</p>
           </div>
         </div>
       </div>

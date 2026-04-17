@@ -31,7 +31,7 @@ function getDisplayValue(star: number) {
 <template>
 <div class="stars">
     <div
-        v-for="star in 5"
+        v-for="star in 10"
         :key="star"
         class="star-wrapper"
         @mousemove="(e) => {
@@ -39,12 +39,15 @@ function getDisplayValue(star: number) {
             const isHalf = e.clientX - rect.left <rect.width / 2;
             currentNotation = isHalf ? star - 0.5 : star;  
         }"
-        @mouseleave="currentNotation = 0"
-        @click="changeNotation(currentNotation)"
+        @mouseleave="currentNotation.value = 0"
+        @click="changeNotation(currentNotation.value)"
     >
-        <span class="starBase">★</span>
-        <span v-if="getDisplayValue(star) === 'full'" class="starFull">★</span>
-        <span v-else-if="getDisplayValue(star) === 'half'" class="starHalf">★</span>
+        <span 
+         class="star"
+         :class="getDisplayValue(star)"
+        > 
+            ★
+        </span>
         
    
     </div>
@@ -59,18 +62,6 @@ function getDisplayValue(star: number) {
     cursor: pointer;
 }
 
-/*
-.star {
-    color: #ccc;
-    transition:  0.2s;
-}
-
-.star.active {
-    color: #ffcc00;
-    transform: scale(1.1);
-}
-    */
-
 .star-wrapper {
     position: relative;
     width: 32px;
@@ -81,17 +72,15 @@ function getDisplayValue(star: number) {
     position: absolute;
     top: 0;
     left: 0;
-}
-
-.base {
-    color: #444;
+    color:#444;
+    transition: 0.2s;
 }
 
 .full {
-    color: #ffcc00;
+    color: rgb(222, 106, 222);
 }
 .half {
-    color: #ffcc00;
+    color: rgb(222, 106, 222);
     width: 50%;
     overflow: hidden;
     display: inline-block;

@@ -106,7 +106,7 @@ function handlePageChange(page: number) {
     bottom: 20px;
     left:0;
     right:0;
-    display: flex;
+    display: flex-end;
     justify-content: center;
     
     
@@ -154,6 +154,7 @@ img{
     padding-top: 15px;
     margin-top: 15px;
 }
+
 .container{
     display: grid;
     grid-template-columns: repeat(auto-fit, 150px);
@@ -164,6 +165,8 @@ img{
     margin-left: 1rem ;
     flex-grow: 1;
     align-self: start;
+    height: 100%;
+
 }
 
 
