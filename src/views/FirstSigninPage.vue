@@ -12,59 +12,23 @@ import Rating from '@/components/Rating.vue';
 const client = generateClient<Schema>();
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
 const genres=ref<Array<Schema['Genre']["type"]>>([]);
-const profile = ref<Schema['UserProfile']["type"]|null>(null);
-
-const listGenresQuery = `
-  query ListGenres {
-    listGenres{
-      items {
-        genreId
-        name
-      }
-    }
-  }
-`;
 
 
-const listMoviesQuery = `
-  query ListMovies {
-    listMovies(limit: 18) {
-      items {
-        movieId
-        title
-        voteAverage
-        posterPath
-        genres
-      }
-    }
-  }
-`;
+
 
 onMounted(async () => {
-    try{
-  const resg = await client.graphql({
-    query: listGenresQuery
-  });
-  console.log("FULL RES:", resg);
-  const items = resg.data?.listGenres?.items;
-  genres.value = Array.isArray(items) ? items : [];
-}catch(error){
-  console.error("Error fetching genres:", error);
-}
+    try {
+      const [moviesData,genresData] = await Promise.all([
+        client.models.Movie.list({ limit: 18 }),
+        client.models.Genre.list()
+      ]);
+      movies.value = moviesData.data ?? [];
+      genres.value = genresData.data ?? [];
+    } catch (error) {
+      console.error("Error fetching movies or genres:", error);
+    }
 });
 
-onMounted(async () => {
-    try{
-  const res = await client.graphql({
-    query: listMoviesQuery
-  });
-  console.log("FULL RES:", res);
-  const items = res.data?.listMovies?.items;
-  movies.value = Array.isArray(items) ? items : [];
-}catch(error){
-  console.error("Error fetching movies:", error);
-}
-});
 
 function getGenres(id:number|null|undefined) {
    if(!id){
@@ -75,27 +39,52 @@ function getGenres(id:number|null|undefined) {
       
    }
 }
-//const rating = ref<number[]>([])
 const ratings = ref<Record<string, number>>({})
 const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
 )
 
-function submit() {
+async function submit() {
   console.log("Ratings submitted:", ratings.value);
   // envoi avec api aux base dynamodb
   // ensuite redirection vers la page d'accueil
+  await client.models.UserProfile.update({
+    id: identifiant.value,
+    hasCompleted:true
+  })
   redirected();
 }
 function redirected(){
    router.push('/');
 }
+
+/*onMounted(async () => {
+    try {
+      const { data, errors } = await client.models.Genre.list({
+        limit: 20
+      });
+      genres.value=data ?? [];
+    } catch (error) {
+      console.error("Error fetching genres:", error);
+    }
+});
+
+onMounted(async () => {
+    try {
+      const { data, errors} = await client.models.Movie.list({
+        limit: 18
+      });
+      movies.value=data ?? [];
+    } catch (error) {
+      console.error("Error fetching movies:", error);
+    }
+});*/
 </script>
 
 
 <template>
    
-   <h4 class="genre">please rate at least 10 movies from the list for a better recommendation</h4>
+   <p class="pform">Please rate at least 10 movies from the list for a better recommendation</p>
 <div class="formContainer">
   <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
@@ -189,6 +178,11 @@ button{
    background-color: rgb(61, 9, 67);
    border: 1px solid rgb(61, 9, 67);
    cursor: pointer;
+}
+
+.pform{
+  color: rgb(239, 162, 239);
+  font-weight: 600;
 }
 
 </style>
