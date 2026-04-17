@@ -1,10 +1,8 @@
 import pandas as pd
 import ast
 
-# Charger ton CSV propre existant
 movies = pd.read_csv('scripts/dataset/movies_cleaned.csv')
 
-# Charger les fichiers Kaggle originaux
 metadata = pd.read_csv('scripts/dataset/movies_metadata.csv', low_memory=False)
 credits = pd.read_csv('scripts/dataset/credits.csv')
 
@@ -46,15 +44,15 @@ incomplete = movies[
 # Export des IDs à supprimer dans DynamoDB
 ids_to_delete = incomplete['movieId'].drop_duplicates()
 ids_to_delete.to_csv('scripts/dataset/ids_to_delete.csv', index=False, header=True)
-print(f"⚠️  {len(ids_to_delete)} films incomplets → IDs exportés dans ids_to_delete.csv")
+print(f"  {len(ids_to_delete)} films incomplets → IDs exportés dans ids_to_delete.csv")
 
 # Suppression dans le csv 
 movies = movies[~movies['movieId'].isin(ids_to_delete)]
 movies['runtime'] = movies['runtime'].astype(int)
 
 after = len(movies)
-print(f"⚠️  {before - after} films supprimés de movies_cleaned.csv")
+print(f"  {before - after} films supprimés de movies_cleaned.csv")
 
 # SAUVEGARDE
 movies.to_csv('scripts/dataset/movies_cleaned.csv', index=False)
-print(f"✅ Done ! {after} films enrichis avec runtime et cast.")
+print(f"Done ! {after} films enrichis avec runtime et cast.")

@@ -12,8 +12,8 @@ print("Connexion à AWS...")
 session = boto3.Session(profile_name='Recomodo-AdminAccess-Amplify-080941085602')
 dynamodb = session.resource('dynamodb', region_name='eu-west-3')
  
-NOM_TABLE_MOVIE = 'Movie-olr2lwhvwbfzzjfd437jzwjsca-NONE'
-NOM_TABLE_GENRE = 'Genre-olr2lwhvwbfzzjfd437jzwjsca-NONE'
+NOM_TABLE_MOVIE = 'Movie-ijhwxiff7nbgfe7pbxjat2dtxi-NONE'
+NOM_TABLE_GENRE = 'Genre-ijhwxiff7nbgfe7pbxjat2dtxi-NONE'
  
 table_movie = dynamodb.Table(NOM_TABLE_MOVIE)
 table_genre = dynamodb.Table(NOM_TABLE_GENRE)
