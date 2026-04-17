@@ -213,8 +213,6 @@ html, body{
   overflow-x: hidden;
   width:100%;
   flex-wrap: wrap;
-  background-image: url("https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg") , linear-gradient(to bottom, rgba(68, 68, 68, 0.6), rgb(39, 39, 39)) ;
-  background-blend-mode: darken;
   background-size: cover;
   
   
@@ -235,12 +233,14 @@ html, body{
 .backdrop-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  filter: blur(40px);
+  object-fit: contain;
+  filter: blur(5px) brightness(0.7);
   transform: scale(1.1);
   display: block;
   transform-origin: top;
-  opacity: 0;
+  opacity:1;
+  top: 0;
+  left: 0;
 }
 
 /* Bouton retour */
