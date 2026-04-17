@@ -6,7 +6,7 @@ from decimal import Decimal
 
 # CONNEXION À AWS DYNAMODB
  
-print("Connexion à AWS...")
+print("Connexion à AWS...") 
  
 session = boto3.Session(profile_name='Recomodo-AdminAccess-Amplify-080941085602')
 dynamodb = session.resource('dynamodb', region_name='eu-west-3')
@@ -93,6 +93,11 @@ with table_rating.batch_writer() as batch:
                     # Champs Amplify obligatoires pour allow.owner()
                     # On simule un owner cohérent avec le userId
                     'owner': f"tmdb_{int(row['userId'])}",
+
+                    'createdAt': str(pd.Timestamp.now()),  # timestamp actuel au format ISO 8601
+                    'updatedAt': str(pd.Timestamp.now()),  # timestamp actuel au format ISO 860
+
+                
                 }
             )
  

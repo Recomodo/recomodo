@@ -1,151 +1,172 @@
 import pandas as pd # pour lire les CSV
 import boto3 # pour se connecter à AWS DynamoDB
-#import os pour accéder aux variables d'environnement AWS_ACCESS_KEY_ID et AWS_SECRET_ACCESS_KEY
 import ast # pour convertir les strings de listes en vraies listes
 from decimal import Decimal # pour convertir les floats en Decimal (DynamoDB n'accepte pas les floats)
-
-
+from datetime import datetime, timezone # pour générer les timestamps createdAt et updatedAt
+ 
+ 
 # CONNEXION À AWS DYNAMODB
-
-
+ 
+ 
 print("Connexion à AWS...")
-#dynamodb = boto3.resource(
-#    'dynamodb',
-#    region_name='eu-west-3',
-#    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-#    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
-#)
 session = boto3.Session(profile_name='Recomodo-AdminAccess-Amplify-080941085602')
 dynamodb = session.resource('dynamodb', region_name='eu-west-3')
-
-
-NOM_TABLE_MOVIE = 'Movie-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table DynamoDB pour les films
-#NOM_TABLE_GENRE = 'Genre-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'#nom de la table DynamoDB pour les genres
-
+ 
+NOM_TABLE_MOVIE = 'Movie-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'
+NOM_TABLE_GENRE = 'Genre-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'
+ 
 table_movie = dynamodb.Table(NOM_TABLE_MOVIE)
-
-#Supression de la table Movie (pour repartir de zéro à chaque fois, pour éviter les doublons à chaque import)
+table_genre = dynamodb.Table(NOM_TABLE_GENRE)
+ 
+# Timestamp actuel au format ISO 8601 (requis par Amplify/GraphQL)
+now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+ 
+ 
+# SUPPRESSION DE LA TABLE MOVIE
+ 
+ 
 print("\nSuppression de tous les films existants...")
-
+ 
 items_to_delete = []
-response = table_movie.scan(ProjectionExpression="id")#on ne récupère que les id pour gagner du temps et éviter de dépasser la limite de 1 MB par scan
+response = table_movie.scan(ProjectionExpression="id")
 items_to_delete.extend(response["Items"])
-
-# DynamoDB renvoie MAX 1 MB par scan.
-# S'il y a plus de films, il faut boucler avec LastEvaluatedKey.
+ 
 while "LastEvaluatedKey" in response:
     response = table_movie.scan(
         ProjectionExpression="id",
         ExclusiveStartKey=response["LastEvaluatedKey"]
     )
     items_to_delete.extend(response["Items"])
-
+ 
 print(f"  {len(items_to_delete)} film(s) trouvé(s) à supprimer.")
-
-with table_movie.batch_writer() as batch:#batch_writer permet de faire des suppressions en lot, plus rapide que de supprimer un par un
+ 
+with table_movie.batch_writer() as batch:
     for item in items_to_delete:
-        batch.delete_item(Key={"id": item["id"]})#on supprime chaque film en utilisant son id comme clé
-
-print("  Table vidée.")
-
-#IMPORT TABLE GENRE
-# Lecture du fichier des genres
-#genres = pd.read_csv(f'scripts/dataset/genres_clean.csv')
-
-# print("\nImport des genres...")
-
-# Compteur d'erreurs pour le rapport final
-# errors_genres = 0
-
-# On parcourt chaque ligne du CSV des genres
-# for index, row in genres.iterrows():
-#     try:
-#         # put_item envoie un enregistrement dans DynamoDB
-#         table_genre.put_item(
-#             Item={
-#                 # 'id' est la clé principale générée par Amplify
-#                 # elle doit être unique pour chaque genre
-#                 'id': str(row['genreId']),
-
-#                 # genreId : l'ID du genre depuis le dataset TMDB
-#                 # ex: 28 pour Action, 16 pour Animation
-#                 'genreId': int(row['genreId']),
-
-#                 # name : le nom du genre
-#                 # ex: "Action", "Animation", "Comedy"
-#                 'name': str(row['name']),
-#             }
-#         )
-#     except Exception as e:
-#         # Si une erreur arrive on l'affiche et on continue
-#         # print(f" Erreur sur le genre {row['name']} : {e}")
-#         # errors_genres += 1
-
-# print(f" Genres importés : {len(genres) - errors_genres}")
-
-
-
+        batch.delete_item(Key={"id": item["id"]})
+ 
+print("  Table Movie vidée.")
+ 
+ 
+# SUPPRESSION DE LA TABLE GENRE
+ 
+ 
+print("\nSuppression de tous les genres existants...")
+ 
+items_to_delete_genre = []
+response_genre = table_genre.scan(ProjectionExpression="id")
+items_to_delete_genre.extend(response_genre["Items"])
+ 
+while "LastEvaluatedKey" in response_genre:
+    response_genre = table_genre.scan(
+        ProjectionExpression="id",
+        ExclusiveStartKey=response_genre["LastEvaluatedKey"]
+    )
+    items_to_delete_genre.extend(response_genre["Items"])
+ 
+print(f"  {len(items_to_delete_genre)} genre(s) trouvé(s) à supprimer.")
+ 
+with table_genre.batch_writer() as batch:
+    for item in items_to_delete_genre:
+        batch.delete_item(Key={"id": item["id"]})
+ 
+print("  Table Genre vidée.")
+ 
+ 
+# IMPORT TABLE GENRE
+ 
+ 
+genres = pd.read_csv('scripts/dataset/genres_clean.csv')
+ 
+print("\nImport des genres...")
+ 
+errors_genres = 0
+ 
+for index, row in genres.iterrows():
+    try:
+        table_genre.put_item(
+            Item={
+                'id': str(row['genreId']),
+                'genreId': int(row['genreId']),
+                'name': str(row['name']),
+                'createdAt': now,  # ajout manuellement des timestamps
+                'updatedAt': now,  
+            }
+        )
+    except Exception as e:
+        print(f"  Erreur sur le genre {row['name']} : {e}")
+        errors_genres += 1
+ 
+print(f"  Genres importés : {len(genres) - errors_genres}")
+ 
+ 
 # IMPORT DE LA TABLE MOVIE
-
-
+ 
+ 
 print("\nImport des films...")
-
+ 
 print(f"Lecture du fichier des films depuis le CSV")
 movies = pd.read_csv('scripts/dataset/movies_cleaned.csv')
 print(f"{len(movies)} films à importer")
-
+ 
 errors_movies = 0
-
-for index, row in movies.iterrows():#iterrows() permet de parcourir chaque ligne du DataFrame movies, index est le numéro de la ligne et row est un objet contenant les données de cette ligne (ex: row['title'] pour le titre du film)
+ 
+for index, row in movies.iterrows():
     try:
         table_movie.put_item(
             Item={
                 # Clé principale
                 'id': str(row['movieId']),
-
+ 
                 # Informations du film
                 'movieId': str(row['movieId']),
                 'title': str(row['title']),
                 'overview': str(row['overview']),
-
+ 
                 # Reconvertit "[28, 16]" en vraie liste [28, 16]
                 'genres': ast.literal_eval(str(row['genres'])),
-
+ 
                 # Mots clés pour TF-IDF
                 'keywords': str(row['keywords']) if pd.notna(row['keywords']) else '',
-
+ 
                 # Date de sortie
                 'releaseDate': str(row['releaseDate']) if pd.notna(row['releaseDate']) else '',
-
+ 
                 # Note moyenne (Decimal car DynamoDB n'accepte pas float)
                 'voteAverage': Decimal(str(row['voteAverage'])),
-
+ 
                 # Nombre de votes
                 'voteCount': int(row['voteCount']),
-
+ 
                 # Réalisateur
                 'director': str(row['director']) if pd.notna(row['director']) else '',
-
+ 
                 # Chemin affiche
                 # URL complète = https://image.tmdb.org/t/p/w500 + posterPath
                 'posterPath': str(row['posterPath']) if pd.notna(row['posterPath']) else '',
+
+                'runtime': int(row['runtime']) if pd.notna(row['runtime']) else 0,
+
+                'cast': str(row['cast']) if pd.notna(row['cast']) else '',
+ 
+                'createdAt': now,  # ajout manuellement des timestamps
+                'updatedAt': now,  
             }
         )
-
+ 
         # Afficher la progression toutes les 500 lignes
         if index % 500 == 0:
-            print(f" {index}/{len(movies)} films importés...")
-
+            print(f"  {index}/{len(movies)} films importés...")
+ 
     except Exception as e:
-        print(f" Erreur sur le film {row['title']} : {e}")
+        print(f"  Erreur sur le film {row['title']} : {e}")
         errors_movies += 1
-
-
+ 
+ 
 # RÉSULTAT FINAL
-
-
+ 
+ 
 print(f"\n Import terminé !")
-print(f" Films importés  : {len(movies) - errors_movies}")
-#print(f" Genres importés : {len(genres) - errors_genres}")
-print(f" Erreurs films   : {errors_movies}")
-#print(f" Erreurs genres  : {errors_genres}")
+print(f"  Films importés  : {len(movies) - errors_movies}")
+print(f"  Genres importés : {len(genres) - errors_genres}")
+print(f"  Erreurs films   : {errors_movies}")
+print(f"  Erreurs genres  : {errors_genres}")

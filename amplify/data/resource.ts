@@ -16,6 +16,8 @@ const schema = a.schema({
       voteCount: a.integer(),// nombre de votes du film
       director: a.string(),//depuis credits.csv
       posterPath: a.string(),// chemin d'accès à l'affiche du film, depuis credits.csv
+      runtime: a.integer(),   // durée du film en minutes, depuis credits.csv
+      cast: a.string(),// liste des acteurs principaux du film, séparés par des virgules, depuis credits.csv
     })
     .authorization((allow) => [allow.authenticated().to(["read"])]),//les utilisateurs authentifiés peuvent lire les films, mais pas les modifier
 
