@@ -16,7 +16,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 12H5M12 19l-7-7 7-7"/>
       </svg>
-      Retour
+      Back
     </button>
 
     <!-- Contenu principal -->
@@ -30,7 +30,7 @@
             class="movie-poster"
           />
           <div>
-            <h1>Votre note</h1>
+            <h1>Your note</h1>
             <Notation v-model="userRating" />
             <p class="UserRatingValue">{{ userRating }}/5</p>
           </div>
@@ -83,13 +83,13 @@
 
         <!-- Synopsis -->
         <div class="synopsis-section">
-          <h2 class="section-title">Résumé</h2>
+          <h2 class="section-title">Overview</h2>
           <p class="synopsis-text">{{ movie.overview }}</p>
         </div>
 
         <!-- Realisateur -->
         <div v-if="movie.director" class="director-section">
-          <h2 class="section-title">Realisateur</h2>
+          <h2 class="section-title">Director</h2>
           <p class="director-name">{{ movie.director }}</p>
         </div>
 
@@ -103,7 +103,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-value">{{ movie.voteAverage?.toFixed(1) }}/10</span>
-              <span class="stat-label">Note moyenne</span>
+              <span class="stat-label">Average Rating</span>
             </div>
           </div>
           
@@ -546,5 +546,3 @@ html, body{
   }
 }
 </style>
-
-

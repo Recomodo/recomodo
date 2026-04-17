@@ -17,9 +17,9 @@ function changePage(page: number) {
 
 <template>
     <div class="pagination">
-        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">Précédent</button>
-        <span>Page {{ currentPage }} sur {{ totalPages }}</span>
-        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">Suivant</button>
+        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
     </div>
 </template>
 

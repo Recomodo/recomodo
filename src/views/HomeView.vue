@@ -174,7 +174,7 @@ function handlePageChange(page: number) {
 
 <template>
 <div class="page">
-    <h1>Bienvenue sur Recomodo</h1>
+    <h1>Welcome to Recomodo</h1>
 <div class="content">
 <div class="container">
     <RouterLink
