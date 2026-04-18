@@ -7,7 +7,17 @@ const router = useRouter();
 import type {Schema} from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { getCurrentUser } from 'aws-amplify/auth';
+
 import Rating from '@/components/Rating.vue';
+
+const email = ref<string | null>(null);
+const identifiant = ref<string | null>(null);
+onMounted(async () => {
+  const user = await getCurrentUser();
+  email.value = user.signInDetails?.loginId ?? null;
+  identifiant.value = user.userId;
+});
 
 const client = generateClient<Schema>();
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
@@ -48,10 +58,12 @@ async function submit() {
   console.log("Ratings submitted:", ratings.value);
   // envoi avec api aux base dynamodb
   // ensuite redirection vers la page d'accueil
+  if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
     hasCompleted:true
   })
+  }
   redirected();
 }
 function redirected(){

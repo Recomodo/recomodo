@@ -10,7 +10,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const email = ref<string | null>(null);
-const identifiant = ref<string | null>(null);;
+const identifiant = ref<string | null>(null);
 onMounted(async () => {
   const user = await getCurrentUser();
   email.value = user.signInDetails?.loginId ?? null;
@@ -44,7 +44,7 @@ async function raz(){
         id:identifiant.value,
         hasCompleted:false
       })
-      router.push('firstsignin')
+      router.push('/firstsignin')
     }
   }catch(error){
     console.log(error);
