@@ -8,7 +8,7 @@ const client = generateClient <Schema>();
 
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
 const currentPage = ref(1);
-const itemsPerPage = 500;
+const itemsPerPage = 70;
 
 const moviesByPage = ref<Record<number, Array<Schema['Movie']["type"]>>>({});
 const nextTokens = ref<Record<number, string | null>>({});
@@ -93,17 +93,10 @@ function handlePageChange(page: number) {
 }
 
 .pagination-wrapper {
-    margin-top: auto;
+    /*margin-top: auto;*/
     padding: 2rem 0;
-
-    
-    bottom: 20px;
-    left:0;
-    right:0;
-    display: flex-end;
     justify-content: center;
-    
-    
+    display: flex;
 }
 
 html, body {
@@ -161,6 +154,7 @@ img{
     flex-grow: 1;
     align-self: start;
     height: 100%;
+    flex: 1;
 
 }
 
