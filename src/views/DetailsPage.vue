@@ -57,19 +57,15 @@
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            {{ movie.runtime || '2h 15min' }}
+            {{ formatRuntime(movie.releaseDate) }}
           </span>
         </div>
 
         <!-- Genres -->
-        <div class="genres-row">
-          <span 
-            v-for="(genre, index) in movie.genres" 
-            :key="index" 
-            class="genre-tag"
-          >
-            {{ genre }}
-          </span>
+        <div class="genres" v-if="movie.genres">
+          <div class="genre" v-for="genreId in movie.genres" :key="genreId">
+              {{ getGenres(genreId) }}
+          </div>
         </div>
 
         <!-- Synopsis -->
@@ -115,56 +111,44 @@
         </div>
       </div>
     </div>
-
-    
-
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Schema } from "../../amplify/data/resource";
 import Notation from '@/components/Notation.vue';
 import { onMounted , ref } from 'vue';
 import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 
+const genres = ref<Array<Schema['Genre']["type"]>>([]);
 const route = useRoute();
 const router = useRouter();
-const client = generateClient ();
+const client = generateClient <Schema>();
 
-const movie = ref(undefined);
-const movieId = route.params.id;
-
-const getMovieQuery = `
-  query GetMovie($id: ID!) {
-    getMovie(id: $id) {
-      
-      movieId
-      title
-      overview
-      genres
-      posterPath
-      releaseDate
-      voteAverage
-      voteCount
-      director
-    }
-  }
-`;
+const movie = ref<any>();
 
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
-  //const movieId = route.params.id;
   try {
-    const result = await client.graphql({
-      query: getMovieQuery,
-      variables: { id: movieId }
-    });
-    console.log("RESULT API: ", result);
-    movie.value = result?.data?.getMovie || null;
+    const {data} = await client.models.Movie.get({
+      id: route.params.id as string});
+      movie.value = data;
+    console.log("RESULT API court: ", data);
   } catch (error) {
     console.error("Error fetching movie details:", error);
-    movie.value = null;
+   
   }
+});
+
+onMounted(async () => {
+    try {
+        const { data, errors } = await client.models.Genre.list();
+        genres.value = data ?? [];
+    } catch (error) {
+        console.error("Error fetching genres:", error);
+        genres.value = [];
+    }
 });
 
 function goBack() {
@@ -191,6 +175,22 @@ function formatNumber(num) {
   }
   return num.toString();
 }
+function formatRuntime(minutes) {
+  if (!minutes) return '';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}h ${m.toString().padStart(2, '0')}min`;
+}
+
+function getGenres(id:number|null|undefined){
+  if(!id){
+      return "";
+  }else{
+      const genre = genres.value.find(g => Number(g.genreId) === Number(id));
+      return genre? genre.name : "";
+  }
+}
+
 </script>
 
 <style >
@@ -233,6 +233,7 @@ html, body{
 .backdrop-image {
   width: 100%;
   height: 100%;
+  position: relative;
   object-fit: contain;
   filter: blur(5px) brightness(0.7);
   transform: scale(1.1);
@@ -355,14 +356,14 @@ html, body{
 }
 
 /* Genres */
-.genres-row {
+.genres {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 2rem;
 }
 
-.genre-tag {
+.genre {
   padding: 0.5rem 1rem;
   background: rgba(139, 92, 246, 0.15);
   border: 1px solid rgba(139, 92, 246, 0.3);

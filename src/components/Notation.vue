@@ -72,7 +72,7 @@ function getDisplayValue(star: number) {
     position: absolute;
     top: 0;
     left: 0;
-    color:#444;
+    color:white;
     transition: 0.2s;
 }
 

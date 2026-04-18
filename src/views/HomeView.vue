@@ -1,41 +1,23 @@
 <script setup lang="ts">
 import {ref , computed , onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';
-
+import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 
-const listMoviesQuery = `
-  query ListMovies {
-    listMovies {
-      items {
-        movieId
-        title
-        voteAverage
-        posterPath
-      }
-    }
-  }
-`;
+const client = generateClient <Schema>();
 
-const client = generateClient();
+const movies = ref<Array<Schema['Movie']["type"]>>([]);
 
-const movies = ref([]);
 
 const currentPage = ref(1);
-const itemsPerPage = 28;
+const itemsPerPage = 70;
 
 onMounted(async () => {
     try {
-        const result = await client.graphql({
-                query: listMoviesQuery
-        });
+        const { data } = await client.models.Movie.list({limit:2000});
+        console.log("RESULT API: ", data);
 
-        console.log("RESULT API: ", result);
-        
-        const items = result?.data?.listMovies?.items;
-
-
-        movies.value = Array.isArray(items) ? items : [];
+        movies.value = data;
 
     } catch (error) {
         console.error("Error fetching movies:", error);
@@ -43,7 +25,7 @@ onMounted(async () => {
     }
 });
 
-const totalPages = computed(() => Math.ceil(movies.value?.length || 0 / itemsPerPage));
+const totalPages = computed(() => Math.ceil((movies.value?.length) / itemsPerPage || 0 / itemsPerPage));
 
 const paginatedMovies = computed(() => {
     const list = Array.isArray(movies.value) ? movies.value : [];
@@ -145,11 +127,12 @@ img{
     align-items: center;
     font-size: small;
     position:relative;
+    color: white;
 }
 .movie{
     height: 200px;
     width:150px;
-    background-color:rgba(226, 163, 255, 0.4);
+    background-color:rgb(61,9,67);
     border-radius: 15px;
     padding-top: 15px;
     margin-top: 15px;
