@@ -31,8 +31,8 @@ onMounted(async () => {
   <main>
     <authenticator>
       <template v-slot="{user, signOut}">
-       <!--<RouterView v-if="user.hasCompleted"/>
-        <FirstSigninPage v-else-if="!user.hasCompleted"/>
+       <!--<RouterView v-if="profile.hasCompleted"/>
+        <FirstSigninPage v-else-if="!profile.hasCompleted"/>
         <p v-else>Loading...</p>-->
 
         <RouterView/>
