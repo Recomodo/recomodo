@@ -11,39 +11,17 @@ import { onMounted, ref, computed } from 'vue';
 import { getCurrentUser } from 'aws-amplify/auth';
 
 const client = generateClient<Schema>();
-const name = ref<string>('');
-const userId = ref<string>('');
-const hasCompleted = ref<boolean>(false);
-
-const GetUserProfileQuery = `
-  query GetUserProfile ($id: ID!) {
-    getUserProfile (id: $id) {
-      userId
-      username
-      hasCompleted
-    }
-  }
-`;
-
+const profile=ref<any>();
+const identifiant = ref<string>("");
 onMounted(async () => {
-  try {
-    const user = await getCurrentUser();
-    userId.value = user.userId;
-    console.log("Current User ID:", userId.value);
-    const res = await client.graphql({
-      query: GetUserProfileQuery,
-      variables: { id: userId.value }
-    });
-    
-    const profile = res.data?.getUserProfile;
-    hasCompleted.value = profile?.hasCompleted ?? false;
-    name.value = profile?.username ?? '';
+  const user = await getCurrentUser();
+  identifiant.value = user.userId;
 
-    console.log("User Profile:", profile);
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-  }
+  const {data} = await client.models.UserProfile.get({id:user.userId});
+  profile.value=data;
+
 });
+
 
 
 </script>
@@ -53,11 +31,13 @@ onMounted(async () => {
   <main>
     <authenticator>
       <template v-slot="{user, signOut}">
+       <!--<RouterView v-if="user.hasCompleted"/>
+        <FirstSigninPage v-else-if="!user.hasCompleted"/>
+        <p v-else>Loading...</p>-->
+
         <RouterView/>
-        <!--<RouterView v-if="hasCompleted"/>-->
-       <!--<FirstSigninPage v-else-if="!hasCompleted"/>-->
-        <p>user: {{ name }}</p>
-        <p>hasCompleted: {{ hasCompleted }}</p>
+      
+
       </template>
     </authenticator>
   </main>
