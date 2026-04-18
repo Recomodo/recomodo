@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref , computed , onMounted} from 'vue';
+import {ref, computed , onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
@@ -7,34 +7,47 @@ import { generateClient } from 'aws-amplify/api';
 const client = generateClient <Schema>();
 
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
-
-
 const currentPage = ref(1);
-const itemsPerPage = 70;
+const itemsPerPage = 500;
 
-onMounted(async () => {
-    try {
-        const { data } = await client.models.Movie.list({limit:2000});
-        console.log("RESULT API: ", data);
+const moviesByPage = ref<Record<number, Array<Schema['Movie']["type"]>>>({});
+const nextTokens = ref<Record<number, string | null>>({});
 
-        movies.value = data;
 
+
+async function loadMoviesPage(page: number) {
+   try {
+     if(moviesByPage.value[page]) {
+        movies.value = moviesByPage.value[page];
+        return;
+      }
+
+      let token=null;
+
+      for (let i=1;i<page;i++){
+        token = nextTokens.value[i];
+        if(!token){
+            break;
+        }
+      }
+
+      const { data, nextToken} = await client.models.Movie.list({ limit: itemsPerPage, nextToken: token });
+        moviesByPage.value[page] = data ?? [];
+        nextTokens.value[page] = nextToken ?? null;
+        movies.value = moviesByPage.value[page];
     } catch (error) {
-        console.error("Error fetching movies:", error);
-        movies.value = [];
-    }
-});
+        console.error("Error fetching movies for page " ,error);
+    }  
+}
 
-const totalPages = computed(() => Math.ceil((movies.value?.length) / itemsPerPage || 0 / itemsPerPage));
 
-const paginatedMovies = computed(() => {
-    const list = Array.isArray(movies.value) ? movies.value : [];
-    const start = (currentPage.value - 1) * itemsPerPage;
-    return list.slice(start, start + itemsPerPage);
+onMounted(() => {
+    loadMoviesPage(1);
 });
 
 function handlePageChange(page: number) {
     currentPage.value = page;
+    loadMoviesPage(page);
 }
 </script>
 
@@ -45,9 +58,9 @@ function handlePageChange(page: number) {
 <div class="content">
 <div class="container">
     <RouterLink
-        v-for="(movie) in paginatedMovies"
+        v-for="(movie) in movies"
         :key="movie.movieId"
-        :to=" { name: 'details', params: { id: movie.movieId },state: { movie} }"
+        :to=" { name: 'details', params: { id: movie.movieId } }"
          
         class="movie"
     >
@@ -57,15 +70,14 @@ function handlePageChange(page: number) {
             :alt="movie.title"
        />
         <div class="discription">
-            <p>{{ movie.title }}</p>
-            <p>{{ movie.voteAverage }}</p>
+            <p><strong><em>{{ movie.title }}</em></strong></p>
+            <p><strong><em>{{ movie.voteAverage }}</em></strong></p>
         </div>
     </RouterLink>
 </div>
 <div class="pagination-wrapper">
-    <Pagination
-        :totalPages="totalPages" 
-        :currentPage="currentPage" 
+    <Pagination 
+        :currentPage="currentPage"
         @page-changed="handlePageChange"/>
 </div>
 </div>

@@ -38,7 +38,7 @@
       <!-- Infos du film -->
       <div class="info-section">
         <!-- Titre -->
-        <h1 class="movie-title">{{ movie.title }}</h1>
+        <h1 class="movie-title"><strong><em>{{ movie.title }}</em></strong></h1>
         
         <!-- Meta infos: annee, duree -->
         <div class="meta-row">
@@ -70,13 +70,13 @@
 
         <!-- Synopsis -->
         <div class="synopsis-section">
-          <h2 class="section-title">Overview</h2>
+          <h2 class="section-title"><strong><em>Overview</em></strong></h2>
           <p class="synopsis-text">{{ movie.overview }}</p>
         </div>
 
         <!-- Realisateur -->
         <div v-if="movie.director" class="director-section">
-          <h2 class="section-title">Director</h2>
+          <h2 class="section-title"><strong><em>Director</em></strong></h2>
           <p class="director-name">{{ movie.director }}</p>
         </div>
 

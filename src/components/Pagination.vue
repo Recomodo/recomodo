@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const props = defineProps<{
-    totalPages: number;
     currentPage: number;
 }>();
 
@@ -9,7 +8,7 @@ const emit = defineEmits ([
 ]);
 
 function changePage(page: number) {
-    if (page >= 1 && page <= props.totalPages) {
+    if (page >= 1) {
         emit("page-changed", page);
     }
 }
@@ -18,8 +17,8 @@ function changePage(page: number) {
 <template>
     <div class="pagination">
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
-        <span>Page {{ currentPage }} of {{ totalPages }}</span>
-        <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
+        <span>Page {{ currentPage }}</span>
+        <button @click="changePage(currentPage + 1)">Next</button>
     </div>
 </template>
 
