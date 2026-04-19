@@ -7,7 +7,7 @@ from boto3.dynamodb.conditions import Key
 
 #Configuration de la session boto3 pour accéder à DynamoDB 
 # ATTENTION : NE PAS UTILISER CETTE CONFIGURATION EN PRODUCTION, ELLE EST UNIQUEMENT DESTINÉE À DES FINS DE TESTS LOCAUX
-#session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
+#session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602"
 
 dynamodb = boto3.resource("dynamodb") #remplacer session par boto3 pour le prod
 s3 = boto3.client("s3") #remplacer session par boto3 pour le prod

@@ -17,6 +17,8 @@
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
+    "@aws-amplify/backend": "^1.22.0",
+    "@aws-amplify/backend-cli": "^1.8.2",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.12.5",
     "@vitejs/plugin-vue": "^5.0.4",
