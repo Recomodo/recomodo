@@ -39,8 +39,8 @@ function getDisplayValue(star: number) {
             const isHalf = e.clientX - rect.left <rect.width / 2;
             currentNotation = isHalf ? star - 0.5 : star;  
         }"
-        @mouseleave="currentNotation.value = 0"
-        @click="changeNotation(currentNotation.value)"
+        @mouseleave="currentNotation = 0"
+        @click="changeNotation(currentNotation)"
     >
         <span 
          class="star"
