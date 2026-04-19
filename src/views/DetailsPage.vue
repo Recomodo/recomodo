@@ -201,7 +201,7 @@ html, body{
   padding: 0;
   height: 100%;
   min-height: 100%;
-  background: #000;
+  /*background: #000;*/
 }
 
 .movie-details-page {
