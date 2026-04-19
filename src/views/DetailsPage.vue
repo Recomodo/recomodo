@@ -29,7 +29,7 @@
             class="movie-poster"
           />
           <div>
-            <Notation v-model="userRating" />
+            <Notation v-model:notation="userRating" />
             <p class="UserRatingValue">{{ userRating }}</p>
           </div>
         </div>
@@ -83,7 +83,7 @@
         <!-- Stats en bas -->
         <div class="stats-row">
           <div class="stat-card">
-            <div clconst movie = ref(history.state.movie) ass="stat-icon rating-icon">
+            <div const movie = ref(history.state.movie) class="stat-icon rating-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
@@ -127,6 +127,7 @@ const router = useRouter();
 const client = generateClient <Schema>();
 
 const movie = ref<any>();
+const userRating = ref(0);
 
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
@@ -155,7 +156,7 @@ function goBack() {
   router.back();
 }
 
-function getImageUrl(posterPath) {
+function getImageUrl(posterPath: any) {
   if (!posterPath) return '/placeholder-movie.jpg';
   if (posterPath.startsWith('/')) {
     return `https://image.tmdb.org/t/p/w500${posterPath}`;
@@ -163,19 +164,19 @@ function getImageUrl(posterPath) {
   return posterPath;
 }
 
-function getYear(dateString) {
+function getYear(dateString: any) {
   if (!dateString) return '';
   return new Date(dateString).getFullYear();
 }
 
-function formatNumber(num) {
+function formatNumber(num: any) {
   if (!num) return '0';
   if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'K';
   }
   return num.toString();
 }
-function formatRuntime(minutes) {
+function formatRuntime(minutes: any) {
   if (!minutes) return '';
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
