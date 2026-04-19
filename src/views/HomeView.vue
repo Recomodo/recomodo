@@ -158,6 +158,14 @@ function searchMovies(query: string) {
   }
 }*/
 
+function getImageUrl(posterPath: any) {
+   const path = String(posterPath || '').trim();
+  if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return '/defaultPoster.webp';
+  if (posterPath.startsWith('/')) {
+    return `https://image.tmdb.org/t/p/w500${path}`;
+  }
+  return posterPath;
+}
 </script>
 
 
@@ -178,9 +186,14 @@ function searchMovies(query: string) {
         class="movie-card"
     >
         <img
+<<<<<<< HEAD
             :src="'https://image.tmdb.org/t/p/w200' + movie.posterPath"
            
+=======
+            :src="getImageUrl(movie?.posterPath)"
+>>>>>>> bbe2a71 (Ajout du poster par défaut)
             :alt="movie.title"
+            @error="e => e.target.src = '/defaultPoster.webp'"
        />
         <div class="movie-info">
              <p class="movie-title">{{ movie.title }}</p>
