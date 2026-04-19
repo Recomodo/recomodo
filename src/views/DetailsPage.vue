@@ -26,6 +26,7 @@
           <img 
             :src="getImageUrl(movie.posterPath)" 
             :alt="movie.title"
+            @error="e => e.target.src = '/defaultPoster.webp'"
             class="movie-poster"
           />
           <div>
@@ -120,6 +121,7 @@ import Notation from '@/components/Notation.vue';
 import { onMounted , ref } from 'vue';
 import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
+import path from "path";
 
 const genres = ref<Array<Schema['Genre']["type"]>>([]);
 const route = useRoute();
@@ -157,9 +159,10 @@ function goBack() {
 }
 
 function getImageUrl(posterPath: any) {
-  if (!posterPath) return '/placeholder-movie.jpg';
+  const path = String(posterPath || '').trim();
+  if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return '/defaultPoster.webp';
   if (posterPath.startsWith('/')) {
-    return `https://image.tmdb.org/t/p/w500${posterPath}`;
+    return `https://image.tmdb.org/t/p/w500${path}`;
   }
   return posterPath;
 }
