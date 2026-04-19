@@ -23,10 +23,10 @@ const client = generateClient<Schema>();
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
 const genres=ref<Array<Schema['Genre']["type"]>>([]);
 
+const moviesList=["11249","27205","155","101","293660","10625","620","185","313369","8587","10674","648","12477","28","348","803","10654","273248"]
 
 
-
-onMounted(async () => {
+/*onMounted(async () => {
     try {
       const [moviesData,genresData] = await Promise.all([
         client.models.Movie.list({ limit: 18 }),
@@ -37,7 +37,7 @@ onMounted(async () => {
     } catch (error) {
       console.error("Error fetching movies or genres:", error);
     }
-});
+});*/
 
 
 function getGenres(id:number|null|undefined) {
@@ -58,6 +58,14 @@ async function submit() {
   console.log("Ratings submitted:", ratings.value);
   // envoi avec api aux base dynamodb
   // ensuite redirection vers la page d'accueil
+await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //stocker les valeurs des notes 
+  client.models.Rating.create({
+    userId: identifiant.value ?? "",
+    movieId,
+    rating
+  })
+));
+
   if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
@@ -70,7 +78,7 @@ function redirected(){
    router.push('/');
 }
 
-/*onMounted(async () => {
+onMounted(async () => {
     try {
       const { data, errors } = await client.models.Genre.list({
         limit: 20
@@ -83,14 +91,16 @@ function redirected(){
 
 onMounted(async () => {
     try {
-      const { data, errors} = await client.models.Movie.list({
-        limit: 18
-      });
-      movies.value=data ?? [];
+      const responses = await Promise.all(moviesList.map(movieId =>
+        client.models.Movie.get({ id: movieId })
+      ));
+      movies.value = responses
+        .map(r => r.data)
+        .filter(Boolean);
     } catch (error) {
       console.error("Error fetching movies:", error);
     }
-});*/
+});
 </script>
 
 
