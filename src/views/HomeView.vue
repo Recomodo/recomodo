@@ -3,6 +3,8 @@ import {ref, computed , onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
+import SearchBar from '@/components/SearchBar.vue';
+import FirstSigninPage from '@/views/FirstSigninPage.vue';
 
 const client = generateClient <Schema>();
 
@@ -17,6 +19,8 @@ const nextTokens = ref<Record<number, string | null>>({});
 
 async function loadMoviesPage(page: number) {
    try {
+    // ne pas chargé si l'utilisateur recherche
+    if (isSearching.value) return;
      if(moviesByPage.value[page]) {
         movies.value = moviesByPage.value[page];
         return;
@@ -49,16 +53,84 @@ function handlePageChange(page: number) {
     currentPage.value = page;
     loadMoviesPage(page);
 }
+
+//recherche
+const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
+const isSearching=ref(false);
+const seen = new Set<string>();
+
+async function searchMovies(query:string){
+    const q=query.toLowerCase().trim();
+    if(!q){
+        isSearching.value=false;
+        searchResults.value=[];
+        return;
+    }
+
+    isSearching.value=true;
+    let results: Array<Schema['Movie']["type"]> = [];
+
+    //recherche dans les pages déjà chargées parla pagination
+    Object.values(moviesByPage.value).forEach(page=>{
+        page.forEach(movie=>{
+            const title=movie.title?.toLowerCase() || "";
+            const keywords= movie.keywords?.toLowerCase() || "";
+
+            if(
+                keywords.includes(q) ||
+                title.includes(q)
+            ){
+                if ((keywords.includes(q) || title.includes(q)) && !seen.has(movie.movieId)) {
+                 seen.add(movie.movieId);
+                 results.push(movie);
+                }
+            }
+
+            
+        });
+    });
+
+    //si pas de résultats dans les pages déjà chargées ou resultats<20
+    let currentNextToken: string | null= nextTokens.value[currentPage.value] ?? null;
+    while(results.length<10 && currentNextToken){
+        const response =await client.models.Movie.list({
+            limit: itemsPerPage,
+            nextToken: currentNextToken
+        });
+
+        const page=response.data ?? [];
+        page.forEach(movie=>{
+            const title=movie.title?.toLowerCase() || "";
+            const keywords=movie.keywords?.toLowerCase() || "";
+            if(
+                keywords.includes(q) ||
+                title.includes(q)
+            ){
+                if ((keywords.includes(q) || title.includes(q)) && !seen.has(movie.movieId)) {
+                   seen.add(movie.movieId);
+                   results.push(movie);
+                }
+            }
+        });
+        currentNextToken=response.nextToken ?? null;
+    } 
+    //limiter les résultats à 20
+    //searchResults.value=results.slice(0,20);
+    searchResults.value=results
+} 
+
 </script>
 
 
 <template>
 <div class="page">
+    <FirstSigninPage/>
     <h1>Welcome to Recomodo</h1>
+    <SearchBar @search="searchMovies"/>
 <div class="content">
 <div class="container">
     <RouterLink
-        v-for="(movie) in movies"
+       v-for="movie in isSearching? searchResults : movies"
         :key="movie.movieId"
         :to=" { name: 'details', params: { id: movie.movieId } }"
          
@@ -75,7 +147,8 @@ function handlePageChange(page: number) {
         </div>
     </RouterLink>
 </div>
-<div class="pagination-wrapper">
+
+<div v-if="!isSearching" class="pagination-wrapper">
     <Pagination 
         :currentPage="currentPage"
         @page-changed="handlePageChange"/>
