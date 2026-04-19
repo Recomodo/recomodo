@@ -127,9 +127,8 @@ const genres = ref<Array<Schema['Genre']["type"]>>([]);
 const route = useRoute();
 const router = useRouter();
 const client = generateClient <Schema>();
-
-const movie = ref<any>();
 const userRating = ref(0);
+const movie = ref<any>();
 
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
@@ -184,6 +183,7 @@ function formatRuntime(minutes: any) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}h ${m.toString().padStart(2, '0')}min`;
+
 }
 
 function getGenres(id:number|null|undefined){
