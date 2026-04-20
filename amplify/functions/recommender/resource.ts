@@ -11,16 +11,16 @@ const functionDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const recommender = defineFunction((scope) => {
   const lambda = new Function(scope, "recommender", {
-    functionName: "recommender",
+    //functionName: "recommender",
     runtime: Runtime.PYTHON_3_10,
     handler: "recommender.handler",
     timeout: Duration.seconds(30),
     memorySize: 2048,
     environment: {
-      RATINGS_TABLE_NAME: "Rating-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE",
+      RATINGS_TABLE_NAME: "Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
       RATINGS_USER_ID_INDEX: "byUserId",
       DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
-      MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations.json",
+      MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
     },
     code: Code.fromAsset(functionDir, {
       bundling: {

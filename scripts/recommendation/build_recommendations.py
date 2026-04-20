@@ -19,27 +19,29 @@ DATA_BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
 MOVIES_PARQUET_KEY = os.environ["MOVIES_PARQUET_KEY"]
 GENRES_PARQUET_KEY = os.environ["GENRES_PARQUET_KEY"]
 
-OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "movie_recommendations.json")
+OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "movie_recommendations_genre.json")
 TOP_K = int(os.environ.get("TOP_K", "5"))
 
 s3 = session.client("s3")
+
 
 def read_parquet_from_s3(bucket_name, object_key):
     response = s3.get_object(Bucket=bucket_name, Key=object_key)
     return pd.read_parquet(BytesIO(response["Body"].read()))
 
 #transformation de la liste de liste d'id des genres en liste de strings de noms des genres
-#nécéssaire que ce soit des string pour le TfidfVectorizer
-def list_to_string(movies_genres, genres_dict):
+#nécéssaire que ce soient des string pour le TfidfVectorizer
+def genres_list_to_string(movies_genres, genres_dict):
     genres_string = []
     for i in movies_genres:
         temp = []
         for j in i:
             j=str(j)
             if j in genres_dict:
-                temp.append(genres_dict[j])
+                temp.append(genres_dict[j].strip().lower().replace(" ", "_"))
         genres_string.append(' '.join(temp))
     return genres_string
+
 
 def main() :
     #lecture des fichiers movies_clean.parquet et genres_clean.parquet
@@ -58,19 +60,21 @@ def main() :
 
     #récupération de la colonne genres, qui sont les id des genres associés à chaque film
     movies_genre = movies['genres'].fillna('[]').apply(ast.literal_eval).tolist()
-    genres_string = list_to_string(movies_genre, genres_dict)
+    genres_string = genres_list_to_string(movies_genre, genres_dict)
+    keywords_string = movies["keywords"].fillna("").apply(lambda x: " ".join(k.strip().lower().replace(" ", "_") for k in str(x).split(",") if k.strip())).tolist()
 
-    #création d'une série avec les titres des id des films en index et les indices des films en valeur, pour pouvoir récupérer l'indice d'un film à partir de son id
-    indices = pd.Series(movies.index, index=movies['movieId'])
+    #création d'une liste de string qui contient les genres et les mots-clés associés à chaque film, pour que le TfidfVectorizer puisse les utiliser pour calculer la similarité entre les films
+    combined_string = [ f"{genres_string[i]} {keywords_string[i]}" for i in range(len(movie_ids))]
 
-    #création de la matrice TF-IDF à partir des genres des films
-    tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=0.0, stop_words='english')
+
+    #création de la matrice TF-IDF à partir des genres et mots-clés des films
+    tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=1, stop_words='english')
     tfidf_matrix = tf.fit_transform(genres_string)
 
     recommendations = {}
 
     #calcul de la similarité cosinus entre les films à partir de la matrice TF-IDF
-    #retourne les 2 films les plus similaires à un film donné, en fonction de leurs genres
+    #construit pour chaque film une liste des TOP_K films les plus similaires
     for idx, movie_id in enumerate(movie_ids):
         sim_scores = linear_kernel(tfidf_matrix[idx:idx + 1], tfidf_matrix).flatten()
         ranked = sorted(enumerate(sim_scores), key=lambda x: x[1], reverse=True)
@@ -82,13 +86,14 @@ def main() :
         recommendations[movie_id] = similar_ids
     
     #écriture des recommandations dans un fichier JSON
-    #il y a 5 recommandations par film, et chaque recommandation est l'id d'un film similaire à celui de départ
+    #il y a TOP_K recommandations par film, et chaque recommandation est l'id d'un film similaire à celui de départ
     Path(OUTPUT_PATH).write_text(
         json.dumps(recommendations, ensure_ascii=False),
         encoding="utf-8",
     )
 
     print(f"Wrote recommendations to {OUTPUT_PATH}")
+
 
 if __name__ == "__main__":
     main()
