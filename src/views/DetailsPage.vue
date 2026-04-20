@@ -76,10 +76,17 @@
         </div>
 
         <!-- Realisateur -->
+      <div class="personne-section">
         <div v-if="movie.director" class="director-section">
           <h2 class="section-title"><strong><em>Director</em></strong></h2>
           <p class="director-name">{{ movie.director }}</p>
         </div>
+
+        <div v-if="cast && cast.length > 0" class="director-section">
+          <h2 class="section-title"><strong><em>Cast</em></strong></h2>
+          <p class="cast-names">{{ Array.isArray(cast) ? cast.join(', ') : cast }}</p>
+        </div>
+      </div>
 
         <!-- Stats en bas -->
         <div class="stats-row">
@@ -133,6 +140,7 @@ const movie = ref<any>();
 const hasVoted = ref(false);
 const isSubmitting = ref(false);
 const currentUserId = ref<string | null>(null);
+const cast = ref<Array<Schema['Cast']["type"]>>([]);
 
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
@@ -140,6 +148,7 @@ onMounted(async () => {
     const {data} = await client.models.Movie.get({
       id: route.params.id as string});
       movie.value = data;
+      cast.value = data?.cast || [];
     console.log("RESULT API court: ", data);
   } catch (error) {
     console.error("Error fetching movie details:", error);
@@ -223,7 +232,7 @@ async function handleRating(rating: number) {
   isSubmitting.value = true;
 
   try {
-     await client.models.Rating.list({
+     await client.models.Rating.create({
       movieId: movie.value.id,
       userId: currentUserId.value,
       rating
@@ -456,12 +465,15 @@ html, body{
 /* Realisateur */
 .director-section {
   margin-bottom: 2.5rem;
+  flex: 1;
+  min-width: 150px;
 }
 
-.director-name {
+.director-name, .cast-names {
   font-size: 1.25rem;
   font-weight: 600;
   color: #ffffff;
+  line-height: 1.4;
 }
 
 /* Stats row */
@@ -565,10 +577,22 @@ html, body{
     width: 100%;
     justify-content: center;
   }
+
+  .personne-section{
+  flex-direction: column;
+  gap: 1.5rem;
+  }
 }
 
 .disabled {
   pointer-events: none;
   opacity: 0.5; 
 }
+
+.personne-section {
+  display: flex;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+}
+
 </style>
