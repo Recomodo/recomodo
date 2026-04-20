@@ -12,7 +12,7 @@ const functionDir = path.dirname(fileURLToPath(import.meta.url));
 export const similar = defineFunction((scope) => {
   const lambda = new Function(scope, "similar", {
     functionName: "similar",
-    runtime: Runtime.PYTHON_3_10
+    runtime: Runtime.PYTHON_3_10,
     handler: "similar.handler",
     timeout: Duration.seconds(10), // plus court que le recommender car c'est juste un .get() sur le JSON
     memorySize: 512, // moins de mémoire que le recommender car pas de calcul lourd
