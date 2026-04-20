@@ -30,7 +30,7 @@
             class="movie-poster"
           />
           <div>
-            <Notation v-model:notation="userRating" />
+            <Notation :notation="userRating" @rate = "handleRating" :class=" { disabled : hasVoted}"/>
             <p class="UserRatingValue">{{ userRating }}</p>
           </div>
         </div>
@@ -121,6 +121,7 @@ import Notation from '@/components/Notation.vue';
 import { onMounted , ref } from 'vue';
 import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
+import { getCurrentUser } from "aws-amplify/auth";
 import path from "path";
 
 const genres = ref<Array<Schema['Genre']["type"]>>([]);
@@ -129,6 +130,9 @@ const router = useRouter();
 const client = generateClient <Schema>();
 const userRating = ref(0);
 const movie = ref<any>();
+const hasVoted = ref(false);
+const isSubmitting = ref(false);
+const currentUserId = ref<string | null>(null);
 
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
@@ -151,6 +155,25 @@ onMounted(async () => {
         console.error("Error fetching genres:", error);
         genres.value = [];
     }
+});
+
+onMounted(async () => {
+  try {
+    const user = await getCurrentUser();
+    currentUserId.value = user.username; // ou user.attributes.sub selon votre configuration Cognito
+    const { data } = await client.models.Rating.list({
+      filter: {
+        movieId: { eq: route.params.id as string },
+        userId: { eq: currentUserId.value } // Remplacez par l'ID de l'utilisateur connecté
+      }
+    });
+    if (data.length > 0) {
+      hasVoted.value = true;
+      userRating.value = data[0].rating;
+    }
+  } catch (error) {
+    console.error("Error fetching user rating:", error);
+  }
 });
 
 function goBack() {
@@ -193,6 +216,39 @@ function getGenres(id:number|null|undefined){
       const genre = genres.value.find(g => Number(g.genreId) === Number(id));
       return genre? genre.name : "";
   }
+}
+
+async function handleRating(rating: number) {
+  if (!movie.value ||hasVoted.value || isSubmitting.value) return; // Empêche de voter plusieurs fois ou pendant la soumission
+  isSubmitting.value = true;
+
+  try {
+     await client.models.Rating.list({
+      movieId: movie.value.id,
+      userId: currentUserId.value,
+      rating
+    });
+
+    const oldAverage = movie.value.voteAverage || 0;
+    const oldCount = movie.value.voteCount || 0;
+    const newCount = oldCount + 1;
+    const newAverage = ((oldAverage * oldCount) + rating) / (newCount);
+
+    await client.models.Movie.update({
+      id: movie.value.id,
+      voteAverage: newAverage,
+      voteCount: newCount
+    });
+
+    movie.value.voteAverage = newAverage;
+    movie.value.voteCount = newCount;
+    userRating.value = rating;
+    hasVoted.value = true;
+  } catch (error) {
+    console.error("Error submitting rating:", error); 
+  } finally {
+    isSubmitting.value = false;
+}
 }
 
 </script>
@@ -509,5 +565,10 @@ html, body{
     width: 100%;
     justify-content: center;
   }
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5; 
 }
 </style>
