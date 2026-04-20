@@ -83,13 +83,10 @@
 
         <!-- Realisateur -->
       <div class="personne-section">
-<<<<<<< HEAD
         <div v-if="cast && cast.length > 0" class="director-section">
           <h2 class="section-title"><strong><em>Cast</em></strong></h2>
           <p class="cast-names">{{ Array.isArray(cast) ? cast.join(', ') : cast }}</p>
         </div>
-=======
->>>>>>> b644874 (Récuoération du cast)
         <div v-if="movie.director" class="director-section">
           <h2 class="section-title"><strong><em>Director</em></strong></h2>
           <p class="director-name">{{ movie.director }}</p>
@@ -180,7 +177,6 @@ const hasVoted = ref(false);
 const isSubmitting = ref(false);
 const currentUserId = ref<string | null>(null);
 const cast = ref<Array<Schema['Cast']["type"]>>([]);
-<<<<<<< HEAD
 const recommandationsSimilar = ref<any[]>([]);
 
 async function testSimilar(){
@@ -239,8 +235,6 @@ async function testUpdateRating() {
     console.error("Erreur appel updateUserRating :", error);
   }
 }
-=======
->>>>>>> b644874 (Récuoération du cast)
 
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
@@ -249,16 +243,12 @@ onMounted(async () => {
       id: route.params.id as string});
       movie.value = data;
       cast.value = data?.cast || [];
-<<<<<<< HEAD
 
       await loadSimilarMovies(data.id);
 
       console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
 
      console.log("RESULT API court: ", data);
-=======
-    console.log("RESULT API court: ", data);
->>>>>>> b644874 (Récuoération du cast)
   } catch (error) {
     console.error("Error fetching movie details:", error);
    
@@ -375,7 +365,6 @@ async function handleRating(rating: number) {
   if (!currentUserId.value) return;
   isSubmitting.value = true;
   try {
-<<<<<<< HEAD
     const result = await client.mutations.updateUserRating({
     movieId: movie.value.movieId,
     userId: currentUserId.value,
@@ -388,13 +377,6 @@ async function handleRating(rating: number) {
       console.error("Lmabda error:", result.data?.message);
       return;
     }
-=======
-     await client.models.Rating.create({
-      movieId: movie.value.id,
-      userId: currentUserId.value,
-      rating
-    });
->>>>>>> b644874 (Récuoération du cast)
 
     const oldAverage = movie.value.voteAverage || 0;
     const oldCount = movie.value.voteCount || 0;
