@@ -2,10 +2,8 @@ import json
 import os
 import boto3
 
-session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
+s3 = boto3.client("s3")
 
-s3 = session.client("s3")
- 
 DATA_BUCKET_NAME = os.environ.get("DATA_BUCKET_NAME")
 MOVIES_RECOMMENDATIONS_KEY = os.environ.get("MOVIES_RECOMMENDATIONS_KEY")
 
