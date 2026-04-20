@@ -1,5 +1,6 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";//on importe les fonctions nécessaires pour définir le schéma de la base de données et les autorisations d'accès aux données depuis le backend Amplify
 import {recommender} from "../functions/recommender/resource";
+import {similar} from "../functions/similar/resource";
 
 // On crée le schéma de la base de données
 const schema = a.schema({
@@ -80,7 +81,7 @@ const schema = a.schema({
     })
     .returns(a.ref("SimilarMoviesResponse"))
     .authorization((allow) => [allow.authenticated()])
-    .handler(a.handler.function("similar")),
+    .handler(a.handler.function(similar)),
 });
 
 export type Schema = ClientSchema<typeof schema>;
