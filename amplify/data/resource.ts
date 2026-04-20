@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";//on importe les fonctions nécessaires pour définir le schéma de la base de données et les autorisations d'accès aux données depuis le backend Amplify
+import {recommender} from "../functions/recommender/resource";
 
 // On crée le schéma de la base de données
 const schema = a.schema({
@@ -39,8 +40,9 @@ const schema = a.schema({
       name: a.string().required(), // nom du genre
     })
     .authorization((allow) => [allow.authenticated().to(["read"])]),//les utilisateurs authentifiés peuvent lire les genres, mais pas les modifier
-    // Table des profils d'utilisateurs qui stocke les informations du profil utilisateur qui ne sont pas gérées par Cognito 
-    UserProfile: a
+  
+  // Table des profils d'utilisateurs qui stocke les informations du profil utilisateur qui ne sont pas gérées par Cognito 
+  UserProfile: a
     .model({
       userId: a.string().required(), // ID de l'utilisateur (généré par cognito)
       username: a.string(), // nom de l'utilisateur
@@ -49,6 +51,22 @@ const schema = a.schema({
       
     })
     .authorization((allow) => [allow.owner()]),
+  
+  // Type de retour de la Lambda de recommandation
+  RecommendationResponse: a.customType({
+    userId: a.string().required(),
+    recommendations: a.string().array().required(),
+  }),
+
+  // Query AppSync qui appelle la Lambda recommender
+  getRecommendations: a
+    .query()
+    .arguments({
+      userId: a.string().required(),
+    })
+    .returns(a.ref("RecommendationResponse"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(recommender)),
 });
 
 export type Schema = ClientSchema<typeof schema>;
