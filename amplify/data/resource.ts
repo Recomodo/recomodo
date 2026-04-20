@@ -81,6 +81,8 @@ export const data = defineData({
     },
   },
 });
+
+
 /*== STEP 2 ===============================================================
 Go to your frontend source code. From your client-side code, generate a
 Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
