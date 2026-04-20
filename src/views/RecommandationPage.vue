@@ -3,23 +3,39 @@ import { useRouter } from 'vue-router';
 import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
 import { generateClient } from 'aws-amplify/data';
+import { getCurrentUser} from 'aws-amplify/auth';
 const router = useRouter();
 
 
 const client = generateClient<Schema>();
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
 
-
+const identifiant = ref<string | null>(null);
 onMounted(async () => {
+  const user = await getCurrentUser();
+  identifiant.value = user.userId;
+});
+
+/*onMounted(async () => {
     try {
-      const { data, errors } = await client.models.Movie.list({
-        limit: 20
-      });
+      const { data, errors } = await client.queries.getRecommendations({
+        userId: identifiant.value ?? "",
+      })
       movies.value=data ?? [];
     } catch (error) {
       console.error("Error fetching movies:", error);
     }
-  });
+});*/
+onMounted(async () => {
+    try {
+      const { data, errors } = await client.models.Movie.list({
+        limit: 20
+      })
+      movies.value=data ?? [];
+    } catch (error) {
+      console.error("Error fetching movies:", error);
+    }
+});
 
 function filmDetails(movieId:string){
     router.push(`/movie/details/${movieId}`);
