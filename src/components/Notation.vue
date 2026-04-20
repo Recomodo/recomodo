@@ -6,14 +6,10 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits ([
-    "update:notation"
+    "rate"
 ]);
 
 const currentNotation = ref(0);
-
-function changeNotation(value: number) {
-    emit("update:notation", value);
-}
 
 function getDisplayValue(star: number) {
     const displayValue = currentNotation.value || props.notation;
@@ -40,7 +36,7 @@ function getDisplayValue(star: number) {
             currentNotation = isHalf ? star - 0.5 : star;  
         }"
         @mouseleave="currentNotation = 0"
-        @click="changeNotation(currentNotation)"
+        @click="$emit('rate' , star)"
     >
         <span 
          class="star"
