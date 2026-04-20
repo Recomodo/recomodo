@@ -16,7 +16,7 @@ onMounted(async () => {
   identifiant.value = user.userId;
 });
 
-onMounted(async () => {
+/*onMounted(async () => {
     try {
       const { data, errors } = await client.queries.getRecommendations({
         //userId: identifiant.value ?? "",
