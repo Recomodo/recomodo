@@ -11,7 +11,7 @@ const functionDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const recommender = defineFunction((scope) => {
   const lambda = new Function(scope, "recommender", {
-    functionName: "recommender",
+    //functionName: "recommender",
     runtime: Runtime.PYTHON_3_10,
     handler: "recommender.handler",
     timeout: Duration.seconds(30),
@@ -28,7 +28,7 @@ export const recommender = defineFunction((scope) => {
         local: {
           tryBundle(outputDir: string) {
             execSync(
-              `cp ${path.join(functionDir, "recommender.py")} ${outputDir}`,
+              `copy ${path.join(functionDir, "recommender.py")} ${outputDir}`,
               { stdio: "inherit" }
             );
             return true;
