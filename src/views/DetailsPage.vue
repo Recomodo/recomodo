@@ -454,6 +454,7 @@ html, body{
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.75rem;
+  margin: 0;
 }
 
 .synopsis-text {
@@ -465,8 +466,10 @@ html, body{
 /* Realisateur */
 .director-section {
   margin-bottom: 2.5rem;
-  flex: 1;
+  display: flex;
+  flex-direction: column;
   min-width: 150px;
+  gap: 0.5rem;
 }
 
 .director-name, .cast-names {
@@ -474,6 +477,7 @@ html, body{
   font-weight: 600;
   color: #ffffff;
   line-height: 1.4;
+  margin: 0;
 }
 
 /* Stats row */
@@ -591,8 +595,13 @@ html, body{
 
 .personne-section {
   display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 3rem;
   margin-bottom: 2.5rem;
+  margin-top: 2rem;
 }
+
+
 
 </style>
