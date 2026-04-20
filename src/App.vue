@@ -1,45 +1,46 @@
 <script setup lang="ts">
-import { Authenticator } from '@aws-amplify/ui-vue';
-import "@aws-amplify/ui-vue/styles.css";
-import Nav from '@/components/Nav.vue';
-import Footer from '@/components/Footer.vue';
-import FirstSigninPage from '@/views/FirstSigninPage.vue';
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-vue'
+import "@aws-amplify/ui-vue/styles.css"
+import Nav from '@/components/Nav.vue'
+import Footer from '@/components/Footer.vue'
+import type { Schema } from "../amplify/data/resource"
+import { generateClient } from 'aws-amplify/data'
+import { watch, ref } from 'vue'
 
-import type {Schema} from "../amplify/data/resource";
-import { generateClient } from 'aws-amplify/data';
-import { onMounted, ref, computed } from 'vue';
-import { getCurrentUser } from 'aws-amplify/auth';
+const client = generateClient<Schema>()
+const profile = ref<any>(null)
+const auth = useAuthenticator()
 
-const client = generateClient<Schema>();
-const profile=ref<any>();
-const identifiant = ref<string>("");
-onMounted(async () => {
-  const user = await getCurrentUser();
-  identifiant.value = user.userId;
-
-  const {data} = await client.models.UserProfile.get({id:user.userId});
-  profile.value=data;
-
-});
-
-
-
+watch(() => auth.user, async (newUser) => {
+  if (newUser) {
+    try {
+      const { data } = await client.models.UserProfile.get({ id: newUser.userId })
+      if (!data) {
+        const { data: newProfile } = await client.models.UserProfile.create({
+          id: newUser.userId,
+          username: '',
+          hasCompleted: false,
+        })
+        profile.value = newProfile
+      } else {
+        profile.value = data
+      }
+    } catch (error) {
+      console.error('Erreur UserProfile:', error)
+    }
+  }
+}, { immediate: true })
 </script>
 
 <template>
- <Nav/>
+  <Nav/>
   <main>
-    <authenticator>
-      <template v-slot="{user, signOut}">
-       <!--<RouterView v-if="profile.hasCompleted"/>
-        <FirstSigninPage v-else-if="!profile.hasCompleted"/>
-        <p v-else>Loading...</p>-->
-
-        <RouterView/>
-      
-
+    <Authenticator>
+      <template v-slot="{ user, signOut }">
+        <p v-if="profile === null">Chargement...</p>
+        <RouterView v-else/>
       </template>
-    </authenticator>
+    </Authenticator>
   </main>
   <Footer/>
 </template>
