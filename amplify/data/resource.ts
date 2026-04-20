@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";//on importe les fonctions nécessaires pour définir le schéma de la base de données et les autorisations d'accès aux données depuis le backend Amplify
+import {recommender} from "../functions/recommender/resource";
 
 // On crée le schéma de la base de données
 const schema = a.schema({
@@ -49,6 +50,20 @@ const schema = a.schema({
       
     })
     .authorization((allow) => [allow.owner()]),
+
+    getRecommendations: a
+    .query()
+    .arguments({
+      userId: a.string().required()
+    })
+    .returns(
+      a.customType({
+        userId: a.string(),
+        recommendations: a.string().array()
+      })
+    )
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(recommender))
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -63,6 +78,8 @@ export const data = defineData({
     },
   },
 });
+
+
 /*== STEP 2 ===============================================================
 Go to your frontend source code. From your client-side code, generate a
 Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
