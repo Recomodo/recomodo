@@ -1,18 +1,24 @@
 import json
 import os
 import boto3
- 
-s3 = boto3.client("s3")
+
+session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
+
+s3 = session.client("s3")
  
 DATA_BUCKET_NAME = os.environ.get("DATA_BUCKET_NAME")
 MOVIES_RECOMMENDATIONS_KEY = os.environ.get("MOVIES_RECOMMENDATIONS_KEY")
- 
+
+_similar_cache = None
  
 # Charge le fichier JSON depuis S3 qui contient pour chaque film
 # la liste de ses films similaires, précalculée par build_recommendations.py.
 def load_recommendations_from_s3():
-    response = s3.get_object(Bucket=DATA_BUCKET_NAME, Key=MOVIES_RECOMMENDATIONS_KEY)
-    return json.loads(response["Body"].read().decode("utf-8"))
+    global _similar_cache
+    if _similar_cache is None:
+        response = s3.get_object(Bucket=DATA_BUCKET_NAME, Key=MOVIES_RECOMMENDATIONS_KEY)
+        _similar_cache = json.loads(response["Body"].read().decode("utf-8"))
+    return _similar_cache
  
  
 # Cherche "movieId" à plusieurs endroits dans l'event car selon comment
@@ -22,16 +28,6 @@ def extract_movie_id(event):
         return event["movieId"]
     elif event.get("arguments") and "movieId" in event["arguments"]:
         return event["arguments"]["movieId"]
-    elif event.get("queryStringParameters") and "movieId" in event["queryStringParameters"]:
-        return event["queryStringParameters"]["movieId"]
-    elif event.get("pathParameters") and "movieId" in event["pathParameters"]:
-        return event["pathParameters"]["movieId"]
-    elif event.get("body"):
-        body = event["body"]
-        if isinstance(body, str):
-            body = json.loads(body)
-        if "movieId" in body:
-            return body["movieId"]
     return None
  
  
@@ -40,10 +36,7 @@ def handler(event, context):
     movie_id = extract_movie_id(event)
  
     if not movie_id: #si on n'a pas réussi à extraire le movieId de l'event, on retourne une erreur
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"error": "missing movieId"})
-        }
+        raise ValueError("movieId not found in event")
  
     recommendations_map = load_recommendations_from_s3()
  
@@ -53,14 +46,18 @@ def handler(event, context):
  
     if not similar: #si la liste des films similaires est vide, on retourne une erreur 404 pour indiquer que le movieId n'est pas trouvé ou qu'il n'a pas de recommandations
         return {
-            "statusCode": 404,
-            "body": json.dumps({"error": "no similar movies found for this movieId"})
+            "movieId": movie_id,
+            "similar": []
         }
  
     return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "sourceMovieId": movie_id,  # pour afficher "Films similaires à X" côté front
-            "similar": similar,
-        })
+        "movieId": movie_id,
+        "similar": similar
     }
+
+# if __name__ == "__main__":
+#     # Test local du handler avec un event de test
+#     test_event = {
+#         "arguments": {"movieId": "3635"}
+#     }
+#     print(handler(test_event, None))

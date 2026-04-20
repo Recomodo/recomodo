@@ -18,7 +18,7 @@ export const similar = defineFunction((scope) => {
     memorySize: 512, // moins de mémoire que le recommender car pas de calcul lourd
     environment: {
       DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
-      MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations.json",
+      MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
     },
     code: Code.fromAsset(functionDir, {
       bundling: {
