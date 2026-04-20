@@ -19,8 +19,8 @@ onMounted(async () => {
 onMounted(async () => {
     try {
       const { data, errors } = await client.queries.getRecommendations({
-        userId: identifiant.value ?? "",
-        //userId:"tmdb_150",
+        //userId: identifiant.value ?? "",
+        userId:"tmdb_150",
       })
       movies.value=(data?.recommendations as unknown as Schema['Movie']["type"][]) ?? [];
       console.log("Recommendations fetched:", movies.value);
