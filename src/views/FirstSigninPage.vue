@@ -95,8 +95,12 @@ onMounted(async () => {
         client.models.Movie.get({ id: movieId })
       ));
       movies.value = responses
-        .map(r => r.data)
-        .filter(Boolean);
+        .map((response) => response.data)
+        .filter(
+          (
+            movie
+          ): movie is NonNullable<(typeof responses)[number]["data"]> => movie !== null
+        );
     } catch (error) {
       console.error("Error fetching movies:", error);
     }
