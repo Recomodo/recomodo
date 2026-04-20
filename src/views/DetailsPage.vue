@@ -379,7 +379,7 @@ html, body{
   align-items: center;
   gap: 0.4rem;
   padding: 0.6rem 1rem;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  background: linear-gradient(135deg, rgb(222, 106, 222) 0%, rgb(222, 106, 222) 100%);
   border-radius: 50px;
   color: #000;
   font-weight: 700;
@@ -509,7 +509,7 @@ html, body{
 
 .rating-icon {
   background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
+  color: rgb(222, 106, 222);
 }
 
 .votes-icon {
