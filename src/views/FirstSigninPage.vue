@@ -179,10 +179,13 @@ onMounted(async () => {
    flex-direction: column;
    justify-content: space-between;
    padding-block: 1rem;
+   /*flex-wrap:wrap;
+   overflow: visible;*/
 }
 .genres{
    display:flex;
    flex-direction: row;
+
 }
 
 .genre{
