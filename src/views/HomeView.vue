@@ -126,7 +126,9 @@ async function searchMovies(query:string){
 <div class="page">
     <FirstSigninPage/>
     <h1>Welcome to Recomodo</h1>
+    <div class="Search">
     <SearchBar @search="searchMovies"/>
+    </div>
 <div class="content">
 <div class="container">
     <RouterLink
@@ -229,6 +231,12 @@ img{
     height: 100%;
     flex: 1;
 
+}
+.search{
+    display: flex;
+    align-self: flex-end;
+    position:fixed;
+    right:0rem;
 }
 
 

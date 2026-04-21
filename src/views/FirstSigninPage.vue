@@ -182,10 +182,10 @@ onMounted(async () => {
    /*flex-wrap:wrap;
    overflow: visible;*/
 }
+
 .genres{
    display:flex;
-   flex-direction: row;
-
+   flex-direction:row;
 }
 
 .genre{
