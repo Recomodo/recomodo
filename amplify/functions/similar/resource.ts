@@ -45,6 +45,15 @@ export const similar = defineFunction((scope) => {
       ],
     })
   );
+
+  lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["s3:ListBucket"],
+    resources: [
+      "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
+    ],
+  })
+);
  
   return lambda;
 });
