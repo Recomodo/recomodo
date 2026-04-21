@@ -111,7 +111,11 @@ a {
     align-items: center;
     font-size: small;
     
-   
+}
+.discription p:first-child {
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
 }
 .movie{
     height: 200px;

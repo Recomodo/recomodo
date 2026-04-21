@@ -1,6 +1,6 @@
 <template>
 
-<input type="text" placeholder="Recherche " id="titre_film" class="searchBar" v-model="titre" @keyup.enter="emitSearch"> <!--v-model => titre.value="ce que l'utilisateur entre" -->
+<input type="text" placeholder="Search " id="titre_film" class="searchBar" v-model="titre" @keyup.enter="emitSearch"> <!--v-model => titre.value="ce que l'utilisateur entre" -->
 
 </template>
 
@@ -25,3 +25,11 @@ function onInput(){
     },300);
 }*/
 </script>
+
+<style>
+.searchBar{
+    width: 20%;
+    display: block;
+    padding: 0.3rem;
+}
+</style>
