@@ -1,24 +1,22 @@
 import { execSync } from "child_process";
 import * as path from "path";
 import { fileURLToPath } from "url";
-
+ 
 import { defineFunction } from "@aws-amplify/backend";
-import { DockerImage,Duration } from "aws-cdk-lib";
+import { DockerImage, Duration } from "aws-cdk-lib";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
-
+ 
 const functionDir = path.dirname(fileURLToPath(import.meta.url));
-
-export const recommender = defineFunction((scope) => {
-  const lambda = new Function(scope, "recommender", {
-    functionName: "recommender",
+ 
+export const similar = defineFunction((scope) => {
+  const lambda = new Function(scope, "similar", {
+    functionName: "similar",
     runtime: Runtime.PYTHON_3_10,
-    handler: "recommender.handler",
-    timeout: Duration.seconds(30),
-    memorySize: 2048,
+    handler: "similar.handler",
+    timeout: Duration.seconds(10), // plus court que le recommender car c'est juste un .get() sur le JSON
+    memorySize: 512, // moins de mémoire que le recommender car pas de calcul lourd
     environment: {
-      RATINGS_TABLE_NAME: "Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
-      RATINGS_USER_ID_INDEX: "byUserId",
       DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
       MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
     },
@@ -28,7 +26,7 @@ export const recommender = defineFunction((scope) => {
         local: {
           tryBundle(outputDir: string) {
             execSync(
-              `cp ${path.join(functionDir, "recommender.py")} ${outputDir}`,
+              `cp ${path.join(functionDir, "similar.py")} ${outputDir}`,
               { stdio: "inherit" }
             );
             return true;
@@ -37,17 +35,8 @@ export const recommender = defineFunction((scope) => {
       },
     }),
   });
-
-  lambda.addToRolePolicy(
-    new PolicyStatement({
-      actions: ["dynamodb:Query"],
-      resources: [
-        "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
-        "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE/index/byUserId",
-      ],
-    })
-  );
-
+ 
+  // Permission de lire le fichier JSON des recommandations dans S3
   lambda.addToRolePolicy(
     new PolicyStatement({
       actions: ["s3:GetObject"],
@@ -56,6 +45,6 @@ export const recommender = defineFunction((scope) => {
       ],
     })
   );
-
+ 
   return lambda;
 });

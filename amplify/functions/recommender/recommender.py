@@ -5,10 +5,10 @@ from boto3.dynamodb.conditions import Key
 
 #Configuration de la session boto3 pour accéder à DynamoDB 
 # ATTENTION : NE PAS UTILISER CETTE CONFIGURATION EN PRODUCTION, ELLE EST UNIQUEMENT DESTINÉE À DES FINS DE TESTS LOCAUX
-session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
+#session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
 
-dynamodb = session.resource("dynamodb") #remplacer session par boto3 pour le prod
-s3 = session.client("s3") #remplacer session par boto3 pour le prod
+dynamodb = boto3.resource("dynamodb") #remplacer session par boto3 pour le prod
+s3 = boto3.client("s3") #remplacer session par boto3 pour le prod
 
 #variable d'environnement pour le nom de la table DynamoDB
 RATINGS_TABLE_NAME = os.environ.get("RATINGS_TABLE_NAME")
@@ -73,6 +73,8 @@ def get_recommendations_for_user(top_movies_id, already_rated_movies, recommenda
 
 
 def handler(event, context):
+    print("RECOMMENDER VERSION 2026-04-21-1")
+    print("EVENT =", event)
     user_id = extract_user_id(event)
 
     if not user_id: #erreur si on ne trouve pas l'id de l'utilisateur dans l'event
@@ -99,8 +101,8 @@ def handler(event, context):
         "recommendations": recommendations
     }
 
-if __name__ == "__main__":
-    test_event = {
-    "arguments": {"userId": "tmdb_150"}
-    }
-    print(handler(test_event, None))
+# if __name__ == "__main__":
+#     test_event = {
+#     "arguments": {"userId": "tmdb_150"}
+#     }
+#     print(handler(test_event, None))
