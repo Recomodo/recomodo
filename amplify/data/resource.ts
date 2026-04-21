@@ -45,7 +45,6 @@ const schema = a.schema({
   // Table des profils d'utilisateurs qui stocke les informations du profil utilisateur qui ne sont pas gérées par Cognito 
   UserProfile: a
     .model({
-      userId: a.string().required(), // ID de l'utilisateur (généré par cognito)
       username: a.string(), // nom de l'utilisateur
       //genres: a.integer().array(),  genres préférés de l'utilisateur
       hasCompleted: a.boolean(), // indique si l'utilisateur a complété son profil
