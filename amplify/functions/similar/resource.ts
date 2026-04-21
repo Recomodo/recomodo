@@ -41,7 +41,7 @@ export const similar = defineFunction((scope) => {
     new PolicyStatement({
       actions: ["s3:GetObject"],
       resources: [
-        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movie_recommendations.json",
+        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movie_recommendations_genre.json",
       ],
     })
   );
