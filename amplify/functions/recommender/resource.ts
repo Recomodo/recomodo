@@ -42,8 +42,8 @@ export const recommender = defineFunction((scope) => {
     new PolicyStatement({
       actions: ["dynamodb:Query"],
       resources: [
-        "arn:aws:dynamodb:eu-west-1:080941085602:table/Rating-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE",
-        "arn:aws:dynamodb:eu-west-1:080941085602:table/Rating-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE/index/byUserId",
+        "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
+        "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE/index/byUserId",
       ],
     })
   );
@@ -52,7 +52,7 @@ export const recommender = defineFunction((scope) => {
     new PolicyStatement({
       actions: ["s3:GetObject"],
       resources: [
-        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movie_recommendations.json",
+        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movie_recommendations_genre.json",
       ],
     })
   );
