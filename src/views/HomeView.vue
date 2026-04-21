@@ -134,16 +134,16 @@ async function searchMovies(query:string){
         :key="movie.movieId"
         :to=" { name: 'details', params: { id: movie.movieId } }"
          
-        class="movie"
+        class="movie-card"
     >
         <img
             :src="'https://image.tmdb.org/t/p/w500' + movie.posterPath"
            
             :alt="movie.title"
        />
-        <div class="discription">
-            <p><strong><em>{{ movie.title }}</em></strong></p>
-            <p><strong><em>{{ movie.voteAverage }}</em></strong></p>
+        <div class="movie-info">
+             <p class="movie-title">{{ movie.title }}</p>
+             <p class="movie-meta">★ {{ movie.voteAverage }}</p>
         </div>
     </RouterLink>
 </div>
@@ -162,6 +162,7 @@ async function searchMovies(query:string){
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    
     
 }
 
@@ -183,51 +184,67 @@ h1{
     padding-top: 2rem;
 }
 
-.movie {
-  text-decoration: none; /* enlève le soulignement */
-  color: inherit;        /* garde le texte blanc */
-  display: block;
+/* CARD */
+.movie-card {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
   cursor: pointer;
-  transition: transform 0.2s;
+  width: 150px;
+  height: 265px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  box-shadow: 0 4px 20px rgba(114, 55, 136, 0.6);
+  border: 1px solid #7a2a8a;
+  border-radius: 6px;
 }
 
-img{
-    width: 100px;
-    height: 140px;
-    display: block;
-    justify-self: center;
-    
-}
-.discription{
-    display: flex;
-    flex-direction:row;
-    justify-content: space-around;
-    align-items: center;
-    font-size: small;
-    position:relative;
-    color: white;
-}
-.movie{
-    height: 200px;
-    width:150px;
-    background-color:rgb(61,9,67);
-    border-radius: 15px;
-    padding-top: 15px;
-    margin-top: 15px;
+.movie-card:hover {
+  transform: scale(1.04);
 }
 
+.movie-card img {
+  width: 150px;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.movie-info {
+  background: #3d0943;
+  padding: 4px 8px;
+  width: 100%;
+  height: 45px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.movie-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-meta {
+  margin: 3px 0 0 0;
+  font-size: 11px;
+  color: #f5c518;
+}
 .container{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, 150px);
-    gap: 2rem;
-    padding: 2rem 2rem;
-    box-sizing: border-box;
-    justify-content: start;
-    margin-left: 1rem ;
-    flex-grow: 1;
-    align-self: start;
-    height: 100%;
-    flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  grid-auto-rows: 270px;
+  gap: 1.5rem;
+  padding: 2rem;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+  max-width: 100%;
 
 }
 
