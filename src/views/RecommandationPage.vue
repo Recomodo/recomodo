@@ -16,17 +16,22 @@ onMounted(async () => {
   identifiant.value = user.userId;
 });
 
-/*onMounted(async () => {
+onMounted(async () => {
     try {
       const { data, errors } = await client.queries.getRecommendations({
         userId: identifiant.value ?? "",
+        //userId:"tmdb_150",
       })
-      movies.value=data ?? [];
+      movies.value=(data?.recommendations as unknown as Schema['Movie']["type"][]) ?? [];
+      console.log("Recommendations fetched:", movies.value);
+      console.log("data:", data);
+      console.log("errors:", errors);
     } catch (error) {
       console.error("Error fetching movies:", error);
     }
-});*/
-onMounted(async () => {
+}); 
+
+/*onMounted(async () => {
     try {
       const { data, errors } = await client.models.Movie.list({
         limit: 20
@@ -36,6 +41,7 @@ onMounted(async () => {
       console.error("Error fetching movies:", error);
     }
 });
+*/
 
 function filmDetails(movieId:string){
     router.push(`/movie/details/${movieId}`);
@@ -51,9 +57,28 @@ function filmDetails(movieId:string){
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
          :alt="movie.title ?? ''" />
     <div class="discription">
-       <p>{{ movie.title }}</p>
-       <p>{{ movie.voteAverage }}</p>
+       <span class="title">{{ movie.title }}</span>
+       <span class="rating">{{ movie.voteAverage }}<font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></span>
     </div>   
    </div>
 </div>
 </template>
+
+<style scoped>
+.title{
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rating {
+  flex-shrink: 0; 
+}
+.discription{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px; 
+  padding: 10px 8px;
+}
+</style>
