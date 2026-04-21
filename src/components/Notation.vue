@@ -36,11 +36,11 @@ function getDisplayValue(star: number) {
             currentNotation = isHalf ? star - 0.5 : star;  
         }"
         @mouseleave="currentNotation = 0"
-        @click="$emit('rate' , star)"
+        @click="$emit('rate' , currentNotation)"
     >
         <span 
-         class="star"
-         :class="getDisplayValue(star)"
+        class="star"
+        :class="getDisplayValue(star)"
         > 
             ★
         </span>
@@ -77,7 +77,7 @@ function getDisplayValue(star: number) {
 }
 .half {
     color: rgb(222, 106, 222);
-    width: 50%;
+    width: 44%;
     overflow: hidden;
     display: inline-block;
 }

@@ -29,7 +29,7 @@
             @error="e => e.target.src = '/defaultPoster.webp'"
             class="movie-poster"
           />
-          <div>
+          <div class="notation_number">
             <Notation :notation="userRating" @rate = "handleRating" :class=" { disabled : hasVoted}"/>
             <p class="UserRatingValue">{{ userRating }}</p>
           </div>
@@ -303,11 +303,11 @@ html, body{
   height: 100%;
   position: relative;
   object-fit: contain;
-  filter: blur(5px) brightness(0.7);
+  filter: blur(10px) brightness(0.5);
   transform: scale(1.1);
   display: block;
   transform-origin: top;
-  opacity:1;
+  opacity:0.8;
   top: 0;
   left: 0;
 }
@@ -370,6 +370,22 @@ html, body{
     0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
+.notation_number {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+  transform: translateX(-50px);
+}
+
+.UserRatingValue {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  line-height: 0;
+  transform: translateY(3px);
+}
+
 .rating-badge {
   position: absolute;
   top: -12px;
@@ -398,6 +414,8 @@ html, body{
   line-height: 1.1;
   margin-bottom: 1.25rem;
   text-wrap: balance;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 /* Meta row */
@@ -454,12 +472,14 @@ html, body{
   letter-spacing: 0.05em;
   margin-bottom: 0.75rem;
   margin: 0;
+  color: #a1a1aa;
 }
 
 .synopsis-text {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: #d4d4d8;
+  color: #e4e4e7;
+  max-width: 800px;
 }
 
 /* Realisateur */
@@ -474,7 +494,7 @@ html, body{
 .director-name, .cast-names {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #f4f4f5;
   line-height: 1.4;
   margin: 0;
 }
@@ -599,6 +619,11 @@ html, body{
   gap: 3rem;
   margin-bottom: 2.5rem;
   margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 
