@@ -19,9 +19,12 @@ watch(() => auth.user, async (newUser) => {
       
       if (!data) {
         // Première connexion → on crée le profil
+        // Première connexion → on génère le username depuis l'email
+        const email = newUser.signInDetails?.loginId ?? ''
+        const username = email.split('@')[0]  // ← "Adriana.Nganzu" depuis "Adriana.Nganzu@gmail.com"
         const { data: newProfile } = await client.models.UserProfile.create({
           id: newUser.userId,
-          username: '',
+          username: username,
           hasCompleted: false,
         })
         profile.value = newProfile
