@@ -77,14 +77,13 @@
 
         <!-- Realisateur -->
       <div class="personne-section">
-        <div v-if="movie.director" class="director-section">
-          <h2 class="section-title"><strong><em>Director</em></strong></h2>
-          <p class="director-name">{{ movie.director }}</p>
-        </div>
-
         <div v-if="cast && cast.length > 0" class="director-section">
           <h2 class="section-title"><strong><em>Cast</em></strong></h2>
           <p class="cast-names">{{ Array.isArray(cast) ? cast.join(', ') : cast }}</p>
+        </div>
+        <div v-if="movie.director" class="director-section">
+          <h2 class="section-title"><strong><em>Director</em></strong></h2>
+          <p class="director-name">{{ movie.director }}</p>
         </div>
       </div>
 
@@ -117,6 +116,25 @@
             </div>
           </div>
         </div>
+      <div v-if="recommandationsSimilar.length" class="recommandationSimilar-section">
+        <h2 class="section-title"><strong><em>You might also like</em></strong></h2>
+        <div class="recommandationSimilar-row">
+          <div 
+            v-for="rec in recommandationsSimilar" 
+            :key="rec.id" 
+            class="rec-card"
+            @click="goToMovie(rec.id)"
+          >
+            <img 
+              :src="getImageUrl(rec.posterPath)" 
+              :alt="rec.title"
+              @error="e => e.target.src = '/defaultPoster.webp'"
+              class="rec-poster"
+            />
+            <p class="rec-title">{{ rec.title }}</p>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -141,6 +159,7 @@ const hasVoted = ref(false);
 const isSubmitting = ref(false);
 const currentUserId = ref<string | null>(null);
 const cast = ref<Array<Schema['Cast']["type"]>>([]);
+const recommandationsSimilar = ref<any[]>([]);
 
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
@@ -149,6 +168,8 @@ onMounted(async () => {
       id: route.params.id as string});
       movie.value = data;
       cast.value = data?.cast || [];
+
+      await loadSimilarMovies(data.id);
     console.log("RESULT API court: ", data);
   } catch (error) {
     console.error("Error fetching movie details:", error);
@@ -258,6 +279,30 @@ async function handleRating(rating: number) {
   } finally {
     isSubmitting.value = false;
 }
+}
+
+async function loadSimilarMovies(movieId: string) {
+    try {
+      const result = await client.queries.getSimilarMovies({
+        movieId: movieId
+      });
+      const ids = result.data?.similar || [];
+
+      const movies = await Promise.all (
+        ids.map(async (id: string) => {
+            const { data } = await client.models.Movie.get({ id });
+            return data;
+          })
+      );
+      recommandationsSimilar.value = movies.filter(Boolean);
+    } catch (error) {
+      console.error("Error fetching similar movies:", error);
+      recommandationsSimilar.value = [];
+}
+}
+
+function goToMovie(id: string){
+  router.push({name: 'movie-details',params: {id}});
 }
 
 </script>
