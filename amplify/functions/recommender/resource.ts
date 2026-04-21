@@ -11,7 +11,7 @@ const functionDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const recommender = defineFunction((scope) => {
   const lambda = new Function(scope, "recommender", {
-    //functionName: "recommender",
+    functionName: "recommender",
     runtime: Runtime.PYTHON_3_10,
     handler: "recommender.handler",
     timeout: Duration.seconds(30),
