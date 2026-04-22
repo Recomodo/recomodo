@@ -11,7 +11,7 @@ const functionDir = path.dirname(fileURLToPath(import.meta.url));
  
 export const similar = defineFunction((scope) => {
   const lambda = new Function(scope, "similar", {
-    functionName: "similar",
+    //functionName: "similar",
     runtime: Runtime.PYTHON_3_10,
     handler: "similar.handler",
     timeout: Duration.seconds(10), // plus court que le recommender car c'est juste un .get() sur le JSON
@@ -35,6 +35,25 @@ export const similar = defineFunction((scope) => {
       },
     }),
   });
- 
+  lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["s3:GetObject"],
+    resources: [
+      "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm/recomodo/movie_recommendations_genre.json",
+      ],
+    })
+  );
+
+  lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["s3:ListBucket"],
+    resources: [
+      "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm",
+      ],
+    })
+  );
+
+
   return lambda;
 });
+
