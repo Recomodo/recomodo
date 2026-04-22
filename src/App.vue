@@ -54,9 +54,14 @@ watch(() => auth.user, async (newUser) => {
         <FirstSigninPage v-else-if="!profile.hasCompleted"/>
 
         <!-- App normale -->
+<<<<<<< HEAD
         <RouterView v-else/>
         <!--<RouterView/>-->
       <Footer/>
+=======
+        <RouterView v-else />
+
+>>>>>>> 15031cb (ajustement css similar)
       </template>
     </Authenticator>
   </main>

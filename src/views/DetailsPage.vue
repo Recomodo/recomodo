@@ -132,8 +132,12 @@
             </div>
           </div>
         </div>
-        <div v-if="recommandationsSimilar.length" class="recommandationSimilar-section">
-        <h2 class="section-title"><strong><em>You might also like</em></strong></h2>
+      </div>
+    </div>
+   </div>
+   
+    <div v-if="recommandationsSimilar.length" class="recommandationSimilar-section">
+        <h2 class="sectionRec-title"><strong><em>You might also like</em></strong></h2>
         <div class="recommandationSimilar-row">
           <div 
             v-for="rec in recommandationsSimilar" 
@@ -568,6 +572,7 @@ async function loadSimilarMovies(movieId: string) {
       const result = await client.queries.getSimilarMovies({
         movieId: movieId
       });
+      console.log("IDS", result.data?.similar);
       const ids = result.data?.similar || [];
 
       const movies = await Promise.all (
