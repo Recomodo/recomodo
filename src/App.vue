@@ -53,7 +53,7 @@ watch(() => auth.user, async (newUser) => {
         <!-- <FirstSigninPage v-else-if="!profile.hasCompleted"/> -->
 
         <!-- App normale -->
-        <RouterView v-else/>
+        <RouterView v-else />
 
       </template>
     </Authenticator>
