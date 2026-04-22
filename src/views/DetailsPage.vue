@@ -1,5 +1,6 @@
 <template>
   <div  v-if="movie" class="movie-details-page">
+   <div class="movie-section" >
     <!-- Background blur avec le poster -->
     <div class="backdrop-container">
       <img 
@@ -116,8 +117,12 @@
             </div>
           </div>
         </div>
-        <div v-if="recommandationsSimilar.length" class="recommandationSimilar-section">
-        <h2 class="section-title"><strong><em>You might also like</em></strong></h2>
+      </div>
+    </div>
+   </div>
+   
+    <div v-if="recommandationsSimilar.length" class="recommandationSimilar-section">
+        <h2 class="sectionRec-title"><strong><em>You might also like</em></strong></h2>
         <div class="recommandationSimilar-row">
           <div 
             v-for="rec in recommandationsSimilar" 
@@ -135,15 +140,13 @@
           </div>
         </div>
       </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Schema } from "../../amplify/data/resource";
 import Notation from '@/components/Notation.vue';
-import { onMounted , ref } from 'vue';
+import { onMounted , ref , watch } from 'vue';
 import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
@@ -170,7 +173,8 @@ onMounted(async () => {
       cast.value = data?.cast || [];
 
       await loadSimilarMovies(data.id);
-    console.log("RESULT API court: ", data);
+
+     console.log("RESULT API court: ", data);
   } catch (error) {
     console.error("Error fetching movie details:", error);
    
@@ -286,6 +290,7 @@ async function loadSimilarMovies(movieId: string) {
       const result = await client.queries.getSimilarMovies({
         movieId: movieId
       });
+      console.log("IDS", result.data?.similar);
       const ids = result.data?.similar || [];
 
       const movies = await Promise.all (
@@ -332,6 +337,13 @@ html, body{
   
 }
 
+.movie-section {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  
+}
+
 /* Background blur */
 .backdrop-container {
   position: absolute;
@@ -342,6 +354,7 @@ html, body{
   overflow: hidden;
   z-index: 0;
   width: 100%;
+  
 }
 
 .backdrop-image {
@@ -392,7 +405,7 @@ html, body{
   max-width: 100%;
   width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem 4rem;
+  padding:  2rem;
   box-sizing: border-box;
   flex-wrap: wrap;
 }
@@ -672,6 +685,47 @@ html, body{
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.recommandationSimilar-section {
+  background: #1a0120;
+  padding: 3rem 2rem;
+}
+
+.recommandationSimilar-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.rec-card {
+  width: 150px;
+  cursor: pointer;
+  transition: transform 0.2 ease;
+}
+
+.rec-card:hover {
+  transform: scale(1.05);
+}
+
+.rec-poster {
+  width: 150px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.rec-title {
+  font-size: 12px;
+  margin-top: 5px;
+  color: white;
+  text-align: center;
+}
+
+.sectionRec-title {
+  padding: 3rem;
+  margin-top: px;
+}
 
 
 </style>
