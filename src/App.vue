@@ -8,11 +8,13 @@ import type { Schema } from "../amplify/data/resource"
 import { watch, ref } from 'vue'
 
 const client = generateClient<Schema>()
-const profile = ref<any>(null)
+const profile = ref<any>(undefined) // undefined = pas encore chargé, null = pas de profil (erreur ou pas connecté)
 const auth = useAuthenticator()
 
 watch(() => auth.user, async (newUser) => {
-  if (newUser) {
+  if (!newUser) {
+    profile.value = undefined // pas encore chargé, on attend la connexion
+  } else {
     try {
       // On cherche le profil avec l'userId de Cognito
       const { data } = await client.models.UserProfile.get({ id: newUser.userId })
@@ -34,6 +36,7 @@ watch(() => auth.user, async (newUser) => {
       }
     } catch (error) {
       console.error('Erreur UserProfile:', error)
+      profile.value = null // En cas d'erreur (ex: pas connecté), on met à null pour indiquer qu'il n'y a pas de profil
     }
   }
 }, { immediate: true }) // immediate:true pour déclencher dès le démarrage si déjà connecté
@@ -44,8 +47,7 @@ watch(() => auth.user, async (newUser) => {
   <main>
     <Authenticator>
       <template v-slot="{ user, signOut }">
-        <!-- Chargement -->
-        <p v-if="profile === null">Chargement...</p>
+        <p v-if="profile === undefined">Chargement...</p>
 
         <!-- Questionnaire si première connexion -->
         <!-- <FirstSigninPage v-else-if="!profile.hasCompleted"/> -->
