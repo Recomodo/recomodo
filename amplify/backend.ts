@@ -4,6 +4,7 @@ import { data } from './data/resource';
 import { recommender } from './functions/recommender/resource';
 import { similar } from './functions/similar/resource';
 import { updateMovieRating } from './functions/updateMovieRating/resource';
+import { storage } from './storage/resource';
 
 defineBackend({
   auth,
@@ -11,4 +12,5 @@ defineBackend({
   recommender,
   similar,
   updateMovieRating,
+  storage,
 });
