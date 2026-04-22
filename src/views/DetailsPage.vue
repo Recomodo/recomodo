@@ -307,7 +307,7 @@ async function loadSimilarMovies(movieId: string) {
 }
 
 function goToMovie(id: string){
-  router.push({name: 'movie-details',params: {id}});
+  router.push({name: 'details',params: {id}});
 }
 
 </script>
@@ -695,7 +695,7 @@ html, body{
   grid-template-columns: repeat(auto-fill, 150px);
   gap: 1.5rem;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: -40px;
 }
 
 .rec-card {
@@ -724,7 +724,7 @@ html, body{
 
 .sectionRec-title {
   padding: 3rem;
-  margin-top: px;
+  margin-top: -35px;
 }
 
 
