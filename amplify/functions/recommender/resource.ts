@@ -19,7 +19,6 @@ export const recommender = defineFunction((scope) => {
     environment: {
       RATINGS_TABLE_NAME: "Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
       RATINGS_USER_ID_INDEX: "byUserId",
-      DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
       MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
     },
     code: Code.fromAsset(functionDir, {
@@ -44,15 +43,6 @@ export const recommender = defineFunction((scope) => {
       resources: [
         "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
         "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE/index/byUserId",
-      ],
-    })
-  );
-
-  lambda.addToRolePolicy(
-    new PolicyStatement({
-      actions: ["s3:GetObject"],
-      resources: [
-        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movie_recommendations_genre.json",
       ],
     })
   );
