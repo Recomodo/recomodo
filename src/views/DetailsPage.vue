@@ -589,7 +589,7 @@ async function loadSimilarMovies(movieId: string) {
 }
 
 function goToMovie(id: string){
-  router.push({name: 'movie-details',params: {id}});
+  router.push({name: 'details',params: {id}});
 }
 
 </script>

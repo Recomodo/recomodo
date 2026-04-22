@@ -55,11 +55,15 @@ watch(() => auth.user, async (newUser) => {
 
         <!-- App normale -->
 <<<<<<< HEAD
+<<<<<<< HEAD
         <RouterView v-else/>
         <!--<RouterView/>-->
       <Footer/>
 =======
         <RouterView v-else />
+=======
+        <RouterView v-else  :key="$route.fullPath"/>
+>>>>>>> e68e580 (Similar parfait)
 
 >>>>>>> 15031cb (ajustement css similar)
       </template>
