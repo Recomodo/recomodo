@@ -17,7 +17,6 @@ export const similar = defineFunction((scope) => {
     timeout: Duration.seconds(10), // plus court que le recommender car c'est juste un .get() sur le JSON
     memorySize: 512, // moins de mémoire que le recommender car pas de calcul lourd
     environment: {
-      DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
       MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
     },
     code: Code.fromAsset(functionDir, {
@@ -35,25 +34,6 @@ export const similar = defineFunction((scope) => {
       },
     }),
   });
- 
-  // Permission de lire le fichier JSON des recommandations dans S3
-  lambda.addToRolePolicy(
-    new PolicyStatement({
-      actions: ["s3:GetObject"],
-      resources: [
-        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9/recomodo/movie_recommendations_genre.json",
-      ],
-    })
-  );
-
-  lambda.addToRolePolicy(
-  new PolicyStatement({
-    actions: ["s3:ListBucket"],
-    resources: [
-      "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-amplifydataamplifycodege-kdsjbfaiy1u9",
-    ],
-  })
-);
  
   return lambda;
 });
