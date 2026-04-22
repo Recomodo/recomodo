@@ -17,6 +17,7 @@ export const similar = defineFunction((scope) => {
     timeout: Duration.seconds(10), // plus court que le recommender car c'est juste un .get() sur le JSON
     memorySize: 512, // moins de mémoire que le recommender car pas de calcul lourd
     environment: {
+      DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm",
       MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
     },
     code: Code.fromAsset(functionDir, {
