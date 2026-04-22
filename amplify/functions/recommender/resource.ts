@@ -19,6 +19,7 @@ export const recommender = defineFunction((scope) => {
     environment: {
       RATINGS_TABLE_NAME: "Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
       RATINGS_USER_ID_INDEX: "byUserId",
+      DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm",
       MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
     },
     code: Code.fromAsset(functionDir, {
