@@ -35,6 +35,25 @@ export const similar = defineFunction((scope) => {
       },
     }),
   });
- 
+  lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["s3:GetObject"],
+    resources: [
+      "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm/recomodo/movie_recommendations_genre.json",
+      ],
+    })
+  );
+
+  lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["s3:ListBucket"],
+    resources: [
+      "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm",
+      ],
+    })
+  );
+
+
   return lambda;
 });
+
