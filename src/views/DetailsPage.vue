@@ -146,7 +146,7 @@
 <script setup lang="ts">
 import type { Schema } from "../../amplify/data/resource";
 import Notation from '@/components/Notation.vue';
-import { onMounted , ref , watch } from 'vue';
+import { onMounted , ref  } from 'vue';
 import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
@@ -164,6 +164,24 @@ const currentUserId = ref<string | null>(null);
 const cast = ref<Array<Schema['Cast']["type"]>>([]);
 const recommandationsSimilar = ref<any[]>([]);
 
+async function testSimilar(){
+  try {
+    const result=await client.queries.getSimilarMovies({
+      movieId:"3635",
+    });
+    console.log("result=",result);
+    console.log("data=",result?.data);
+    console.log("errors=",result.errors);
+
+    if(result.errors?.length) {
+      console.log("first error=",result.errors[0]);
+      console.log("first error message=",result.errors[0].message);
+    }
+  }catch(error) {
+    console.error("erreur appel getSimilarMovies:",error);
+  }
+}
+
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
   try {
@@ -172,7 +190,7 @@ onMounted(async () => {
       movie.value = data;
       cast.value = data?.cast || [];
 
-      await loadSimilarMovies(data.id);
+      await testSimilar(data.id);
 
      console.log("RESULT API court: ", data);
   } catch (error) {
@@ -284,6 +302,28 @@ async function handleRating(rating: number) {
     isSubmitting.value = false;
 }
 }
+/*
+async function handleRating(rating: number) {
+  if (!movie.value ||hasVoted.value || isSubmitting.value) return; // Empêche de voter plusieurs fois ou pendant la soumission
+  isSubmitting.value = true;
+
+  try {
+     await client.queries.updateMovieRating({
+      movieId: movie.value.id,
+      userId: currentUserId.value,
+      rating
+    });
+
+    movie.value.voteCount+=1;
+    userRating.value = rating;
+    hasVoted.value = true;
+  } catch (error) {
+    console.error("Error submitting rating:", error); 
+  } finally {
+    isSubmitting.value = false;
+}
+}
+*/
 
 async function loadSimilarMovies(movieId: string) {
     try {

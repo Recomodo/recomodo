@@ -28,7 +28,7 @@ export const updateMovieRating = defineFunction((scope) => {
         local: { // Copier le fichier updateMovieRating.py dans le dossier de sortie pour la Lambda
           tryBundle(outputDir: string) {
             execSync(
-              `cp ${path.join(functionDir, "updateMovieRating.py")} ${outputDir}`,
+              `copy ${path.join(functionDir, "updateMovieRating.py")} ${outputDir}`,
               { stdio: "inherit" }
             );
             return true;
