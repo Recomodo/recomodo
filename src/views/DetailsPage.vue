@@ -271,7 +271,7 @@ onMounted(async () => {
       movie.value = data;
       cast.value = data?.cast || [];
 
-      await loadSimilarMovies(data.id);
+      await testSimilar(data.id);
 
       console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
 
