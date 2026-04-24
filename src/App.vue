@@ -44,10 +44,10 @@ watch(() => auth.user, async (newUser) => {
 </script>
 
 <template>
- 
   <main>
     <Authenticator>
       <template v-slot="{ user, signOut }">
+        <Nav/>
         <p v-if="profile === undefined">Chargement...</p>
 
         <!-- Questionnaire si première connexion -->
