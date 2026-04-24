@@ -14,11 +14,6 @@ const routes = [
         component: () => import("../views/RecommandationPage.vue"),
     },
     {
-        path:"/profile",
-        name:"profile",
-        component: () => import("../views/ProfilePage.vue"),
-    },
-    {
         path:"/",
         name:"home",
         component: HomeView,
