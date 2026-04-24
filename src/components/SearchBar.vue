@@ -1,6 +1,6 @@
 <template>
 
-<input type="text" placeholder="Search " id="titre_film" class="searchBar" v-model="titre" @keyup.enter="emitSearch"> <!--v-model => titre.value="ce que l'utilisateur entre" -->
+<input type="text" placeholder="Search " id="titre_film" class="searchBar" v-model="titre" @input="onInput"> <!--v-model => titre.value="ce que l'utilisateur entre" -->
 
 </template>
 
@@ -13,17 +13,19 @@ const emit = defineEmits<{
     (e:"search", value:string): void;
 }>();
 
-function emitSearch(){
+/*function emitSearch(){
     emit("search", titre.value)
-}
-//cas si je fait on input
-/*let timeout:any;
-function onInput(){
-    clearTimeout(timeout);
-    timeout=setTimeout(()=>{
-        emit("search",titre.value);
-    },300);
 }*/
+let timeout: ReturnType<typeof setTimeout>;
+
+function onInput() {
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+        emit("search", titre.value);
+    }, 300);
+}
+
 </script>
 
 <style>
