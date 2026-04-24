@@ -19,7 +19,7 @@ const nextTokens = ref<Record<number, string | null>>({});
 async function loadMoviesPage(page: number) {
    try {
     // ne pas chargé si l'utilisateur recherche
-    if (isSearching.value) return;
+   // if (isSearching.value) return;
      if(moviesByPage.value[page]) {
         movies.value = moviesByPage.value[page];
         return;
