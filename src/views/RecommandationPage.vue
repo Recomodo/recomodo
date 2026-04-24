@@ -4,26 +4,29 @@ import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
 import { generateClient } from 'aws-amplify/data';
 import { getCurrentUser} from 'aws-amplify/auth';
-const router = useRouter();
+
+const router = useRouter(); 
 
 
 const client = generateClient<Schema>();
+const moviesIds = ref<any>([]);
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
-
 const identifiant = ref<string | null>(null);
-onMounted(async () => {
-  const user = await getCurrentUser();
-  identifiant.value = user.userId;
-});
-
+        
 onMounted(async () => {
     try {
-      const { data, errors } = await client.queries.getRecommendations({
-        //userId: identifiant.value ?? "",
+        const user = await getCurrentUser();
+        identifiant.value = user.userId;
+        const { data, errors } = await client.queries.getRecommendations({
+        //userId: identifiant.value ??
         userId:"tmdb_150",
-      })
-      movies.value=(data?.recommendations as unknown as Schema['Movie']["type"][]) ?? [];
-      console.log("Recommendations fetched:", movies.value);
+        })
+      moviesIds.value=data?.recommendations;
+
+      // récuperer les films complets
+      const moviesData = await Promise.all(moviesIds.value.map((movieId:string) => client.models.Movie.get({ id: movieId})))
+      movies.value = moviesData.map(res => res.data).filter(movie => movie !== undefined)
+      console.log("Recommendations fetched:", moviesIds.value);
       console.log("data:", data);
       console.log("errors:", errors);
     } catch (error) {
@@ -31,34 +34,24 @@ onMounted(async () => {
     }
 }); 
 
-/*onMounted(async () => {
-    try {
-      const { data, errors } = await client.models.Movie.list({
-        limit: 20
-      })
-      movies.value=data ?? [];
-    } catch (error) {
-      console.error("Error fetching movies:", error);
-    }
-});
-*/
 
 function filmDetails(movieId:string){
     router.push(`/movie/details/${movieId}`);
 }
 
 
+
 </script>
 
 
 <template>
-<div class="recommendationsContainer">
-<div  class="movie"v-for="(movie) in movies" :key="movie.movieId" @click="filmDetails(movie.movieId)">
+<div class="container">
+<div  class="movie-card"v-for="(movie) in movies" :key="movie.movieId" @click="filmDetails(movie.movieId)">
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
          :alt="movie.title ?? ''" />
-    <div class="discription">
-       <span class="title">{{ movie.title }}</span>
-       <span class="rating">{{ movie.voteAverage }}<font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></span>
+    <div class="movie-info">
+       <span class="movie-title">{{ movie.title }}</span>
+       <span class="movie-meta">{{ movie.voteAverage }}<font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: #f5c518;" /></span>
     </div>   
    </div>
 </div>
@@ -71,14 +64,6 @@ function filmDetails(movieId:string){
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.rating {
-  flex-shrink: 0; 
-}
-.discription{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px; 
-  padding: 10px 8px;
-}
+
+
 </style>
