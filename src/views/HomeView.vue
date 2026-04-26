@@ -132,7 +132,7 @@ function getImageUrl(posterPath: any) {
 
 <template>
 <div class="page">
-    <FirstSigninPage/>
+    <!--<FirstSigninPage/>-->
     <h1>Welcome to Recomodo</h1>
     <SearchBar @search="searchMovies"/>
 <div class="content">
