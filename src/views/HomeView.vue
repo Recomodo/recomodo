@@ -186,12 +186,8 @@ function getImageUrl(posterPath: any) {
         class="movie-card"
     >
         <img
-<<<<<<< HEAD
             :src="'https://image.tmdb.org/t/p/w200' + movie.posterPath"
            
-=======
-            :src="getImageUrl(movie?.posterPath)"
->>>>>>> bbe2a71 (Ajout du poster par défaut)
             :alt="movie.title"
             @error="e => e.target.src = '/defaultPoster.webp'"
        />
