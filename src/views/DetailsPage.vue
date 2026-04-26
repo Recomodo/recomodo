@@ -124,11 +124,12 @@
     <div v-if="recommandationsSimilar.length" class="recommandationSimilar-section">
         <h2 class="sectionRec-title"><strong><em>You might also like</em></strong></h2>
         <div class="recommandationSimilar-row">
-          <div 
+          <RouterLink 
             v-for="rec in recommandationsSimilar" 
             :key="rec.id" 
+            :to="{ name: 'details' , params : { id: rec.movieId}}"
             class="rec-card"
-            @click="goToMovie(rec.id)"
+            
           >
             <img 
               :src="getImageUrl(rec.posterPath)" 
@@ -136,8 +137,11 @@
               @error="e => e.target.src = '/defaultPoster.webp'"
               class="rec-poster"
             />
-            <p class="rec-title">{{ rec.title }}</p>
-          </div>
+            <div class="rec-info">
+              <p class="rec-title">{{ rec.title }}</p>
+              <p class="rec-meta">★ {{ rec.voteAverage?.toFixed(1) }}</p>
+            </div>
+          </RouterLink>
         </div>
       </div>
   </div>
@@ -146,7 +150,7 @@
 <script setup lang="ts">
 import type { Schema } from "../../amplify/data/resource";
 import Notation from '@/components/Notation.vue';
-import { onMounted , ref  } from 'vue';
+import { onMounted , ref , watch } from 'vue';
 import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
@@ -267,6 +271,21 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error("Error fetching user rating:", error);
+  }
+});
+
+watch(() => route.params.id, async (newId) => {
+  if (!newId) return;
+  try {
+    const { data } = await client.models.Movie.get ({
+      id : newId as string
+    });
+    movie.value =  data;
+    cast.value = data?.cast || [];
+
+    await loadSimilarMovies(data.id);
+  }catch(error) {
+    console.error("Error fetching movie details",error);
   }
 });
 
@@ -430,7 +449,10 @@ async function loadSimilarMovies(movieId: string) {
             return data;
           })
       );
-      recommandationsSimilar.value = movies.filter(Boolean);
+      recommandationsSimilar.value = movies
+      .filter(Boolean)
+      .filter(m=>m.id!==movieId);
+      console.log(recommandationsSimilar.value[0]);
     } catch (error) {
       console.error("Error fetching similar movies:", error);
       recommandationsSimilar.value = [];
@@ -438,6 +460,7 @@ async function loadSimilarMovies(movieId: string) {
 }
 
 function goToMovie(id: string){
+  console.log("goToMovie id :",id);
   router.push({name: 'details',params: {id}});
 }
 
@@ -830,32 +853,62 @@ html, body{
 }
 
 .rec-card {
+  text-decoration: none;
   width: 150px;
+  height: 265px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   transition: transform 0.2 ease;
+  box-shadow: 0 4px 20px rgba(114, 55, 136, 0.6);
+  border: 1px solid #7a2a8a;
+  border-radius: 6px;
 }
 
 .rec-card:hover {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .rec-poster {
   width: 150px;
   height: 220px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 0;
+  display: block;
+}
+
+.rec-info {
+  background: #3d0943;
+  padding: 4px 8px;
+  height: 45px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: 100%;
 }
 
 .rec-title {
   font-size: 12px;
   margin-top: 5px;
-  color: white;
-  text-align: center;
+  color: #fff;
+  text-align: left;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-meta {
+  margin-top: -12px;
+  font-size: 11px;
+  color: #f5c518;
 }
 
 .sectionRec-title {
-  padding: 3rem;
+  padding: 0 0 2rem 0;
   margin-top: -35px;
+  color: white;
+  font-size: 1.5rem;
 }
 
 
