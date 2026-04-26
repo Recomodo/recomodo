@@ -165,12 +165,13 @@ function searchMovies(query: string) {
 <div class="page">
     <h1>Welcome to Recomodo</h1>
     <div class="Search">
-    <SearchBar @search="searchMovies"/>
+    <!-- <SearchBar @search="searchMovies"/> -->
+    <SearchBar/>
     </div>
 <div class="content">
 <div class="container">
     <RouterLink
-       v-for="movie in isSearching? searchResults : movies"
+       v-for="movie in movies"
         :key="movie.movieId"
         :to=" { name: 'details', params: { id: movie.movieId } }"
          
@@ -188,7 +189,7 @@ function searchMovies(query: string) {
     </RouterLink>
 </div>
 
-<div v-if="!isSearching" class="pagination-wrapper">
+<div class="pagination-wrapper">
     <Pagination 
         :currentPage="currentPage"
         @page-changed="handlePageChange"/>

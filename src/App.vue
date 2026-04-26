@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Authenticator, useAuthenticator } from '@aws-amplify/ui-vue'
 import "@aws-amplify/ui-vue/styles.css"
-import Nav from '@/components/Nav.vue'
+import Nav from '@/components/Nav.vue' 
 import Footer from '@/components/Footer.vue'
 import { generateClient } from 'aws-amplify/data'
 import type { Schema } from "../amplify/data/resource"
