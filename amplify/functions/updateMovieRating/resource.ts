@@ -17,8 +17,10 @@ export const updateMovieRating = defineFunction((scope) => {
     memorySize: 256,
     environment: {
       RATING_TABLE_NAME: "Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
-      RATING_USER_INDEX: "byUserId",
-      MOVIE_TABLE_NAME: "Movie-ijhwxiff7nbgfe7pbxjat2dtxi-NONE", 
+      RATING_USER_ID_INDEX: "byUserId",
+      RATING_MOVIE_ID_INDEX: "byMovieId",
+      MOVIE_TABLE_NAME: "Movie-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
+      MOVIE_MOVIE_ID_INDEX: "byMovieId", 
     },
     code: Code.fromAsset(functionDir, {
       bundling: {
