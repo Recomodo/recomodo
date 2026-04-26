@@ -8,6 +8,11 @@
         :alt="movie.title"
         class="backdrop-image"
       />
+      <img 
+        :src="getImageUrl(movie.posterPath)"
+        :alt="movie.title" 
+        class="backdrop-image"
+      />
       <div class="backdrop-overlay"></div>
     </div>
 
@@ -473,7 +478,6 @@ html, body{
   padding: 0;
   height: 100%;
   min-height: 100%;
-  /*background: #000;*/
 }
 
 .movie-details-page {
@@ -504,25 +508,35 @@ html, body{
   top: 0;
   left: 0;
   right: 0;
-  height: 100%;
-  overflow: hidden;
+  height: 500px;
   z-index: 0;
   width: 100%;
+  
   
 }
 
 .backdrop-image {
   width: 100%;
   height: 100%;
-  position: relative;
+  position: absolute;
   object-fit: contain;
+  object-position: left bottom;
   filter: blur(10px) brightness(0.5);
-  transform: scale(1.1);
+  transform: scale(1.1) translateX(10%) translateY(22%);
   display: block;
   transform-origin: top;
   opacity:0.8;
   top: 0;
   left: 0;
+}
+
+.backdrop-image-bg {
+  position:absolute;
+  width: 100%;
+  height:100%;
+  object-fit: cover;
+  filter: blur(10px) brightness(0.5);
+  transform: scale(1.1);
 }
 
 /* Bouton retour */
@@ -840,7 +854,7 @@ html, body{
 }
 
 .recommandationSimilar-section {
-  background: #1a0120;
+  background: #15001d;
   padding: 3rem 2rem;
 }
 
