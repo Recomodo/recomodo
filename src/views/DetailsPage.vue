@@ -271,7 +271,9 @@ onMounted(async () => {
       movie.value = data;
       cast.value = data?.cast || [];
 
-      await testSimilar(data.id);
+      await loadSimilarMovies(data.id);
+
+      console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
 
       console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
 
@@ -417,7 +419,7 @@ async function handleRating(rating: number) {
     hasVoted.value = true;
 
   } catch (error) {
-    console.error("Error submitting rating:", error); 
+    console.error("Error submitting rating:", error);
   } finally {
     isSubmitting.value = false;
   }
