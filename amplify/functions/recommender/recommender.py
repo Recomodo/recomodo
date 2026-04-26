@@ -17,7 +17,6 @@ RATINGS_USER_ID_INDEX = os.environ.get("RATINGS_USER_ID_INDEX")
 DATA_BUCKET_NAME = os.environ.get("DATA_BUCKET_NAME")
 MOVIES_RECOMMENDATIONS_KEY = os.environ.get("MOVIES_RECOMMENDATIONS_KEY")
 
-
 ratings_table = dynamodb.Table(RATINGS_TABLE_NAME)
 _recommendations_cache = None #cache pour stocker les recommandations pré-calculées, pour éviter de faire une requête S3 à chaque appel de la fonction handler
 
@@ -73,8 +72,6 @@ def get_recommendations_for_user(top_movies_id, already_rated_movies, recommenda
 
 
 def handler(event, context):
-    print("RECOMMENDER VERSION 2026-04-21-1")
-    print("EVENT =", event)
     user_id = extract_user_id(event)
 
     if not user_id: #erreur si on ne trouve pas l'id de l'utilisateur dans l'event
