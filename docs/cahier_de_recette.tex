@@ -1,0 +1,890 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, top=2cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+
+
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{lmodern}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor= black,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+}
+
+
+\begin{document}
+\begin{titlepage}
+    \centering
+    \vspace*{0.2cm} 
+    
+
+    
+    % Optional logo
+    \includegraphics[width=0.5\textwidth]{upc.jpg}\par
+    \vspace{1cm}
+
+    
+    \textbf{\Large Cahier de recette} \\[1em]
+    \textquotedblleft \textsc{Projet de programmation} \textquotedblright \\[1em]
+    \textbf{\large Sujet} \\[1em]
+    \rule{\textwidth}{0.4pt} \\[1em]
+    \textbf{\LARGE
+    Développement d’un système de recommandation basique } \\[1em]
+    \rule{\textwidth}{0.4pt}
+
+    \vspace{1.8cm}
+    
+    
+    
+
+\noindent
+\begin{minipage}[t]{0.45\textwidth}
+    \textbf{\large Réalisé par:} \\[1em]
+    Dihya MEGHERFI \\
+    Dina BOUDERKA \\
+    Lilia JESOVER--ENGEL \\
+    Adriana NGANZU NDAYIDI \\
+    
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+    \raggedleft
+    \textbf{\large Encadré par:} \\[1em]
+    M. Enzo BONNEAU
+\end{minipage}
+
+    \vspace{1.2cm}
+    
+ \rule{\textwidth}{0.4pt} \\[1em]
+    \textbf{\LARGE
+    Année: 2025/2026}\\
+
+
+   
+    \vfill
+\end{titlepage}
+
+\newpage
+\newpage
+\tableofcontents
+\newpage
+
+\chapter{Préambule}
+Le cahier de recette s’inscrit dans le cadre du projet de développement d’un système de recommandation de films. Ce document définit l'ensemble des procédures de tests et de validation permettant de vérifier que l'application livrée est conforme aux exigences spécifiées dans le cahier des charges. À l'issue de ces tests, il permettra d'officialiser la validation du produit final.
+
+\section{Objectifs et méthodes}
+L’objectif principal de ce cahier de recette est de vérifier que l’application respecte les spécifications fonctionnelles et techniques établies lors de la phase de conception. Il s’agit de s’assurer que chaque fonctionnalité obligatoire définie dans le cahier des charges (FR-01 à FR-09) est opérationnelle, accessible et conforme.
+
+La méthode utilisée repose sur des tests manuels réalisés via l’interface web, accessible depuis un navigateur standard. Chaque scénario précise les données en entrée, les résultats attendus ainsi que les critères de validation permettant de déterminer la conformité ou la non-conformité de la fonctionnalité testée. Un résultat est considéré comme valide lorsque le comportement observé correspond exactement au comportement attendu décrit dans le scénario. Toute anomalie détectée devra être signalée et analysée avant validation définitive.
+
+\section{Documents de référence}
+Les documents ayant servi de base à l’élaboration du cahier de recette sont :
+
+\begin{itemize}
+    \item Le cahier des charges du projet.
+    \item Modèle de cahier de recette fourni par l'UFR Maths-Info.
+    \item Les maquettes de l’interface utilisateur.
+    \item La documentation du jeu de données utilisé : \texttt{The Movies Dataset}.
+    \item La documentation de l’outil d’hébergement : \texttt{AWS}.
+\end{itemize}
+ 
+
+\chapter{Guide de lecture}
+\section{Maîtrise d’œuvre}
+La maîtrise d'œuvre caractérise l'équipe responsable de la réalisation du projet.
+
+La maîtrise d'œuvre de ce projet est représentée par les quatre étudiantes en charge du projet : Dina Bouderka, Adriana Nganzu Ndayidi, Lilia Jesover-Engel et Dihya Megherfi.  
+  
+\subsection{Responsable}
+La fonction de chef de projet est exercée à tour de rôle par les membres du groupe.
+Le rôle du responsable est de :
+\begin{itemize}
+    \item Organiser les réunions.
+    \item Répartir les tâches.
+    \item Assurer le respect des délais.
+\end{itemize}
+\subsection{Personnel administratif}
+Le projet ne comporte pas de personnel administratif spécifique. Les membres du groupe assurent directement l’organisation et le suivi administratif.  
+\subsection{Personnel technique}
+Le personnel technique est constitué des membres du groupe du projet.
+
+Le rôle de l’équipe est d’assurer:
+
+\begin{itemize}
+\label{BE1}
+    \item L’analyse du besoin.
+    \item Le développement du backend et du frontend.
+    \item Le traitement des données.
+    \item Les tests du système.
+    \item L’intégration des différentes parties du projet.
+\end{itemize}
+\newpage
+\section{Maîtrise d’ouvrage}
+La maîtrise d'ouvrage caractérise la personne ou l'entité qui a demandé la création du produit.
+
+La maîtrise d'ouvrage de ce projet est représentée par son
+commanditaire, UFR Maths-info de l'Université Paris Cité et l'encadrant du projet, M. Enzo Bonneau.
+
+Ce dernier a pour rôle de :
+\begin{itemize}
+    \item Valider les fonctionnalités majeures du produit.
+    \item Évaluer la conformité du produit final au cahier des charges.
+    \item Approuver le produit final.
+\end{itemize}
+\chapter{Concepts de base}
+Cette section présente les notions essentielles nécessaires à la compréhension des tests et de la logique du système de recommandation de films. Pour la suite du projet, on considère qu'un film noté par un utilisateur correspond à un film déjà vu par celui-ci.
+\section{Système de recommandation}
+\label{SR1}
+Un système de recommandation est un ensemble de méthodes permettant de suggérer des films à un utilisateur en fonction de données existantes. Dans ce projet, l'utilisateur fournit initialement ses notes et préférences via un formulaire lors de la création de son compte, et ces informations sont utilisées pour générer ses recommandations personnalisées.
+
+\section{Jeu de données}
+\label{JD1}
+Ensemble structuré d'informations exploité par le système. Dans ce projet, il s'agit d'un fichier contenant des films ainsi que les évaluations associées.
+
+\section{Données utilisateurs}
+\label{DU1}
+Les données exploitées pour générer les recommandations incluent : 
+\begin{itemize}
+    \item L'historique de visionnage.
+    \item Les notes attribuées aux films.
+\end{itemize}
+Ces informations sont essentielles pour vérifier la pertinence et la cohérence des recommandations lors des tests.
+
+\section{Algorithme de recommandation}
+\label{ADR1}
+Méthode de calcul permettant de générer des suggestions de films. Le modèle repose sur des algorithmes de calcul de similarité entre films.
+Les tests de recette vérifieront que : 
+\begin{itemize}
+    \item Les calculs sont cohérents.
+    \item Les recommandations sont pertinentes.
+    \item Les résultats sont reproductibles.
+\end{itemize}
+
+\section{Interface web}
+\label{IW1}
+Interface accessible via un navigateur permettant à l'utilisateur d'interagir avec le système.
+Le système inclut une interface permettant : 
+\begin{itemize}
+    \item De consulter les recommandations de films générées.
+    \item De noter des œuvres.
+    \item De rechercher des films.
+\end{itemize}
+Les tests vérifieront la cohérence entre les actions de l'utilisateur et les résultats affichés.
+
+\chapter{Description de la fourniture}
+\label{Four1}
+La fourniture du projet comprend l'ensemble des éléments nécessaires à l'installation, à l'exécution et à l'évaluation de l'application de recommandation de films.
+Elle se compose des éléments suivants : 
+\begin{itemize}
+    \item L'application fonctionnelle de recommandation de films.
+    \item Le code source complet du projet, fourni sous forme de fichiers numériques structurés et exploitables.
+    \item Les fichiers de données nécessaires au fonctionnement du système.
+    \item La documentation du projet (cahier des charges, cahier de recette, conception détaillée, manuel d'installation, manuel d'utilisation et rapport) fournie au format PDF.
+\end{itemize}
+L'ensemble de ces éléments est livré sous forme numérique, regroupé dans une archive permettant leur consultation et leur utilisation.
+
+\chapter{Moyen d’essai et outils}
+\label{GV1}
+Les tests seront effectués sur les ordinateurs portables des différents membres de l’équipe et potentiellement dans le cloud.\\
+Le système de recommandation sera développé en Python. L’environnement de développement utilisé sera Visual Studio Code et la gestion des versions sera assurée par  Subversion (SVN) et GitHub.\\
+Les tests seront effectués à partir d’un échantillon de notre jeu de données.\\
+Pour vérifier la conformité fonctionnelle de notre produit, nous utiliserons des scénarios de test effectués manuellement (voir ci-après), des scripts de test automatisés ainsi que des mesures de temps d’exécution. Les frameworks de test automatisé seront choisis après évaluation lors de la réalisation du projet. Les candidats pour Python sont \texttt{pytest, Unittest}, …  Pour Nodejs et l’application Vue sont \texttt{Playwright, Selenium}, … 
+
+
+\chapter{Conformité aux spécifications générales}
+Ce chapitre vise à ce que l'application web respecte les exigences du cahier des charges:
+\begin{itemize}
+    \item Le site web se lance sans erreurs critiques.
+    \item Les principales fonctionnalités sont accessibles.
+    \item Aucune anomalie bloquante n'est détectée.
+    \item Le système présente un comportement stable.
+\end{itemize}
+
+\chapter{Conformité aux spécifications fonctionnelles obligatoires}
+
+\section{SC-01 - Création d'un compte utilisateur}
+\label{CU1}
+\subsection*{Description}
+Ce scénario vérifie qu’un utilisateur peut créer un compte en saisissant des informations valides dans le formulaire d’inscription.
+Le test assure que les données saisies sont correctement transmises au système, vérifiées, puis enregistrées si elles respectent les règles définies (champs obligatoires remplis, format d’email valide, mot de passe conforme...).
+
+\textbf{Environnement du test :}\\
+Application Web fonctionnelle accessible via un navigateur.
+
+\subsection*{Contraintes}
+\begin{itemize}
+    \item  Le formulaire d’inscription doit être accessible.
+    \item Base de données utilisateurs opérationnel.
+    \item L’email et le nom de l'utilisateur utilisés pour le test ne doivent pas être enregistrés dans le système.
+    \item Le compte a été validé par les administrateurs.
+\end{itemize}
+
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Accès à la page d’inscription.
+\end{itemize}
+  
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+Création de compte :
+\begin{itemize}
+    \item Nom d’utilisateur : NomNouvelUtilisateur.
+    \item Email : nouvelUtilisateur@example.com .
+    \item Mot de passe : NouveauMotDePasse123 .
+\end{itemize}
+\subsubsection{Résultats attendus :}
+Le système crée le compte utilisateur, affiche un message de confirmation et redirige l’utilisateur vers son espace personnel ou la page de connexion.
+
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item L’accès à la création de compte est possible.
+    \item Le compte est créé avec succès.
+    \item L’utilisateur peut se connecter avec le nouveau compte créé.
+    \item L’accès au système est autorisé.
+    \item Aucune anomalie n’est observée.
+
+\end{itemize} 
+\newpage
+
+\section{SC-02 - Première connexion utilisateur}
+\label{Co1}
+\subsection*{Description}
+Vérifier que lors de la première connexion de l’utilisateur, le questionnaire demandant ses préférences est bien opérationnel. Le système doit alors enregistrer ces premières préférences.
+
+\textbf{Environnement de test : }\\
+Application web fonctionnelle accessible via un navigateur.
+\subsection*{Contraintes}
+\begin{itemize}
+    \item Backend accessible.
+    \item L’utilisateur doit avoir fait une demande de création de compte et rempli le formulaire.
+    \item Le compte doit avoir été validé par les administrateurs.
+\end{itemize}
+
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Fonctionnalité de création de compte opérationnelle.
+\end{itemize}
+
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item Compte utilisateur valide.
+    \item Réponses du questionnaire rempli par l’utilisateur.
+\end{itemize}
+\subsubsection{Résultats attendus :}
+Les premières préférences de l’utilisateur doivent être enregistrées après la complétion du questionnaire.
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item Les premières préférences sont bien enregistrées.
+\end{itemize}
+\newpage
+
+\section{SC-03 - Page de connexion : connexion avec identifiants valides}
+\label{Co2}
+\subsection*{Description}
+Ce scénario a pour  but de vérifier le bon fonctionnement de la page de connexion de l’application.
+Il permet de s’assurer que le formulaire de connexion est accessible et qu'un utilisateur peut se connecter avec des identifiants valides.
+
+\textbf{Environnement du test :}\\
+Application Web fonctionnelle accessible via un navigateur.
+\subsection*{Contraintes}
+\begin{itemize}
+    \item La page de connexion doit être accessible.
+    \item Le système d’authentification doit être opérationnel.
+    \item La base de données des utilisateurs doit être accessible.
+\end{itemize}
+
+\subsection*{Dépendances}
+
+\begin{itemize}
+    \item Un compte utilisateur valide doit être préalablement enregistré dans la base de données.
+    \item Le scénario de création de compte doit être validé.
+\end{itemize}
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+
+\begin{itemize}
+    \item Email valide.
+    \item Mot de passe correspondant.
+\end{itemize}
+
+\subsubsection{Résultats attendus :}
+Le test est validé si l’accès est autorisé sans message d’erreur et que les fonctionnalités réservées aux utilisateurs connectés sont accessibles.
+
+
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item L’utilisateur est authentifié avec succès.
+    \item Une session utilisateur est créée.
+    \item L’utilisateur est redirigé vers la page d’accueil ou son espace personnel.
+\end{itemize}
+\newpage
+
+\section{SC-04 - Page de Connexion : connexion avec identifiants invalides}
+\label{Co3}
+\subsection*{Description}
+Ce scénario a pour  but de vérifier le bon fonctionnement de la page de connexion de l’application.
+Il permet de s’assurer que le formulaire de connexion est accessible et qu'un utilisateur ne peut pas se connecter avec des identifiants invalides.
+
+\textbf{Environnement du test :}\\
+Application Web fonctionnelle accessible via un navigateur.
+\subsection*{Contraintes}
+
+\begin{itemize}
+    \item La page de connexion doit être accessible.
+    \item Le système d’authentification doit être opérationnel.
+    \item Backend opérationnel.
+\end{itemize}
+
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Page de connexion accessible. 
+\end{itemize}
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item Email incorrect ou inexistant.
+    \item Mot de passe erroné.
+\end{itemize}
+
+\subsubsection{Résultats attendus :}
+Le test est validé si le système bloque l’accès et affiche un message d’erreur approprié sans provoquer de dysfonctionnement.
+
+
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item L’accès est refusé.
+    \item Affichage d'un message d'erreur.
+    \item Aucune redirection vers une page protégée n’a lieu.
+\end{itemize}
+
+\newpage
+ 
+\section{SC-05 - Première recommandation}
+\label{Rec1}
+\subsection*{Description}
+Vérifiez que lors de la première demande de recommandation, le système retourne bien une recommandation basée sur les préférences enregistrées pendant la première connexion au compte utilisateur (voir \ref{Co1}).
+
+\textbf{Environnement de test : }\\
+Application web fonctionnelle accessible via un navigateur.
+
+\subsection*{Contraintes}
+\begin{itemize}
+    \item Backend accessible.
+    \item L’utilisateur doit avoir fait une demande de création de compte et rempli le formulaire.
+    \item Le compte doit avoir été validé par les administrateurs.
+    \item L’utilisateur doit avoir rempli le questionnaire de préférences.
+    \item Les premières préférences de l’utilisateur doivent être enregistrées.
+\end{itemize}
+
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Fonctionnalité de création de compte opérationnelle.
+    \item Les premières préférences de l’utilisateur ont bien étaient enregistrées.
+\end{itemize}
+
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item Compte utilisateur valide.
+    \item Premières préférences de l’utilisateur.
+\end{itemize}
+\subsubsection{Résultats attendus :}
+En se basant sur les premières préférences de l’utilisateur, le système retourne une liste de films recommandés personnalisées.
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item Une liste d’au moins 6 films est retournée.
+    \item La liste de film est pertinente, la pertinence sera évaluée par rapport aux mesures de qualités de l’algorithme de recommandation.
+\end{itemize}
+\newpage
+
+\section{SC-06 - Renouvellement des recommandations}
+\label{Rec2}
+\subsection*{Description}
+Vérifier que le système ne recommande pas de films déjà notés par l'utilisateur et que les listes de recommandations ne sont pas identiques entre deux exécutions successives lorsque l'utilisateur a fourni des informations supplémentaires (nouvelles notes).\\
+L'utilisateur dispose déjà d'un profil et a renseigné des données initiales. Il ajoute ensuite de nouvelles évaluations via l'interface. Le système doit recalculer les recommandations en tenant compte de ces informations.
+
+\textbf{Environnement de test : }\\
+Application web déployée, accessible via un navigateur standard, avec un jeu de données chargé.
+
+
+\subsection*{Contraintes}
+\begin{itemize}
+    \item L'utilisateur doit être identifié pour que le système puisse associer les données à son profil. 
+    \item Le jeu de données doit contenir suffisamment de films pour permettre le renouvellement des suggestions.
+    \item Un historique de notes initiales doit exister. 
+\end{itemize}
+
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Création préalable d'un compte utilisateur.
+    \item Fonctionnalité de notation opérationnelle.
+    \item Génération initiale de recommandations disponibles.
+\end{itemize}
+
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item Profil utilisateur existant.
+    \item Films notés initialement.
+    \item Nouvelles notes attribuées à plusieurs films.
+\end{itemize}
+\subsubsection{Résultats attendus :}
+Le test est validé si la liste est actualisée, pertinente et exempte de films déjà visionnés.
+
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item La nouvelle liste ne contient pas de films déjà notés par l'utilisateur.
+    \item La liste diffère de la précédente (au moins partiellement).
+    \item Les recommandations restent cohérentes avec les préférences de l'utilisateur.
+\end{itemize}
+\newpage
+
+\section{SC-07 - Remise à zéro (RAZ)}
+\label{DU2}
+\subsection*{Description}
+Vérifier que dans le cas où l’utilisateur à mal remplis ses préférences lors de la première connexion, il est possible de réinitialiser les informations entrées et de reprendre depuis le début pour les recommandations.\\ 
+Le système doit alors supprimer les données de préférences déjà enregistrées et supprimer ou invalider les recommandations qui avaient été générées à partir des mauvaises préférences.
+
+\textbf{Environnement de test : }\\
+Application web fonctionnelle accessible via un navigateur.
+
+\subsection*{Contraintes}
+\begin{itemize}
+    \item Backend accessible.
+    \item L’utilisateur doit être connecté à son compte.
+    \item Des préférences  doivent déjà exister sur son profil.
+\end{itemize}
+
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Existence d'un profil utilisateur enregistré.
+    \item Fonctionnalité d'authentification opérationnelle.
+    \item Fonctionnalité de gestion des préférences opérationnelle.
+    \item Fonctionnalité de recommandation fonctionnelle.
+\end{itemize}
+
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item Compte utilisateur valide.
+    \item Préférences déjà enregistrées.
+    \item Action de réinitialisation déclenchée par l’utilisateur.
+\end{itemize}
+\subsubsection{Résultats attendus :}
+Les anciennes préférences sont supprimées et le système redirige l'utilisateur vers le formulaire rempli lors de la première connexion.
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item Les anciennes préférences sont supprimées.
+    \item Les recommandations personnalisées disparaissent.
+    \item L’utilisateur est redirigé vers une page demandant de rentrer de nouvelles préférences.
+    \item Le système propose de nouvelles recommandations à partir des nouvelles préférences.
+\end{itemize}
+\newpage
+
+\section{SC-08 - Recherche d’un film}
+\label{Fi1}
+\subsection*{Description}
+Vérifier si l'utilisateur peut rechercher un film à l'aide de la barre de recherche de l'application web.\\
+Consiste à saisir un titre de film et à observer le comportement du système selon que le film existe ou pas dans le jeu de données.
+
+\textbf{Environnement de test :}
+\begin{itemize}
+    \item Application web déployée.
+    \item Navigateur web.
+    \item Serveur backend actif.
+    \item Jeu de donnée chargé.
+\end{itemize}
+\subsection*{Contraintes}
+\begin{itemize}
+    \item Dataset valide contenant plusieurs films.
+    \item Backend accessible.
+    \item Interface opérationnelle.
+\end{itemize}
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Authentification de l'utilisateur (voir \ref{Co2}).
+    \item Chargement de données.
+    \item Affichage des films.
+\end{itemize}
+\subsection*{Procédure de test}
+\subsection*{Cas du film existant :}
+\subsubsection{Données d'entrées :}
+\begin{itemize}
+    \item Titre d'un film présent dans le dataset.
+\end{itemize}
+
+\subsubsection{Résultats attendus :}
+
+La page doit afficher les films correspondants à ce titre, ainsi que des recommandations cohérentes avec ce dernier.
+
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item Le résultat est pertinent.
+    \item Pas de message d'erreur.
+    \item Le système présente un comportement stable lors du test.
+\end{itemize}
+
+\subsection*{Cas du film inexistant :}
+\subsubsection{Résultats attendus :}
+Un message informatif indiquant à l'utilisateur qu'aucun film ne correspond à sa recherche doit être affiché.
+\subsubsection{Données d'entrées :}
+\begin{itemize}
+    \item Titre absent du dataset.
+\end{itemize}
+
+
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item Le message affiché est claire et visible.
+    \item Absence d'erreurs techniques.
+    \item Le système présente un comportement stable lors du test.
+\end{itemize}
+\newpage
+
+\section{SC-09 - Notation d'un film}
+\label{Fi2}
+\subsection*{Description}
+Vérifier qu’un utilisateur peut attribuer une note à un film et que cette note est correctement enregistrée par le système, puis prise en compte dans le calcul des recommandations.
+
+\textbf{Environnement de test :}\\
+Application web fonctionnelle accessible via un navigateur.
+\subsection*{Contraintes}
+\begin{itemize}
+    \item L’utilisateur doit être authentifié.
+    \item Fonctionnalité d’authentification opérationnelle.
+    \item Accès à la fiche d’un film.
+\end{itemize}
+
+\subsection*{Dépendances }
+\begin{itemize}
+    \item Existence d’un profil utilisateur enregistré.
+    \item Fonctionnalité d’authentification opérationnelle.
+    \item Accès à la fiche d’un film.
+\end{itemize}
+
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item Compte utilisateur valide.
+    \item Film existant dans le catalogue.
+    \item Valeur de note à attribuer.
+\end{itemize}
+
+\subsubsection{Résultats attendus :}
+Le test est validé si la note saisie est correctement sauvegardée, affichée ultérieurement et prise en compte par le système sans erreur.
+
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item La note est enregistrée correctement.
+    \item La note apparaît lors de la consultation ultérieure du film.
+    \item La note est associée au bon utilisateur.
+    \item Les recommandations sont mises à jour en fonction de cette nouvelle information.
+\end{itemize}
+\newpage
+
+\section{SC-10 - Visualisation des détails d'un film}
+\label{Fi3}
+\subsection*{Description}
+Un utilisateur peut consulter un film en cliquant dessus.\\
+Lors de cette opération une autre page s'ouvre avec tous les détails du film (titre, genre, date de sortie, la note moyenne, résumé, possibilité de noter).
+
+\textbf{Environnement de test :}
+\begin{itemize}
+    \item Application web déployée.
+    \item Navigateur web.
+    \item Serveur backend actif.
+    \item Jeu de données chargé.
+\end{itemize}
+\subsection*{Contraintes}
+\begin{itemize}
+    \item Application web opérationnelle.
+    \item Backend accessible.
+    \item Films disponibles dans la base de données.
+    \item Utilisateur connecté.
+\end{itemize}
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Authentification de l'utilisateur (voir \ref{Co2}).
+    \item Affichage de la liste des films.
+\end{itemize}
+\subsection*{Procédure de test}
+\subsubsection{Données en entrées :}
+\begin{itemize}
+    \item L'utilisateur doit être connecté.
+    \item La liste de films initiale doit être affichée.
+\end{itemize}
+
+\subsubsection{Résultats attendus :}
+Les détails du film sélectionné doivent être affichés (titre, genre, résumé, note moyenne, date de sortie).
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item La page contient des informations cohérentes par rapport au film.
+    \item Pas de crash ou erreurs détectées.
+    \item L'interface présente un comportement stable.
+\end{itemize}
+\newpage
+
+\section{SC-11 - Validation de navigation }
+\label{Nav1}
+\subsection*{Description}
+Ce scénario vérifie que l’utilisateur peut naviguer correctement entre les différentes pages de l’application via l’interface web (page de connexion, page d’accueil, page de liste des films, page de détail, page de recommandations, etc). Le test permet ainsi de vérifier que les liens, boutons et menus fonctionnent et permettent d'accéder à la page correspondante.
+
+\textbf{environnement de test :}
+\begin{itemize}
+    \item Un navigateur web.
+    \item Application déployée et accessible en ligne.
+
+\end{itemize}
+ \subsection*{Contraintes}
+\begin{itemize}
+    \item Interface Frontend finalisé.
+    \item L'utilisateur doit être authentifié.
+    \item Interconnexion correct entre les pages.
+    
+\end{itemize}
+ 
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Les fonctionnalités de connexion utilisateur doivent être opérationnelles.
+    \item Existence d'un compte utilisateur enregistré dans la base. 
+
+\end{itemize}
+
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item URL de l’application.
+    \item Identifiants valides.
+    \item Actions utilisateur (clics sur les boutons et liens).
+\end{itemize}
+ 
+\subsubsection{Résultat attendu :}
+Chaque clic redirige correctement vers la page attendue, aucun message d’erreur ne s’affiche, les boutons et liens sont pleinement fonctionnels et le temps de chargement reste raisonnable.
+
+\subsubsection{Critère de validation :}
+\begin{itemize}
+    \item Toutes les pages sont accessibles.
+    \item Les transitions sont correctes.
+    \item Aucun bug n'est observé.
+
+\end{itemize}
+\newpage
+\chapter{Conformité aux spécifications fonctionnelles optionnelles} 
+\section{OSC-01 - Mettre un film en favoris}
+\label{Fi4}
+\subsection*{Description}
+Ce scénario vérifie qu'un utilisateur authentifié peut mettre un film en favoris.
+
+\textbf{Environnement de test :}\\
+Le test est réalisé via un navigateur web.
+\subsection*{Contraintes}
+\begin{itemize}
+    \item L'application doit être déployée.
+    \item L'utilisateur doit être connecté.
+    \item Le jeu de données doit être importé.
+    \item La base de données doit être accessible.
+    \item L'algorithme doit intégrer les favoris dans son calcul.
+\end{itemize}
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Le scénario connexion d'un utilisateur (voir \ref{Co2}) doit être validé.
+    \item Le scénario affichage des détails d'un film (voir \ref{Fi3}) doit être fonctionnel. 
+    \item Le film sélectionné doit exister dans la base de données.
+\end{itemize}
+
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item URL de l’application.
+    \item Identifiants valides.
+    \item Actions utilisateur (clics sur le bouton "Ajouter en favoris").
+\end{itemize}
+ \newpage
+\subsubsection{Résultats attendus :}
+Le film sélectionné est ajouté avec succès à la liste des favoris de l’utilisateur et cette action est correctement prise en compte par le système, notamment dans la mise à jour éventuelle des recommandations.
+\subsubsection{Critère de validation :}
+\begin{itemize}
+    \item Le système de recommandation tient compte des favoris dans son calcul.
+    \item Le film est enregistré dans la base de données comme favori pour cet utilisateur.
+    \item Une modification cohérente des recommandations est observée après l'ajout en favoris.
+    \item Aucun bug n'est observé.
+\end{itemize}
+
+\newpage
+
+\section{OSC-02 - Choix des critères de recommandation}
+\label{Rec3}
+\subsection*{Description }
+Ce scénario vise à vérifier que l'utilisateur peut sélectionner les critères sur lesquels le moteur de recommandation se basera.\\
+Le test consiste à choisir un ou plusieurs critères (ex: genre, acteur ou réalisateur) et à observer les recommandations générées.
+
+\textbf{Environnement de test :}
+\begin{itemize}
+    \item Application web déployée.
+    \item Navigateur web.
+    \item Serveur backend actif.
+    \item Jeu de données chargé.
+\end{itemize}
+\subsection*{Contraintes}
+\begin{itemize}
+    \item Présence des critères dans le jeu de données.
+    \item Interface fonctionnelle.
+    \item Moteur de recommandation actif.
+\end{itemize}
+\subsection*{Dépendances}
+\begin{itemize}
+    \item Authentification de l'utilisateur (voir \ref{Co2}).
+    \item Chargement de données.
+    \item Génération des recommandations.
+\end{itemize}
+\subsection*{Procédure de test}
+\subsubsection{Données en entrée :}
+\begin{itemize}
+    \item Sélection d'un critère.
+\end{itemize}
+
+\subsubsection{Résultats attendus :}
+Génération d'une liste de films cohérente avec le critère choisi avec une mise à jour dynamique de l'affichage.
+\subsubsection{Critères de validation :}
+\begin{itemize}
+    \item Les recommandations respectent le critère.
+    \item Aucun message d'erreur.
+    \item L'interface présente un comportement stable.
+\end{itemize}
+
+
+\chapter{Conformité aux spécifications d’interfaces}
+\label{IW2}
+Ce chapitre vise à vérifier que les spécifications d'interfaces sont conformes aux attentes du projet :
+\begin{itemize}
+    \item Tous les éléments prévus dans les spécifications sont présents.
+    \item La navigation est fluide.
+    \item Le design de l'interface correspond aux schémas imaginés.
+    \item Pas d'anomalie visuelle.
+\end{itemize}
+
+Des tests automatisés de l’interface utilisateur seront effectués avec le « UI mode » de Playwright.
+
+\chapter{Conformité de la documentation}
+\label{Doc1}
+Ce chapitre vise à vérifier que la documentation fournie est conforme aux attentes du projet.
+\subsubsection*{La documentation fournie:}
+\begin{itemize}
+    \item Cahier des charges.
+    \item Cahier de recette.
+    \item Documentation technique.
+    \item Guide utilisateur.
+\end{itemize}
+\subsubsection*{Critères de validations:}
+\begin{itemize}
+    \item Les informations sont complètes.
+    \item Les explications sont compréhensibles.
+    \item Les procédures sont reproductibles.
+    \item Les documentations sont structurées et lisibles.
+\end{itemize}
+
+\chapter*{Annexes}
+\label{Fonc1}
+\addcontentsline{toc}{chapter}{Annexes}
+\begin{enumerate}[label=A.\arabic*, leftmargin=1.7cm]
+    \item Les fonctionnalités obligatoires du produit :
+    \begin{enumerate}[label=FR-0\arabic*, leftmargin=0.8cm]
+    \item Système de recommandation basique.
+    \item Interface web fonctionnelle et interactive.
+    \item Création d'un compte utilisateur.
+    \item Authentification et connexion de l'utilisateur.
+    \item Choix des préférences utilisateur, pour amorcer le moteur de recommandation.
+    \item Génération d'une liste de films recommandés. 
+    \item Notation des films par l'utilisateur.
+    \item Affichage des informations d'un film.
+    \item Barre de recherche.
+\end{enumerate}
+\item Les fonctionnalités optionnelles du produit :
+   \begin{enumerate}[label=OFR-0\arabic*, leftmargin=1.13cm,start=2]
+    \item Possibilité pour l’utilisateur de choisir les critères sur lesquels la recommandation se basera (par exemple : un réalisateur, un acteur, un genre ...).
+    \item Permettre à l’utilisateur de mettre un film en favoris.
+\end{enumerate}
+\end{enumerate} 
+
+
+
+
+\chapter*{Glossaire}
+\addcontentsline{toc}{chapter}{Glossaire}
+\begin{itemize}
+    \item \underline{Algorithme :} Un algorithme peut s’apparenter à une recette de cuisine, il s’agit d’un ensemble fini d’instructions détaillées permettant de résoudre un problème ou effectuer une tâche.\\
+    \underline{NB :} Dans notre cas, nous utiliserons un algorithme de recommandation, qui permet de proposer des contenus pertinents à un utilisateur.
+    \item \underline{Application web :} Une application Web est un logiciel qui s'exécute dans votre navigateur Web.
+    \item \underline{Backend :} Le backend est la partie invisible, qui gère le fonctionnement interne du produit (par exemple : les données).
+    \item \underline{Base de données :} Une base de données est un ensemble d'informations organisé de manière à être facilement accessible, géré et mis à jour.
+    \item \underline{Bug :} Un bug est un défaut de conception d'un programme informatique à l'origine d'un dysfonctionnement.
+    \item \underline{Cloud :} Le cloud est un réseau mondial de serveurs distants conçu pour stocker et traiter des données pour d'autres appareils et ordinateurs.
+    \item \underline{Framework :} Un framework est une structure prête à être utilisée pour développer un logiciel, il contient des outils et des bibliothèques.
+    \item \underline{Frontend :} Le frontend est la partie visible du site web, c'est ce avec quoi l'utilisateur interagit directement.
+    \item \underline{GitHub :} GitHub est une plateforme basée sur le cloud où l'on peut stocker, partager et travailler avec d'autres pour écrire du code.
+    \item \underline{Interface web :} Une interface web est une interface  à laquelle on accède et qui s'affiche grâce à un navigateur web, qui permet un dialogue entre l'utilisateur et le système.
+    \item \underline{Jeu de données :} Un jeu de données est un ensemble structuré de données. 
+    \item \underline{Navigateur :} Un navigateur est une application qui vous permet de naviguer sur les sites web d'internet.
+    \item \underline{Site web :} Un site web est un ensemble de pages web qui peuvent être consultées en suivant des hyperliens à l'intérieur du site.
+    \item \underline{Subversion (SVN) :} SVN est un gestionnaire de version de code source.
+    \item \underline{Système de recommandation :} Un système de recommandation est un système qui permet de proposer des contenus ou des produits en fonction de ses préférences.
+    \item \underline{Test automatisé :} Un test automatisé est un processus de vérification et de validation des fonctionnalités d'un logiciel, d'une application ou d'un système informatique, qui est effectué automatiquement à l'aide d'outils spécialisés.
+\end{itemize}
+
+\chapter*{Références}
+\addcontentsline{toc}{chapter}{Références}
+\begin{itemize}
+    \item Rounak,  Banik. « The Movies Dataset ». 2018,\\ \url{https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset/data?select=credits.csv.}
+    \item Fournier-S’niehotta, Raphaël. « Systèmes de recommandation »,\\
+    \url{https://cedric.cnam.fr/vertigo/cours/RCP217/docs/RCP217-RecSys1.pdf}
+    \item Boisson, Romain. « The acceptance test specification : a comprehensive guide to ensuring the quality of your projects ». 2025,\\
+    \url{https://www.kapptivate.com/fr/blog/acceptance-test-specification} 
+    \item Dihmani, AbdelAziz. « Maîtrisez le Cahier de Recette en Gestion de Projet » 2024,\\
+    \url{https://stratify.fr/cahier-de-recette/} 
+    \item Blog Gestion de projet. « Comment rédiger un cahier de recette en 6 points ? (+Template) »,\\
+    \url{https://blog-gestion-de-projet.com/cahier-de-recette/}
+    \item OpenClassrooms. «Préparez votre cahier de recette »,  \\
+    \url {https://openclassrooms.com/fr/courses/7365126-concevez-une-strategie-de-test/8213509-definissez-vos-scenarios.}
+    \item Cahier de recette « À quoi ça sert et comment bien le construire ? »,\\
+    \url{https://www.yeswedev.bzh/blog-site-web/cahier-de-recette}
+    \item AZ (2024, March 6).« Cahier de recette informatique: Template Excel. Le Cours Gratuit »,
+    \url{https://lecoursgratuit.com/cahier-de-recette-informatique-template-excel/}
+
+\end{itemize}
+
+\chapter*{Index}
+\addcontentsline{toc}{chapter}{Index}
+\begin{itemize}
+    \item Algorithme de recommandation \pageref{ADR1}
+    \item Compte utilisateur \pageref{CU1} 
+    \item Connexion \pageref{Co1} \pageref{Co2} \pageref{Co3}
+    \item Documentation \pageref{Doc1}
+    \item Données utilisateurs \pageref{DU1} \pageref{DU2}
+    \item Films \pageref{Fi1} \pageref{Fi2} \pageref{Fi3} \pageref{Fi4}
+    \item Fonctionnalité \pageref{Fonc1}
+    \item Fourniture \pageref{Four1}
+    \item Gestion de versions \pageref{GV1}
+    \item Interface web \pageref{IW1} \pageref{IW2}
+    \item Jeu de données \pageref{JD1}
+    \item Navigation \pageref{Nav1}
+    \item Recommandation \pageref{Rec1} \pageref{Rec2} \pageref{Rec3}
+    \item Système de recommandation \pageref{SR1}
+\end{itemize}
+
+\end{document}
