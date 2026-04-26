@@ -182,6 +182,45 @@ async function testSimilar(){
   }
 }
 
+async function testUpdateRating() {
+  try {
+    const user = await getCurrentUser();
+    console.log("userId",user,username);
+
+    const testMovieUUID="";
+    const testMovieId="27214";
+    const testRating=7.5;
+
+    const result1 = await client.mutations.updateUserRating({
+      movieId: testMovieUUID,
+      userId:user.username,
+      rating:testRating
+    });
+    console.log("result =", result1);
+    console.log("data =", result1.data);
+    console.log("errors =", result1.errors);
+    if (result1.errors?.length) {
+      console.log("first error message =", result1.errors[0].message);
+    }
+
+    console.log("--- Test avec movieId entier ---");
+    const result2 = await client.mutations.updateUserRating({
+      movieId: testMovieId,
+      userId: user.username,
+      rating: testRating
+    });
+    console.log("result =", result2);
+    console.log("data =", result2.data);
+    console.log("errors =", result2.errors);
+    if (result2.errors?.length) {
+      console.log("first error message =", result2.errors[0].message);
+    }
+
+  } catch (error) {
+    console.error("Erreur appel updateUserRating :", error);
+  }
+}
+
 onMounted(async () => {
   console.log("ROUTE PARAMS: ", route.params);
   try {
@@ -190,7 +229,9 @@ onMounted(async () => {
       movie.value = data;
       cast.value = data?.cast || [];
 
-      await testSimilar(data.id);
+      await loadSimilarMovies(data.id);
+
+      console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
 
      console.log("RESULT API court: ", data);
   } catch (error) {
@@ -212,7 +253,8 @@ onMounted(async () => {
 onMounted(async () => {
   try {
     const user = await getCurrentUser();
-    currentUserId.value = user.username; // ou user.attributes.sub selon votre configuration Cognito
+    console.log("user",user);
+    currentUserId.value = user.userId; // ou user.attributes.sub selon votre configuration Cognito
     const { data } = await client.models.Rating.list({
       filter: {
         movieId: { eq: route.params.id as string },
@@ -269,22 +311,62 @@ function getGenres(id:number|null|undefined){
       return genre? genre.name : "";
   }
 }
-
+/*
 async function handleRating(rating: number) {
   if (!movie.value ||hasVoted.value || isSubmitting.value) return; // Empêche de voter plusieurs fois ou pendant la soumission
+  if (!currentUserId.value) return;
   isSubmitting.value = true;
-
   try {
-     await client.models.Rating.create({
-      movieId: movie.value.id,
-      userId: currentUserId.value,
-      rating
-    });
+    const result = await client.mutations.updateUserRating({
+    movieId: movie.value.movieId,
+    userId: currentUserId.value,
+    rating
+  });
+  console.log("Lambda result",result);
+  console.log(movie.value);
+
+    if (!result.data?.success) {
+      console.error("Lmabda error:", result.data?.message);
+      return;
+    }
 
     const oldAverage = movie.value.voteAverage || 0;
     const oldCount = movie.value.voteCount || 0;
     const newCount = oldCount + 1;
     const newAverage = ((oldAverage * oldCount) + rating) / (newCount);
+
+    movie.value.voteAverage = newAverage;
+    movie.value.voteCount = newCount;
+
+    userRating.value = rating;
+    hasVoted.value = true;
+
+  } catch (error) {
+    console.error("Error submitting rating:", error); 
+  } finally {
+    isSubmitting.value = false;
+  }
+}*/
+
+async function handleRating(rating: number) {
+  if (!movie.value || hasVoted.value || isSubmitting.value) return;
+  if (!currentUserId.value) return;
+
+  isSubmitting.value = true;
+
+  try {
+
+    await client.models.Rating.create({
+      movieId: movie.value.id,
+      userId: currentUserId.value,
+      rating
+    });
+
+ 
+    const oldAverage = movie.value.voteAverage || 0;
+    const oldCount   = movie.value.voteCount   || 0;
+    const newCount   = oldCount + 1;
+    const newAverage = ((oldAverage * oldCount) + rating) / newCount;
 
     await client.models.Movie.update({
       id: movie.value.id,
@@ -292,16 +374,25 @@ async function handleRating(rating: number) {
       voteCount: newCount
     });
 
-    movie.value.voteAverage = newAverage;
-    movie.value.voteCount = newCount;
+    const { data: updatedMovie } = await client.models.Movie.get({ 
+      id: movie.value.id 
+    });
+    
+    if (updatedMovie) {
+      movie.value = updatedMovie;
+    }
+
     userRating.value = rating;
-    hasVoted.value = true;
+    hasVoted.value   = true;
+
   } catch (error) {
-    console.error("Error submitting rating:", error); 
+    console.error("Error submitting rating:", error);
   } finally {
     isSubmitting.value = false;
+  }
 }
-}
+
+
 /*
 async function handleRating(rating: number) {
   if (!movie.value ||hasVoted.value || isSubmitting.value) return; // Empêche de voter plusieurs fois ou pendant la soumission
@@ -495,7 +586,7 @@ html, body{
   padding: 0.6rem 1rem;
   background: linear-gradient(135deg, rgb(222, 106, 222) 0%, rgb(222, 106, 222) 100%);
   border-radius: 50px;
-  color: #000;
+  color: rgb(222, 106, 222);
   font-weight: 700;
   font-size: 1rem;
   box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
