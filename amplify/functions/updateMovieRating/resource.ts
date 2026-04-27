@@ -38,23 +38,26 @@ export const updateMovieRating = defineFunction((scope) => {
     }),
   });
 
-  // Donner les permissions à la Lambda de lire et écrire dans la table Rating
+  // Donner les permissions nécessaires à la Lambda pour accéder aux tables et index DynamoDB
   lambda.addToRolePolicy(
     new PolicyStatement({
-      actions: ["dynamodb:Query", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Scan"],
+      actions: ["dynamodb:Query"],
       resources: [
         "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
         "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE/index/byUserId",
+        "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE/index/byMovieId",
+        "arn:aws:dynamodb:eu-west-3:080941085602:table/Movie-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
+        "arn:aws:dynamodb:eu-west-3:080941085602:table/Movie-ijhwxiff7nbgfe7pbxjat2dtxi-NONE/index/byMovieId",
       ],
     })
   );
-
-  // Donner les permissions à la Lambda de lire et écrire dans la table Movie (pour mettre à jour la note moyenne du film)
+  // Donner les permissions nécessaires à la Lambda pour mettre à jour les éléments dans les tables DynamoDB
   lambda.addToRolePolicy(
     new PolicyStatement({
-      actions: ["dynamodb:UpdateItem", "dynamodb:Scan"],
+      actions: ["dynamodb:PutItem", "dynamodb:UpdateItem"],
       resources: [
-        "arn:aws:dynamodb:eu-west-3:080941085602:table/Movie-ijhwxiff7nbgfe7pbxjat2dtxi-NONE", // à vérifier
+        "arn:aws:dynamodb:eu-west-3:080941085602:table/Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
+        "arn:aws:dynamodb:eu-west-3:080941085602:table/Movie-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
       ],
     })
   );
