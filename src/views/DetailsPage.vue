@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import type { Schema } from "../../amplify/data/resource";
 import Notation from '@/components/Notation.vue';
-import { onMounted , ref , watch } from 'vue';
+import { onMounted , ref , watch , nextTick} from 'vue';
 import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
@@ -398,31 +398,39 @@ async function handleRating(rating: number) {
 
   try {
 
-    await client.models.Rating.create({
-      movieId: movie.value.id,
+    const result = await client.mutations.updateUserRating({
+      movieId: movie.value.movieId,
       userId: currentUserId.value,
       rating
     });
 
- 
-    const oldAverage = movie.value.voteAverage || 0;
-    const oldCount   = movie.value.voteCount   || 0;
-    const newCount   = oldCount + 1;
-    const newAverage = ((oldAverage * oldCount) + rating) / newCount;
+    console.log("Lambda result", result);
+    console.log("Lambda data", result.data);
+    console.log("Lambda errors", result.errors);
 
-    await client.models.Movie.update({
-      id: movie.value.id,
-      voteAverage: newAverage,
-      voteCount: newCount
-    });
+    if (!result.data?.success) {
+      console.error("Lambda error:", result.data?.message);
+      return;
+    }
+
 
     const { data: updatedMovie } = await client.models.Movie.get({ 
       id: movie.value.id 
     });
+
+    console.log("updateMovie", updatedMovie?.voteAverage, updatedMovie?.voteCount);
     
     if (updatedMovie) {
-      movie.value = updatedMovie;
+      movie.value=null;
+      await nextTick();
+      movie.value = { ... updatedMovie };
     }
+
+     movie.value={
+      ...movie.value,
+      voteAverage:updatedMovie?.voteAverage,
+      voteCount: updatedMovie?.voteCount
+    };
 
     userRating.value = rating;
     hasVoted.value   = true;
@@ -431,6 +439,7 @@ async function handleRating(rating: number) {
     console.error("Error submitting rating:", error);
   } finally {
     isSubmitting.value = false;
+    console.log("Final movie.value", movie.value?.voteAverage, movie.value?.voteCount);
   }
 }
 
