@@ -145,7 +145,9 @@ onMounted(async () => {
 .blockMovie{
    display: flex;
    flex-direction: row;
-   justify-content: space-around;
+   padding-inline: 50px;
+   justify-content: space-between;
+   /*gap:110px;*/
    background-color: rgb(61, 9, 67);
    border-radius: 14px;
    box-shadow: 20px 20px 20px rgba(239, 162, 239, 0.219);
@@ -163,7 +165,8 @@ onMounted(async () => {
 .discriptionForm{
    display: flex; 
    width:100%;
-   justify-content: space-between;
+  justify-content: space-between;
+
 }
 
 .formSubContainer{
@@ -171,17 +174,17 @@ onMounted(async () => {
    flex-direction: column;
    justify-content: space-between;
    padding-block: 1rem;
-   /*flex-wrap:wrap;
-   overflow: visible;*/
+   width: 60%;
 }
 
 .genres{
    display:flex;
    flex-direction:row;
+   flex-wrap: wrap;
 }
 
 .genre{
-   display: inline;
+   display: flex;
    color: rgb(239, 162, 239);
    background-color: rgba(128, 0, 122, 0.153);
    border-color:rgb(239, 162, 239);
