@@ -32,7 +32,7 @@ function changePage(page: number) {
         padding: 1rem 2rem;
         width: fit-content;
 
-        background: rgba(0, 0, 0, 0.2);
+        background: #15001d;
         border-radius: 12px;
         backdrop-filter: blur(10px);
         color: white;
@@ -42,7 +42,7 @@ function changePage(page: number) {
 
     .pagination button {
         padding: 0.5rem 1rem;
-        background: #007bff;
+        background: #7a2a8a;
         color: white;
         border: none;
         cursor: pointer;

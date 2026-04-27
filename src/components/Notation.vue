@@ -73,10 +73,10 @@ function getDisplayValue(star: number) {
 }
 
 .full {
-    color: rgb(222, 106, 222);
+    color: #f5c518;
 }
 .half {
-    color: rgb(222, 106, 222);
+    color: #f5c518;
     width: 44%;
     overflow: hidden;
     display: inline-block;
