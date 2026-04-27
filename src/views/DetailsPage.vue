@@ -350,6 +350,135 @@ function getGenres(id:number|null|undefined){
       return genre? genre.name : "";
   }
 }
+/*
+async function handleRating(rating: number) {
+  if (!movie.value ||hasVoted.value || isSubmitting.value) return; // Empêche de voter plusieurs fois ou pendant la soumission
+  if (!currentUserId.value) return;
+  isSubmitting.value = true;
+  try {
+    const result = await client.mutations.updateUserRating({
+    movieId: movie.value.movieId,
+    userId: currentUserId.value,
+    rating
+  });
+  console.log("Lambda result",result);
+  console.log(movie.value);
+
+    if (!result.data?.success) {
+      console.error("Lmabda error:", result.data?.message);
+      return;
+    }
+
+    const oldAverage = movie.value.voteAverage || 0;
+    const oldCount = movie.value.voteCount || 0;
+    const newCount = oldCount + 1;
+    const newAverage = ((oldAverage * oldCount) + rating) / (newCount);
+
+    movie.value.voteAverage = newAverage;
+    movie.value.voteCount = newCount;
+
+    userRating.value = rating;
+    hasVoted.value = true;
+
+  } catch (error) {
+    console.error("Error submitting rating:", error); 
+  } finally {
+    isSubmitting.value = false;
+  }
+}*/
+
+async function handleRating(rating: number) {
+  if (!movie.value || hasVoted.value || isSubmitting.value) return;
+  if (!currentUserId.value) return;
+
+  isSubmitting.value = true;
+
+  try {
+
+    await client.models.Rating.create({
+      movieId: movie.value.id,
+      userId: currentUserId.value,
+      rating
+    });
+
+ 
+    const oldAverage = movie.value.voteAverage || 0;
+    const oldCount   = movie.value.voteCount   || 0;
+    const newCount   = oldCount + 1;
+    const newAverage = ((oldAverage * oldCount) + rating) / newCount;
+
+    await client.models.Movie.update({
+      id: movie.value.id,
+      voteAverage: newAverage,
+      voteCount: newCount
+    });
+
+    const { data: updatedMovie } = await client.models.Movie.get({ 
+      id: movie.value.id 
+    });
+    
+    if (updatedMovie) {
+      movie.value = updatedMovie;
+    }
+
+    userRating.value = rating;
+    hasVoted.value   = true;
+
+  } catch (error) {
+    console.error("Error submitting rating:", error);
+  } finally {
+    isSubmitting.value = false;
+  }
+}
+
+
+/*
+async function handleRating(rating: number) {
+  if (!movie.value ||hasVoted.value || isSubmitting.value) return; // Empêche de voter plusieurs fois ou pendant la soumission
+  isSubmitting.value = true;
+
+  try {
+     await client.queries.updateMovieRating({
+      movieId: movie.value.id,
+      userId: currentUserId.value,
+      rating
+    });
+
+    movie.value.voteCount+=1;
+    userRating.value = rating;
+    hasVoted.value = true;
+  } catch (error) {
+    console.error("Error submitting rating:", error); 
+  } finally {
+    isSubmitting.value = false;
+}
+}
+*/
+
+async function loadSimilarMovies(movieId: string) {
+    try {
+      const result = await client.queries.getSimilarMovies({
+        movieId: movieId
+      });
+      console.log("IDS", result.data?.similar);
+      const ids = result.data?.similar || [];
+
+      const movies = await Promise.all (
+        ids.map(async (id: string) => {
+            const { data } = await client.models.Movie.get({ id });
+            return data;
+          })
+      );
+      recommandationsSimilar.value = movies.filter(Boolean);
+    } catch (error) {
+      console.error("Error fetching similar movies:", error);
+      recommandationsSimilar.value = [];
+}
+}
+
+function goToMovie(id: string){
+  router.push({name: 'details',params: {id}});
+}
 
 
 
