@@ -281,9 +281,6 @@ onMounted(async () => {
 
 watch(() => route.params.id, async (newId) => {
   if (!newId) return;
-
-  
-
   try {
     const { data } = await client.models.Movie.get ({
       id : newId as string
@@ -353,6 +350,9 @@ function getGenres(id:number|null|undefined){
       return genre? genre.name : "";
   }
 }
+
+
+
 /*
 async function handleRating(rating: number) {
   if (!movie.value ||hasVoted.value || isSubmitting.value) return; // Empêche de voter plusieurs fois ou pendant la soumission
@@ -391,6 +391,44 @@ async function handleRating(rating: number) {
 }*/
 
 async function handleRating(rating: number) {
+  if (!movie.value || hasVoted.value || isSubmitting.value) return;
+  if (!currentUserId.value) return;
+
+  isSubmitting.value = true;
+
+  try {
+    await client.models.Rating.create({
+      movieId: movie.value.id,
+      userId: currentUserId.value,
+      rating
+    });
+
+    const res = await client.mutations.updateUserRating({
+      movieId: movie.value.id,
+      userId: currentUserId.value,
+      rating
+    });
+
+    console.log("RESULT", res);
+
+    const { data: updatedMovie } = await client.models.Movie.get({ 
+      id: movie.value.id 
+    });
+    
+    if (updatedMovie) {
+      movie.value = updatedMovie;
+    }
+
+    userRating.value = rating;
+    hasVoted.value   = true;
+
+  } catch (error) {
+    console.error("Error submitting rating:", error);
+  } finally {
+    isSubmitting.value = false;
+  }
+}
+/*async function handleRating(rating: number) {
   if (!movie.value || hasVoted.value || isSubmitting.value) return;
   if (!currentUserId.value) return;
 
@@ -441,7 +479,7 @@ async function handleRating(rating: number) {
     isSubmitting.value = false;
     console.log("Final movie.value", movie.value?.voteAverage, movie.value?.voteCount);
   }
-}
+}*/
 
 
 /*
