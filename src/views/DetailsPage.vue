@@ -281,6 +281,9 @@ onMounted(async () => {
 
 watch(() => route.params.id, async (newId) => {
   if (!newId) return;
+
+  
+
   try {
     const { data } = await client.models.Movie.get ({
       id : newId as string
@@ -289,6 +292,21 @@ watch(() => route.params.id, async (newId) => {
     cast.value = data?.cast || [];
 
     await loadSimilarMovies(data.id);
+
+    const { data: ratings } = await client.models.Rating.list ({
+      filter : {
+        movieId : { eq: newId as string},
+        userId: { eq: currentUserId.value}
+      }
+    });
+    if (ratings.length>0) {
+      hasVoted.value=true;
+      userRating.value=ratings[0].rating;
+    }
+    else {
+      userRating.value=0;
+      hasVoted.value=false;
+    }
   }catch(error) {
     console.error("Error fetching movie details",error);
   }
@@ -471,7 +489,7 @@ function goToMovie(id: string){
 
 </script>
 
-<style >
+<style scoped>
 
 html, body{
   margin: 0;
@@ -755,7 +773,7 @@ html, body{
 
 .rating-icon {
   background: rgba(251, 191, 36, 0.15);
-  color: rgb(222, 106, 222);
+  color:#f5c518;
 }
 
 .votes-icon {
@@ -862,7 +880,7 @@ html, body{
   display: grid;
   grid-template-columns: repeat(auto-fill, 150px);
   gap: 1.5rem;
-  justify-content: center;
+  justify-content: left;
   margin-top: -40px;
 }
 
