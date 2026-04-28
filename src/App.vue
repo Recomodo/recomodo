@@ -54,18 +54,10 @@ watch(() => auth.user, async (newUser) => {
         <FirstSigninPage v-else-if="!profile.hasCompleted"/>
 
         <!-- App normale -->
-<<<<<<< HEAD
-<<<<<<< HEAD
+
         <RouterView v-else/>
         <!--<RouterView/>-->
       <Footer/>
-=======
-        <RouterView v-else />
-=======
-        <RouterView v-else  :key="$route.fullPath"/>
->>>>>>> e68e580 (Similar parfait)
-
->>>>>>> 15031cb (ajustement css similar)
       </template>
     </Authenticator>
   </main>

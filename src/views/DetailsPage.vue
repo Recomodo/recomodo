@@ -93,16 +93,6 @@
         </div>
       </div>
 
-        <div v-if="cast && cast.length > 0" class="director-section">
-          <h2 class="section-title"><strong><em>Cast</em></strong></h2>
-          <p class="cast-names">{{ Array.isArray(cast) ? cast.join(', ') : cast }}</p>
-        </div>
-        <div v-if="movie.director" class="director-section">
-          <h2 class="section-title"><strong><em>Director</em></strong></h2>
-          <p class="director-name">{{ movie.director }}</p>
-        </div>
-      </div>
-
         <!-- Stats en bas -->
         <div class="stats-row">
           <div class="stat-card">
@@ -132,29 +122,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-   </div>
-   
-    <div v-if="recommandationsSimilar.length" class="recommandationSimilar-section">
-        <h2 class="sectionRec-title"><strong><em>You might also like</em></strong></h2>
-        <div class="recommandationSimilar-row">
-          <div 
-            v-for="rec in recommandationsSimilar" 
-            :key="rec.id" 
-            class="rec-card"
-            @click="goToMovie(rec.id)"
-          >
-            <img 
-              :src="getImageUrl(rec.posterPath)" 
-              :alt="rec.title"
-              @error="e => e.target.src = '/defaultPoster.webp'"
-              class="rec-poster"
-            />
-            <p class="rec-title">{{ rec.title }}</p>
-          </div>
-        </div>
-      </div>
       </div>
     </div>
    </div>
@@ -425,7 +392,7 @@ async function handleRating(rating: number) {
   }
 }*/
 
-async function handleRating(rating: number) {
+async function handleRating(rating: number, voteCount : number , voteAverage : number) {
   if (!movie.value || hasVoted.value || isSubmitting.value) return;
   if (!currentUserId.value) return;
 
@@ -439,12 +406,18 @@ async function handleRating(rating: number) {
     });
 
     const res = await client.mutations.updateUserRating({
-      movieId: movie.value.id,
+      movieId: movie.value.movieId,
       userId: currentUserId.value,
       rating
     });
 
     console.log("RESULT", res);
+
+    console.log("movieId envoyé",movie.value.id);
+    console.log("userId", currentUserId.value);
+    console.log("rating", rating);
+
+
 
     const { data: updatedMovie } = await client.models.Movie.get({ 
       id: movie.value.id 
@@ -566,31 +539,6 @@ async function loadSimilarMovies(movieId: string) {
 
 function goToMovie(id: string){
   console.log("goToMovie id :",id);
-  router.push({name: 'details',params: {id}});
-}
-
-async function loadSimilarMovies(movieId: string) {
-    try {
-      const result = await client.queries.getSimilarMovies({
-        movieId: movieId
-      });
-      console.log("IDS", result.data?.similar);
-      const ids = result.data?.similar || [];
-
-      const movies = await Promise.all (
-        ids.map(async (id: string) => {
-            const { data } = await client.models.Movie.get({ id });
-            return data;
-          })
-      );
-      recommandationsSimilar.value = movies.filter(Boolean);
-    } catch (error) {
-      console.error("Error fetching similar movies:", error);
-      recommandationsSimilar.value = [];
-}
-}
-
-function goToMovie(id: string){
   router.push({name: 'details',params: {id}});
 }
 
