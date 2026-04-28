@@ -5,7 +5,8 @@
     "amplify/data/resource.ts", 
     "amplify/functions/recommender/resource.ts", 
     "amplify/functions/similar/resource.ts",
-    "amplify/functions/updateMovieRating/resource.ts"
+    "amplify/functions/updateMovieRating/resource.ts",
+    "amplify/functions/getMovieByGenre/resource.ts"
   ],
   "exclude": [
     "src/**/__tests__/*", 
