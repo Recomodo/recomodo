@@ -124,6 +124,8 @@ for index, row in movies.iterrows():
  
                 # Reconvertit "[28, 16]" en vraie liste [28, 16]
                 'genres': ast.literal_eval(str(row['genres'])),
+
+                'mainGenre': int(ast.literal_eval(str(row['genres']))[0]),
  
                 # Mots clés pour TF-IDF
                 'keywords': str(row['keywords']),
@@ -162,7 +164,6 @@ for index, row in movies.iterrows():
         errors_movies += 1
  
  
-# RÉSULTAT FINAL
  
  
 print(f"\n Import terminé !")

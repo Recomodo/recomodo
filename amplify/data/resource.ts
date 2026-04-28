@@ -2,6 +2,7 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";//on imp
 import {recommender} from "../functions/recommender/resource";
 import {similar} from "../functions/similar/resource";
 import { updateMovieRating } from "../functions/updateMovieRating/resource";
+import {getMovieByGenre} from "../functions/getMovieByGenre/resource";
 
 // On crée le schéma de la base de données
 const schema = a.schema({
@@ -13,6 +14,7 @@ const schema = a.schema({
       title: a.string().required(),// titre du film
       overview: a.string(),// résumé du film  
       genres: a.integer().array(),// genres du film
+      mainGenre: a.integer(),// genre principal du film (le premier de la liste des genres) , utilisé pour firstSigninPage
       keywords: a.string(),// mots-clés associés au film, séparés par des virgules
       releaseDate: a.string(),//date de sortie du film, au format "YYYY-MM-DD"
       voteAverage: a.float(), //note moyenne du film, entre 0 et 10
@@ -99,6 +101,27 @@ const schema = a.schema({
     .returns(a.ref("updateMovieRatingResponse"))
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(updateMovieRating)),
+
+  // Type de retour de la Lambda getMovieByGenre
+  GetMovieByGenreResponse: a.customType({
+    movieId: a.string(),
+    title: a.string(),
+    posterPath: a.string(),
+    voteAverage: a.string(),
+    genres: a.integer().array(),
+    mainGenre: a.integer(),
+    overview: a.string(),
+  }),
+
+  getMovieByGenre: a
+    .query()
+    .arguments({
+      genreId: a.integer().required(), 
+      excludedIds: a.string().array(),
+    })
+    .returns(a.ref("GetMovieByGenreResponse"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(getMovieByGenre)),
 
 });
 
