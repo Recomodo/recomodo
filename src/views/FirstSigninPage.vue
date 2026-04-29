@@ -38,6 +38,7 @@ function getGenres(id:number|null|undefined) {
       
    }
 }
+
 const ratings = ref<Record<string, number>>({})
 const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
@@ -54,7 +55,7 @@ await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //s
     rating
   })
 ));
-
+console.log("Ratings submitted:", ratings.value);
   if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
@@ -99,10 +100,73 @@ onMounted(async () => {
     }
 });
 
+
+
+
 // changer de films dans le cas ou il ne l'a pas vu 
-async function changeMovie(idMovieToChange:String){
-//appeler la lambda
-console.log("lambda pour changer de film", idMovieToChange);
+
+const loadingMovie=ref<Record<string,boolean>>({});
+const seenMoviesIds=ref<Set<string>>(new Set());
+
+  movies.value.forEach(m=>{
+    if(m.movieId){
+      seenMoviesIds.value.add(m.movieId);
+    }
+  })
+
+async function changeMovie(idMovieToChange:string){
+  console.log("l'id du film à changer:",idMovieToChange);
+//appeler la lambda 
+try{
+  loadingMovie.value[idMovieToChange]=true;
+  seenMoviesIds.value.add(idMovieToChange);
+  const index = movies.value.findIndex(m=>m.movieId === idMovieToChange);
+  if(index === -1)return;
+  const currentMovie = movies.value[index];
+  const genreId= currentMovie.mainGenre;
+  console.log("le main genre:",genreId);
+
+  if(!genreId) return;
+
+  const excludedIds=Array.from(seenMoviesIds.value);
+  
+  //console.log("ids exclus",excludedIds);
+  const{data, errors} = await client.queries.getMovieByGenre({
+    genreId,
+    excludedIds
+  });
+
+  //ajout de l'id du nouveau film dans exclus
+  if(data?.movieId){
+    seenMoviesIds.value.add(data.movieId);
+  }
+
+  console.log("l'id du film retourné par lambda:",data);
+  console.log("erreur getMovieByGenre:",errors)
+  if(errors || !data || !data.movieId){
+    console.warn("aucun film trouvé");
+    return;
+  }
+  if (!data.movieId || !data.title) {
+  console.warn("Film invalide reçu de la lambda");
+  return;
+}
+  movies.value[index]={
+    ...currentMovie,
+    ...data,
+    movieId:data.movieId,
+    title:data.title,
+    voteAverage: Number(data.voteAverage)
+  };
+
+  //delete ratings.value[idMovieToChange]
+}catch (error){
+  console.error("erreur changement de film:",error);
+}finally{
+  loadingMovie.value[idMovieToChange]=false;
+}
+
+
 }
 
 </script>
@@ -115,13 +179,13 @@ console.log("lambda pour changer de film", idMovieToChange);
   
   <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
     <div>
-      <button class="autre"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" @click="changeMovie(movie.movieId)"/></button>
+      <button class="autre" :disabled="ratings[movie.movieId]>0" @click="changeMovie(movie.movieId)"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" /></button>
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
          :alt="movie.title ?? ''" />
   </div>
          <div class="formSubContainer">
     <div class="discriptionForm">
-       <p>{{ movie.title }}</p>
+       <p class="title">{{ movie.title }}</p>
        <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
     </div> 
     <div class="genres" v-if="movie.genres">
@@ -179,7 +243,9 @@ padding-bottom: 12px;
    width:100%;
   justify-content: space-between;
 }
-
+.title{
+  width:80%;
+}
 .formSubContainer{
    display: flex;
    flex-direction: column;
@@ -192,7 +258,7 @@ padding-bottom: 12px;
    display:flex;
    flex-direction:row;
    flex-wrap: wrap;
-   gap:1px;
+   gap:6px;
 }
 
 .genre{
