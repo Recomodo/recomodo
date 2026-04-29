@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
 
 import Rating from '@/components/Rating.vue';
+import Notation from '@/components/Notation.vue';
 
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
@@ -97,6 +98,13 @@ onMounted(async () => {
       console.error("Error fetching movies:", error);
     }
 });
+
+// changer de films dans le cas ou il ne l'a pas vu 
+async function changeMovie(idMovieToChange:String){
+//appeler la lambda
+console.log("lambda pour changer de film", idMovieToChange);
+}
+
 </script>
 
 
@@ -104,9 +112,13 @@ onMounted(async () => {
    
    <p class="pform">Please rate at least 10 movies from the list for a better recommendation</p>
 <div class="formContainer">
+  
   <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
+    <div>
+      <button class="autre"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" @click="changeMovie(movie.movieId)"/></button>
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
          :alt="movie.title ?? ''" />
+  </div>
          <div class="formSubContainer">
     <div class="discriptionForm">
        <p>{{ movie.title }}</p>
@@ -160,13 +172,12 @@ onMounted(async () => {
    width: 100px;
    display: flex;
    align-self: center;
-
+padding-bottom: 12px;
 }
 .discriptionForm{
    display: flex; 
    width:100%;
   justify-content: space-between;
-
 }
 
 .formSubContainer{
@@ -181,6 +192,7 @@ onMounted(async () => {
    display:flex;
    flex-direction:row;
    flex-wrap: wrap;
+   gap:1px;
 }
 
 .genre{
@@ -208,5 +220,15 @@ button{
   color: rgb(239, 162, 239);
   font-weight: 600;
 }
+.autre{
+  display: flex;
+  position:relative;
+  right: 25px;
+  top: 15px;
+  background-color:rgba(239, 162, 239, 0.2) ;
+  border-radius: 50%;
+  padding: 8px;
+  border-color:rgb(239, 162, 239);
 
+}
 </style>
