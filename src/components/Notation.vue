@@ -6,14 +6,10 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits ([
-    "update:notation"
+    "rate"
 ]);
 
 const currentNotation = ref(0);
-
-function changeNotation(value: number) {
-    emit("update:notation", value);
-}
 
 function getDisplayValue(star: number) {
     const displayValue = currentNotation.value || props.notation;
@@ -40,11 +36,11 @@ function getDisplayValue(star: number) {
             currentNotation = isHalf ? star - 0.5 : star;  
         }"
         @mouseleave="currentNotation = 0"
-        @click="changeNotation(currentNotation)"
+        @click="$emit('rate' , currentNotation)"
     >
         <span 
-         class="star"
-         :class="getDisplayValue(star)"
+        class="star"
+        :class="getDisplayValue(star)"
         > 
             ★
         </span>
@@ -77,11 +73,11 @@ function getDisplayValue(star: number) {
 }
 
 .full {
-    color: rgb(222, 106, 222);
+    color: #f5c518;
 }
 .half {
-    color: rgb(222, 106, 222);
-    width: 50%;
+    color: #f5c518;
+    width: 44%;
     overflow: hidden;
     display: inline-block;
 }
