@@ -89,9 +89,13 @@ const menuRef= ref<HTMLElement | null>(null);
 
 <template>
     <div class="profileContainer" ref="menuRef">
-        <div class="avatar" @click="toggleMenu ">
+        <!--<div class="avatar" @click="toggleMenu ">
             <font-awesome-icon icon="fa-solid fa-circle-user" size="lg" style="color: white;" />
+        </div>-->
+        <div class="avatar" @click="toggleMenu">
+          {{ userName?.charAt(0).toUpperCase() }}
         </div>
+        
         <div v-if="isOpen" class="dropdown">
            <div class="avatar2">
                 {{ userName?.charAt(0).toUpperCase() }}
@@ -114,13 +118,13 @@ const menuRef= ref<HTMLElement | null>(null);
 
 .avatar {
   cursor: pointer;
-  padding: 4px;
+  width: 30px; height: 30px;
   border-radius: 50%;
-  transition: background 0.15s;
-}
-
-.avatar:hover {
-  background: rgba(168, 85, 247, 0.2);
+  background: #521c5d;
+  border: 2px solid #7a2a8a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  color: #e9d5ff;
 }
 
 .dropdown {
