@@ -4,9 +4,9 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from decimal import Decimal
 
-session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602") #configuration de la session boto3 pour accéder à DynamoDB, à remplacer par boto3 directement en prod
+#session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602") #configuration de la session boto3 pour accéder à DynamoDB, à remplacer par boto3 directement en prod
 
-dynamodb = session.resource("dynamodb")
+dynamodb = boto3.resource("dynamodb")
 
 RATING_TABLE_NAME = os.environ.get("RATING_TABLE_NAME")
 MOVIE_TABLE_NAME = os.environ.get("MOVIE_TABLE_NAME")

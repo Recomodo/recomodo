@@ -153,6 +153,7 @@ a {
   width: 100%;
   overflow-x: hidden;
   max-width: 100%;
+  justify-content: center;
 
 }
 /*css de mon footer*/
