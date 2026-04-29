@@ -120,6 +120,7 @@ for index, row in movies.iterrows():
                 # Informations du film
                 'movieId': str(row['movieId']),
                 'title': str(row['title']),
+                'titlelower': str(row['title']).lower(), # titre en minuscules
                 'overview': str(row['overview']),
  
                 # Reconvertit "[28, 16]" en vraie liste [28, 16]
