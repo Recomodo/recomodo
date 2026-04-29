@@ -4,6 +4,7 @@ import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 import SearchBar from '@/components/SearchBar.vue';
+import { textSpanContainsPosition } from 'typescript';
 
 const client = generateClient <Schema>();
 
@@ -57,10 +58,10 @@ function handlePageChange(page: number) {
 //recherche
 
 //algo le plus rapide mais plus de bugs
-/*
+
 const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
 const isSearching=ref(false);
-
+/*
 // Ajoutez ces 3 refs en plus de ceux existants
 const allMovies = ref<Array<Schema['Movie']["type"]>>([]);
 const isLoadingAll = ref(false);
@@ -106,68 +107,73 @@ function searchMovies(query: string) {
 
 }*/
 
-//algo2
-/*async function searchMovies(query: string) {
-  const q = query.toLowerCase().trim();
-  if (!q) {
-    isSearching.value = false;
-    searchResults.value = [];
+
+//algo3
+/*async function searchMovies(query:string) {
+  let results:any[]=[];
+  let nextToken:string | null=null;
+  const q=query.trim();
+  if(!q){
+    isSearching.value=false;
+    searchResults.value=[];
     return;
   }
+  isSearching.value=true;
 
-  isSearching.value = true;
-
-  try {
-    const { data } = await client.models.Movie.list({
-      filter: {
-        or: [
-          { title: { contains: q } },
-          { keywords: { contains: q } },
+do{
+    const {data,nextToken:newNextToken}:{data:any[]; nextToken?:string|null;} =await client.models.Movie.list({
+      filter:{
+        or:[{title: {contains:q}},
+          {keywords:{contains:q}},
         ]
       },
-      limit: 20,
+      nextToken,
     });
-    searchResults.value = data ?? [];
-  } catch (error) {
-    console.error("Erreur recherche :", error);
-  }
+    results = [...results, ...(data ?? [])];
+    nextToken=newNextToken?? null;
+    console.log(data);
+  }while(nextToken)
+
+searchResults.value=results;
 }*/
-/*async function searchMovies(query: string) {
-  const q = query.toLowerCase().trim();
-  if (!q) {
-    isSearching.value = false;
-    searchResults.value = [];
+async function searchMovies(query:string) {
+  const q=query.trim();
+    let results:any[]=[];
+    let nextToken:string | null=null;
+  if(!q){
+    isSearching.value=false;
+    searchResults.value=[];
     return;
   }
-
-  isSearching.value = true;
-
-  try {
-    const { data } = await client.models.Movie.list({
-      filter: {
-        or: [
-          { title: { contains: q } },
-          { keywords: { contains: q } },
-        ]
+  isSearching.value=true;
+do{
+    const {data,nextToken:newNextToken}:{data:any[]; nextToken?:string|null;} =await client.models.Movie.list({
+      filter:{
+        title: {beginsWith:q},
       },
-      limit: 20,
+      nextToken,
     });
-    searchResults.value = data ?? [];
-  } catch (error) {
-    console.error("Erreur recherche :", error);
-  }
-}*/
+    results = [...results, ...(data ?? [])];
+    nextToken=newNextToken?? null;
+    console.log(data);
+  }while(nextToken)
 
+searchResults.value=results;
+}
 </script>
 
 
 <template>
 <div class="page">
+  <div class="haut-page">
+    <div>
     <h1>Welcome to Recomodo</h1>
+    </div>
     <div class="Search">
     <!-- <SearchBar @search="searchMovies"/> -->
     <SearchBar/>
     </div>
+  </div>
 <div class="content">
 <div class="container">
     <RouterLink
@@ -221,16 +227,15 @@ html, body {
 h1{
     color: white;
     margin: 0;
-    padding-left: 4rem;
-    padding-top: 2rem;
 }
 
-.search{
-    display: flex;
-    align-self: flex-end;
-    position:fixed;
-    right:0rem;
+.haut-page{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items:flex-end;
+  padding-inline: 2.3rem;
+  padding-block:2rem;
 }
-
 
 </style>
