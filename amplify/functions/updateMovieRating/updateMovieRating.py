@@ -1,7 +1,6 @@
-import json
 import os
 import boto3
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 
 #session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602") #configuration de la session boto3 pour accéder à DynamoDB, à remplacer par boto3 directement en prod
@@ -57,16 +56,33 @@ def handler(event, context):
     rating_table = dynamodb.Table(RATING_TABLE_NAME)
     movie_table = dynamodb.Table(MOVIE_TABLE_NAME)
 
-    # Créer ou mettre à jour le Rating de cet utilisateur 
+    #Trouver le film dans la table Movie
+    #on cherche avec le movieId et non l'id Dynamodb
+    movies = query_all_items(
+        movie_table,
+        MOVIE_MOVIE_ID_INDEX,
+        Key("movieId").eq(movie_id)
+    )
 
+    if not movies:
+        return {"success": False, "message": f"Film {movie_id} introuvable"}
+
+    movie = movies[0]
+
+    #On récupère les valeurs de voteCount et voteAverage avant la mise à jour pour pouvoir les utiliser dans le calcul de la nouvelle moyenne et du nouveau nombre de votes
+    base_vote_count = int(movie.get("initialVoteCount") or movie.get("voteCount") or 0)
+    base_vote_average = float(movie.get("initialVoteAverage") or movie.get("voteAverage") or 0.0)
+
+
+    # Créer ou mettre à jour le Rating de cet utilisateur 
     # On cherche si ce user a déjà noté ce film via une query
-    user_rating = query_all_items(
+    user_ratings = query_all_items(
         rating_table,
         RATING_USER_ID_INDEX,
         Key("userId").eq(user_id)
     )
 
-    existing = [item for item in user_rating if item["movieId"] == movie_id]
+    existing = [item for item in user_ratings if item["movieId"] == movie_id]
 
     if existing:
         # Mise à jour de la note existante si l'utilisateur a déjà noté ce film
@@ -89,6 +105,7 @@ def handler(event, context):
                 "__typename": "Rating",
             }
         )
+    
 
     #récupérer tous les ratings de ce film pour recalculer la moyenne et le nombre de votes
     all_ratings = query_all_items(
@@ -97,35 +114,35 @@ def handler(event, context):
         Key("movieId").eq(movie_id)
     )
 
-    #Trouver le film dans la table Movie
-    #on cherche avec le movieId et non l'id Dynamodb
-    movies = query_all_items(
-        movie_table,
-        MOVIE_MOVIE_ID_INDEX,
-        Key("movieId").eq(movie_id)
-    )
-
-    if not movies:
-        return {"success": False, "message": f"Film {movie_id} introuvable"}
-
-    movie = movies[0]
-
-    #calculer la nouvelle moyenne et le nombre de votes à partir de tous les ratings de ce film
+    
     rating_values = [float(r["rating"]) for r in all_ratings]
-    vote_count = len(rating_values)
-    vote_average = round(sum(rating_values) / vote_count, 1) if vote_count > 0 else 0.0
+    user_vote_count = len(rating_values)
+    user_vote_sum = sum(rating_values)
+
+    # On combine les votes existants (base_vote_count et base_vote_average) avec les nouveaux votes
+    total_count = base_vote_count + user_vote_count
+    total_sum = (base_vote_average * base_vote_count) + user_vote_sum
+    vote_average = round(total_sum / total_count, 1) if total_count > 0 else 0.0
 
     # Mettre à jour voteAverage et voteCounT dans Movie 
     movie_table.update_item(
         Key={"id": movie["id"]},
-        UpdateExpression="SET voteAverage = :avg, voteCount = :cnt", 
+        UpdateExpression="SET voteAverage = :avg, voteCount = :cnt, #iavg = :iavg, #icnt = :icnt", 
+        ExpressionAttributeNames={
+            "#iavg": "initialVoteAverage",
+            "#icnt": "initialVoteCount"
+        },
         ExpressionAttributeValues={
             ":avg": Decimal(str(vote_average)),
-            ":cnt": vote_count,
+            ":cnt": total_count,
+            ":iavg": Decimal(str(base_vote_average)),
+            ":icnt": base_vote_count
         },
     )
 
     return {"success": True, "message": "Note enregistrée et film mis à jour"}
+
+
 
 # if __name__ == "__main__":
 #     test_event = {

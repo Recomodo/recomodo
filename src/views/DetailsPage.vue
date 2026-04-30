@@ -326,11 +326,6 @@ async function handleRating(rating: number) {
   isSubmitting.value = true;
 
   try {
-    await client.models.Rating.create({
-      movieId: movie.value.id,
-      userId: currentUserId.value,
-      rating
-    });
 
     const res = await client.mutations.updateUserRating({
       movieId: movie.value.movieId,
