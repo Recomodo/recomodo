@@ -14,7 +14,7 @@ import pandas as pd
 
 RATINGS_PATH = "data/dataset/rating_for_testing.csv"
 MOVIES_PATH = "data/dataset/movies_cleaned.csv"
-NEIGHBORS_PATH = "data/recommendation/movie_recommendations_combined40.json"
+NEIGHBORS_PATH = "data/recommendation/movie_recommendations_combined100.json"
 TOP_K = 10
 RANDOM_STATE = 42
 #On considère que les films notés strictement au dessus de cette note sont "aimés" par l'utilisateur
@@ -67,7 +67,7 @@ def recall_at_k(recommended_ids, liked_ids, k):
 
 
 # Charge le fichier JSON contenant, pour chaque film, une liste de films recommandes.
-# On convertit toutes les cles et valeurs en str pour eviter les problemes de format.
+# On convertit toutes les cles et valeurs en str pour eviter les problèmes de format.
 def load_neighbors(json_path):
     with open(json_path, "r", encoding="utf-8") as f:
         raw_neighbors = json.load(f)
@@ -426,3 +426,276 @@ interpret(results, TOP_K)
 # Interpretation
 # Le baseline popularite fait aussi bien ou mieux que l'algo.
 # Precision faible : les genres et le résumé seuls sont probablement trop pauvres pour bien personnaliser.
+
+#Ajout d'un bonus de popularité
+
+#=== Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0012
+# lambda_recall@10: 0.0011
+# lambda_ndcg@10: 0.0065
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4722
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres seuls sont probablement trop pauvres pour bien personnaliser.
+
+#Normalisation des score de contenu
+
+#ALPHA = .80
+#BETA = .20
+# === Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0017
+# lambda_recall@10: 0.0013
+# lambda_ndcg@10: 0.0088
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4696
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible
+
+#ALPHA = .70
+#BETA = .30
+# === Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0027
+# lambda_recall@10: 0.0025
+# lambda_ndcg@10: 0.0122
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4675
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible
+
+#100 voisins
+# === Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0029
+# lambda_recall@10: 0.0033
+# lambda_ndcg@10: 0.0127
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4727
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible
+
+# ALPHA = .60
+# BETA = .40
+# === Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0061
+# lambda_recall@10: 0.0075
+# lambda_ndcg@10: 0.0262
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4714
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres seuls sont probablement trop pauvres pour bien personnaliser.
+
+# ALPHA = .50
+# BETA = .50
+# === Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0142
+# lambda_recall@10: 0.0204
+# lambda_ndcg@10: 0.0861
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4670
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres seuls sont probablement trop pauvres pour bien personnaliser.
+
+# ALPHA = .40
+# BETA = .60
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0258
+# lambda_recall@10: 0.0347
+# lambda_ndcg@10: 0.1306
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4497
+# common_movie_count: 2306
+
+# ALPHA = .30
+# BETA = .70
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0368
+# lambda_recall@10: 0.0460
+# lambda_ndcg@10: 0.1842
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4124
+# common_movie_count: 2306
+
+# ALPHA = .20
+# BETA = .80
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0503
+# lambda_recall@10: 0.0598
+# lambda_ndcg@10: 0.2167
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.3443
+# common_movie_count: 2306
+
+# ALPHA = .10
+# BETA = .90
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0565
+# lambda_recall@10: 0.0712
+# lambda_ndcg@10: 0.2310
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.2615
+# common_movie_count: 2306
+
+# ALPHA = .05
+# BETA = .95
+# la meilleur en terme de score pur
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0571
+# lambda_recall@10: 0.0731
+# lambda_ndcg@10: 0.2329
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.2025
+# common_movie_count: 2306
+
+# ALPHA = .00
+# BETA = 1.
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0565
+# lambda_recall@10: 0.0724
+# lambda_ndcg@10: 0.2323
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.1856
+# common_movie_count: 2306
+
+#150 voisins
+# ALPHA = .70
+# BETA = .30
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0029
+# lambda_recall@10: 0.0033
+# lambda_ndcg@10: 0.0126
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4727
+# common_movie_count: 2306
+
+
+#Ajout de cast et director dans le pré-calcul
+#Ajout d'un bonus/malus diversité
+#100 voisins
+
+# ALPHA = .30
+# BETA = .70
+# GAMMA = .10
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0362
+# lambda_recall@10: 0.0360
+# lambda_ndcg@10: 0.1591
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4089
+# common_movie_count: 2306
+
+# ALPHA = .30
+# BETA = .70
+# GAMMA = .15
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0361
+# lambda_recall@10: 0.0357
+# lambda_ndcg@10: 0.1581
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4150
+# common_movie_count: 2306
+
+# ALPHA = .30
+# BETA = .70
+# GAMMA = .20
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0359
+# lambda_recall@10: 0.0349
+# lambda_ndcg@10: 0.1576
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4172
+# common_movie_count: 2306
+
+# ALPHA = .20
+# BETA = .80
+# GAMMA = .10
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0447
+# lambda_recall@10: 0.0452
+# lambda_ndcg@10: 0.1910
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.3617
+# common_movie_count: 2306
+
+
+# ALPHA = .15
+# BETA = .85
+# GAMMA = .10
+# le meilleur compromis entre de bonnes métriques et diversité/personnalisation
+# === Resultats ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0485
+# lambda_recall@10: 0.0505
+# lambda_ndcg@10: 0.1989
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.3118
+# common_movie_count: 2306

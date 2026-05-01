@@ -19,8 +19,8 @@ DATA_BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
 MOVIES_PARQUET_KEY = os.environ["MOVIES_PARQUET_KEY"]
 GENRES_PARQUET_KEY = os.environ["GENRES_PARQUET_KEY"]
 
-OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "data/recommendation/movie_recommendations_combined40.json")
-TOP_K = int(os.environ.get("TOP_K", "40"))
+OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "data/recommendation/movie_recommendations_combined100.json")
+TOP_K = int(os.environ.get("TOP_K", "100"))
 
 s3 = session.client("s3")
 
@@ -41,6 +41,19 @@ def genres_list_to_string(movies_genres, genres_dict):
                 temp.append(genres_dict[j].strip().lower().replace(" ", "_"))
         genres_string.append(' '.join(temp))
     return genres_string
+
+#Permet de normaliser les noms des acteurs et de le transformer un un seul vecteur
+def people_list_to_string(value):
+    if pd.isna(value):
+        return ""
+    values = [v.strip().lower().replace(" ", "_") for v in str(value).split(",") if v.strip()]
+    return " ".join(values)
+
+#Permet de faire la même chose que people_list_to_string mais pour un seul nom
+def person_name_to_token(value):
+    if pd.isna(value):
+        return ""
+    return str(value).strip().lower().replace(" ", "_")
 
 def noramlize_text(value):
     if pd.isna(value):
@@ -67,15 +80,20 @@ def main() :
     #récupération de la colonne genres, qui sont les id des genres associés à chaque film
     movies_genre = movies['genres'].fillna('[]').apply(ast.literal_eval).tolist()
     genres_string = genres_list_to_string(movies_genre, genres_dict)
-    
-    #récupération de la colonne keywords, qui contient les mot-clés des films
-    #keywords_string = movies["keywords"].fillna("").apply(lambda x: " ".join(k.strip().lower().replace(" ", "_") for k in str(x).split(",") if k.strip())).tolist()
-    
     #récupération de la colonne overview, qui contient les résumé des films
     overview_string = movies["overview"].apply(noramlize_text).tolist()
+    director_string = movies["director"].apply(person_name_to_token).tolist()
+    cast_string = movies["cast"].apply(people_list_to_string).tolist()
 
-    #création d'une liste de string qui contient les genres et les mots-clés associés à chaque film, pour que le TfidfVectorizer puisse les utiliser pour calculer la similarité entre les films
-    combined_string = [ f"{genres_string[i]} {overview_string[i]}".strip() for i in range(len(movie_ids))]
+    #Création d'une string pondérée qui contient les genres, le résumé, le réalisateur et le cast d'un film
+    combined_string = [ 
+        f"{genres_string[i]} {genres_string[i]} {genres_string[i]}"
+        f"{director_string[i]} {director_string[i]}"
+        f"{cast_string[i]} {cast_string[i]}"
+        f"{overview_string[i]}"
+        .strip() 
+        for i in range(len(movie_ids))
+    ]
 
 
     #création de la matrice TF-IDF à partir des genres et mots-clés des films
