@@ -1,16 +1,12 @@
 <template>
   <div  v-if="movie" class="movie-details-page">
+   <div class="movie-page">
    <div class="movie-section" >
     <!-- Background blur avec le poster -->
     <div class="backdrop-container">
       <img 
         :src="getImageUrl(movie.posterPath)" 
         :alt="movie.title"
-        class="backdrop-image"
-      />
-      <img 
-        :src="getImageUrl(movie.posterPath)"
-        :alt="movie.title" 
         class="backdrop-image"
       />
       <div class="backdrop-overlay"></div>
@@ -123,6 +119,7 @@
           </div>
         </div>
       </div>
+    </div>
     </div>
    </div>
    
@@ -402,9 +399,7 @@ function goToMovie(id: string){
 }
 
 </script>
-
 <style scoped>
-
 html, body{
   margin: 0;
   padding: 0;
@@ -423,15 +418,22 @@ html, body{
   width:100%;
   flex-wrap: wrap;
   background-size: cover;
-  
-  
+  display: block;
+}
+
+.movie-page {
+  position: relative;
+  width:100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-x: hidden;
 }
 
 .movie-section {
   position: relative;
   overflow: hidden;
   width: 100%;
-  
+  z-index: 1;
 }
 
 /* Background blur */
@@ -443,8 +445,6 @@ html, body{
   height: 500px;
   z-index: 0;
   width: 100%;
-  
-  
 }
 
 .backdrop-image {
@@ -454,7 +454,7 @@ html, body{
   object-fit: contain;
   object-position: left bottom;
   filter: blur(10px) brightness(0.5);
-  transform: scale(1.1) translateX(10%) translateY(22%);
+  transform: scale(1.1) translateX(7.5%) translateY(31%);
   display: block;
   transform-origin: top;
   opacity:0.8;
@@ -785,6 +785,7 @@ html, body{
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.movie-section,
 .recommandationSimilar-section {
   background: #15001d;
   padding: 3rem 2rem;
@@ -856,6 +857,4 @@ html, body{
   color: white;
   font-size: 1.5rem;
 }
-
-
 </style>
