@@ -132,7 +132,7 @@ const schema = a.schema({
     .handler(a.handler.function(deleteMyAccount)),
 
 })
-.authorization((allow) => [allow.resource(deleteMyAccount)]);;
+.authorization((allow) => [allow.resource(deleteMyAccount)]);
 
 export type Schema = ClientSchema<typeof schema>;
 
