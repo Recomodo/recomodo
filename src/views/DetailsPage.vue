@@ -32,7 +32,7 @@
           <img 
             :src="getImageUrl(movie.posterPath)" 
             :alt="movie.title"
-            @error="e => e.target.src = '/defaultPoster.webp'"
+            @error="handleImageError"
             class="movie-poster"
           />
           <div class="notation_number">
@@ -85,7 +85,7 @@
       <div class="personne-section">
         <div v-if="cast && cast.length > 0" class="director-section">
           <h2 class="section-title"><strong><em>Cast</em></strong></h2>
-          <p class="cast-names">{{ Array.isArray(cast) ? cast.join(', ') : cast }}</p>
+          <p class="cast-names">{{ cast }}</p>
         </div>
         <div v-if="movie.director" class="director-section">
           <h2 class="section-title"><strong><em>Director</em></strong></h2>
@@ -139,7 +139,7 @@
             <img 
               :src="getImageUrl(rec.posterPath)" 
               :alt="rec.title"
-              @error="e => e.target.src = '/defaultPoster.webp'"
+              @error="handleImageError"
               class="rec-poster"
             />
             <div class="rec-info">
@@ -170,39 +170,64 @@ const movie = ref<any>();
 const hasVoted = ref(false);
 const isSubmitting = ref(false);
 const currentUserId = ref<string | null>(null);
-const cast = ref<Array<Schema['Cast']["type"]>>([]);
+const cast = ref<string>('');
 const recommandationsSimilar = ref<any[]>([]);
+
+onMounted(async () => {
+  console.log("ROUTE PARAMS: ", route.params);
+  try {
+    const {data} = await client.models.Movie.get({
+      id: route.params.id as string});
+
+    if (!data) {
+      movie.value = null;
+      cast.value = '';
+      recommandationsSimilar.value = [];
+    return;
+    }
+    movie.value = data;
+    cast.value = data.cast ?? '';
+
+    await loadSimilarMovies(data.id);
+
+    console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
+
+    console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
+
+    console.log("RESULT API court: ", data);
+  } catch (error) {
+    console.error("Error fetching movie details:", error);
+   
+  }
+});
+
+onMounted(async () => {
+    try {
+        const { data, errors } = await client.models.Genre.list();
+        genres.value = data ?? [];
+    } catch (error) {
+        console.error("Error fetching genres:", error);
+        genres.value = [];
+    }
+});
 
 onMounted(async () => {
   try {
     const user = await getCurrentUser();
     console.log("user",user);
     currentUserId.value = user.userId; // ou user.attributes.sub selon votre configuration Cognito
-
-    const {data} = await client.models.Movie.get({
-      id: route.params.id as string});
-      movie.value = data;
-      cast.value = data?.cast || [];
-      await loadSimilarMovies(data.id);
-
-    const { data: genresData } = await client.models.Genre.list();
-    genres.value = genresData ?? [];
-
-     const { data: ratings } = await client.models.Rating.list({
+    const { data } = await client.models.Rating.list({
       filter: {
-        movieId: { eq: movie.value.movieId as string },
-        userId: { eq: currentUserId.value } // Remplacez par l'ID de l'utilisateur connecté
+        movieId: { eq: route.params.id as string },
+        userId: { eq: currentUserId.value ?? undefined } // Remplacez par l'ID de l'utilisateur connecté
       }
     });
-    console.log("hasvoted:", hasVoted.value, "ratings trouvés:", ratings.length, "userId", currentUserId.value)
-    if (ratings.length > 0) {
+    if (data.length > 0) {
       hasVoted.value = true;
-      userRating.value = ratings[0].rating;
+      userRating.value = data[0].rating;
     }
-
   } catch (error) {
-    console.error("Error fetching movie details:", error);
-   
+    console.error("Error fetching user rating:", error);
   }
 });
 
@@ -212,15 +237,24 @@ watch(() => route.params.id, async (newId) => {
     const { data } = await client.models.Movie.get ({
       id : newId as string
     });
+
+    if (!data) {
+      movie.value = null;
+      cast.value = '';
+      recommandationsSimilar.value = [];
+      userRating.value = 0;
+      hasVoted.value = false;
+      return;
+    }
     movie.value =  data;
-    cast.value = data?.cast || [];
+    cast.value = data.cast ?? '';
 
     await loadSimilarMovies(data.id);
 
     const { data: ratings } = await client.models.Rating.list ({
       filter : {
-        movieId : { eq: movie.value.movieId as string},
-        userId: { eq: currentUserId.value}
+        movieId : { eq: newId as string},
+        userId: { eq: currentUserId.value ?? undefined }
       }
     });
     if (ratings.length>0) {
@@ -275,6 +309,13 @@ function getGenres(id:number|null|undefined){
   }else{
       const genre = genres.value.find(g => Number(g.genreId) === Number(id));
       return genre? genre.name : "";
+  }
+}
+
+function handleImageError(event: Event) {
+  const target = event.target as HTMLImageElement | null;
+  if (target) {
+    target.src = '/defaultPoster.webp';
   }
 }
 
@@ -333,7 +374,9 @@ async function loadSimilarMovies(movieId: string) {
         movieId: movieId
       });
       console.log("IDS", result.data?.similar);
-      const ids = result.data?.similar || [];
+      const ids = (result.data?.similar ?? []).filter(
+        (id): id is string => id !== null
+      );
 
       const movies = await Promise.all (
         ids.map(async (id: string) => {
@@ -342,8 +385,10 @@ async function loadSimilarMovies(movieId: string) {
           })
       );
       recommandationsSimilar.value = movies
-      .filter(Boolean)
-      .filter(m=>m.id!==movieId);
+      .filter(
+        (m): m is NonNullable<(typeof movies)[number]> => m !== null
+      )
+      .filter((m)=>m.id !== movieId);
       console.log(recommandationsSimilar.value[0]);
     } catch (error) {
       console.error("Error fetching similar movies:", error);

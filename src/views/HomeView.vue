@@ -166,6 +166,14 @@ function getImageUrl(posterPath: any) {
   }
   return posterPath;
 }
+
+function handleImageError(event: Event) {
+  const target = event.target as HTMLImageElement | null;
+  if (target) {
+    target.src = '/defaultPoster.webp';
+  }
+}
+
 </script>
 
 
@@ -189,7 +197,7 @@ function getImageUrl(posterPath: any) {
             :src="'https://image.tmdb.org/t/p/w200' + movie.posterPath"
            
             :alt="movie.title"
-            @error="e => e.target.src = '/defaultPoster.webp'"
+            @error="handleImageError"
        />
         <div class="movie-info">
              <p class="movie-title">{{ movie.title }}</p>
