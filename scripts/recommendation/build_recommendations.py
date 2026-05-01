@@ -20,7 +20,7 @@ MOVIES_PARQUET_KEY = os.environ["MOVIES_PARQUET_KEY"]
 GENRES_PARQUET_KEY = os.environ["GENRES_PARQUET_KEY"]
 
 OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "movie_recommendations_genre.json")
-TOP_K = int(os.environ.get("TOP_K", "5"))
+TOP_K = int(os.environ.get("TOP_K", "40"))
 
 s3 = session.client("s3")
 

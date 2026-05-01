@@ -20,6 +20,9 @@ MOVIES_RECOMMENDATIONS_KEY = os.environ.get("MOVIES_RECOMMENDATIONS_KEY")
 ratings_table = dynamodb.Table(RATINGS_TABLE_NAME)
 _recommendations_cache = None #cache pour stocker les recommandations pré-calculées, pour éviter de faire une requête S3 à chaque appel de la fonction handler
 
+LIKED_THRESHOLD = 7
+DISLIKED_THRESHOLD = 3.5
+
 #permet de récuperer les recommandations depuis le bucket S3, elles sont stockées dans un fichier JSON
 def load_recommendations_from_s3():
     global _recommendations_cache
@@ -48,24 +51,45 @@ def get_user_ratings(user_id):
 
 #on récupére les films les mieux notés de l'utilisateur
 def top_rated_movies(user_ratings,limit=5):
-    sorted_ratings = sorted(user_ratings, key = lambda x : float(x.get("rating",0)), reverse = True)
-
+    #sorted_ratings = sorted(user_ratings, key = lambda x : float(x.get("rating",0)), reverse = True)
     top_movies = []
-    for i in sorted_ratings :
-        movie_id = i.get("movieId")
-        if movie_id is not None:
-            top_movies.append(str(movie_id))
-    return top_movies[:limit]
+    for i in user_ratings :
+        if i.get("rating") >= LIKED_THRESHOLD :
+            movie_id = i.get("movieId")
+            if movie_id is not None:
+                top_movies.append(str(movie_id))
+    return top_movies
+
+#on récupére les films les moins bien notés de l'utilisateur
+def bottom_rated_movies(user_ratings,limit=5):
+    #sorted_ratings = sorted(user_ratings, key = lambda x : float(x.get("rating",0)), reverse = False)
+    bottom_movies = []
+    for i in user_ratings :
+        if i.get("rating") <= DISLIKED_THRESHOLD :
+            movie_id = i.get("movieId")
+            if movie_id is not None:
+                bottom_movies.append(str(movie_id))
+    return bottom_movies
 
 #on récupère la liste finale des recommendations pour l'utilisateur
-def get_recommendations_for_user(top_movies_id, already_rated_movies, recommendations_map):
+def get_recommendations_for_user(top_movies_id, bottom_movies_id, already_rated_movies, recommendations_map):
     recommendations = []
+    bottom_rec = []
     seen = {str(movie_id) for movie_id in already_rated_movies}
+    
+    #créé une liste des films similaires aux films les moins bien notés de l'utilisateur
+    for movie_id in bottom_movies_id:
+        bottom_rec.append(str(movie_id))
+        not_recs = recommendations_map.get(str(movie_id),[])
+        
+        for rec in not_recs:
+            bottom_rec.append(rec)
+    
     for movie_id in top_movies_id:
         recs = recommendations_map.get(str(movie_id), [])
 
         for rec in recs:
-            if rec not in seen and rec not in recommendations: #pour éviter les films déjà notés ou déja dans la liste
+            if rec not in seen and rec not in recommendations and rec not in bottom_rec: #pour éviter les films déjà notés ou déja dans la liste ou les films similaires à ceux que l'utilisateur n'aime pas
                 recommendations.append(rec)
                 seen.add(rec)
     return recommendations
@@ -87,12 +111,13 @@ def handler(event, context):
     
     recommendations_map = load_recommendations_from_s3()
     top_movies = top_rated_movies(user_ratings)
+    bottom_movies = bottom_rated_movies(user_ratings)
     already_rated_movies_ids = {
         str(item.get("movieId")) 
         for item in user_ratings 
         if item.get("movieId") is not None}
     
-    recommendations = get_recommendations_for_user(top_movies, already_rated_movies_ids, recommendations_map)
+    recommendations = get_recommendations_for_user(top_movies, bottom_movies, already_rated_movies_ids, recommendations_map)
     return {
         "userId": user_id,
         "recommendations": recommendations

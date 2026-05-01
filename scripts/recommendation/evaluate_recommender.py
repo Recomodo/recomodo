@@ -1,7 +1,13 @@
-import argparse
-import ast
+#Pour écrire ce script d'évaluation j'ai utilisé l'aide d'une IA
+#D'abord pour comprendre quelles métriques étaient intéressantes
+#Ensuite en lui demandant de générer un script d'évaluation qui test les métriques ici présentes :
+
+
 import json
 import math
+import os
+import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -13,6 +19,21 @@ TOP_K = 10
 RANDOM_STATE = 42
 #On considère que les films notés strictement au dessus de cette note sont "aimés" par l'utilisateur
 LIKED_THRESHOLD = 7.0
+
+# Variables d'environnement minimales pour permettre l'import de recommender.py
+os.environ.setdefault("AWS_DEFAULT_REGION", "eu-west-3")
+os.environ.setdefault("RATINGS_TABLE_NAME", "dummy-ratings-table")
+os.environ.setdefault("RATINGS_USER_ID_INDEX", "dummy-user-index")
+os.environ.setdefault("DATA_BUCKET_NAME", "dummy-bucket")
+os.environ.setdefault("MOVIES_RECOMMENDATIONS_KEY", "dummy-key")
+
+#chemin vers le dossier contenant recommender.py
+LAMBDA_DIR = Path("amplify/functions/recommender").resolve()
+if str(LAMBDA_DIR) not in sys.path:
+    sys.path.insert(0, str(LAMBDA_DIR))
+
+import recommender 
+
 
 #Cette metrique donne plus d'importance aux bons resultats places en haut de la liste qu'a ceux places plus bas.
 def dcg_at_k(relevances, k):
@@ -53,43 +74,47 @@ def load_neighbors(json_path):
 
     neighbors = {}
     for movie_id, recommended_movies in raw_neighbors.items():
-        movie_id = str(movie_id)
-        neighbors[movie_id] = [str(candidate) for candidate in recommended_movies]
+        neighbors[str(movie_id)] = [str(candidate) for candidate in recommended_movies]
 
     return neighbors
 
+# Appelle la vraie Lambda en remplaçant temporairement :
+# - get_user_ratings() par une version locale basée sur train_df
+# - load_recommendations_from_s3() par une version locale basée sur le JSON
+def call_lambda_handler_for_user(user_id, train_df, neighbors_dict, top_k=10):
+    user_ratings = []
+    user_rows = train_df[train_df["userId"] == user_id]
 
-def recommend_for_user(user_train, neighbors_dict, top_k=10):
-    liked_train = user_train[user_train["rating"] > LIKED_THRESHOLD]["movieId"].tolist()
-    seen_movies = set(user_train["movieId"].tolist())
+    for _, row in user_rows.iterrows():
+        user_ratings.append(
+            {
+                "userId": str(row["userId"]),
+                "movieId": str(row["movieId"]),
+                "rating": float(row["rating"]),
+            }
+        )
 
-    if not liked_train:
+    def fake_get_user_ratings(requested_user_id):
+        if requested_user_id == user_id:
+            return user_ratings
         return []
 
-    scores = {}
+    def fake_load_recommendations_from_s3():
+        return neighbors_dict
 
-    for liked_movie in liked_train:
-        liked_movie = str(liked_movie)
+    original_get_user_ratings = recommender.get_user_ratings
+    original_load_recommendations = recommender.load_recommendations_from_s3
 
-        if liked_movie not in neighbors_dict:
-            continue
+    try:
+        recommender.get_user_ratings = fake_get_user_ratings
+        recommender.load_recommendations_from_s3 = fake_load_recommendations_from_s3
 
-        candidate_list = neighbors_dict[liked_movie]
-
-        for rank, candidate_movie in enumerate(candidate_list):
-            candidate_movie = str(candidate_movie)
-
-            if candidate_movie in seen_movies:
-                continue
-
-            if candidate_movie == liked_movie:
-                continue
-
-            weight = max(len(candidate_list) - rank, 1)
-            scores[candidate_movie] = scores.get(candidate_movie, 0.0) + weight
-
-    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    return [movie_id for movie_id, _ in ranked[:top_k]]
+        event = {"userId": user_id}
+        result = recommender.handler(event, None)
+        return [str(movie_id) for movie_id in result.get("recommendations", [])[:top_k]]
+    finally:
+        recommender.get_user_ratings = original_get_user_ratings
+        recommender.load_recommendations_from_s3 = original_load_recommendations
 
 #Comparaison avec une recommendation par popularité
 #Point de référence simple
@@ -104,9 +129,10 @@ def popularity_baseline(train_df, excluded_movie_ids, top_k=10):
     recs = [str(movie_id) for movie_id in popularity.index if str(movie_id) not in excluded_movie_ids]
     return recs[:top_k]
 
-#
+
 def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
     ratings_df["movieId"] = ratings_df["movieId"].astype(str)
+    ratings_df["userId"] = ratings_df["userId"].astype(str)
     movies_df["movieId"] = movies_df["movieId"].astype(str)
 
     json_movie_ids = set(neighbors_dict.keys())
@@ -151,9 +177,11 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
         ground_truth = set(test_liked["movieId"].astype(str).tolist())
         seen_movies = set(train["movieId"].astype(str).tolist())
 
-        content_recs = recommend_for_user(
-            train,
-            neighbors_dict,
+        # Appel de la vraie logique Lambda
+        lambda_recs = call_lambda_handler_for_user(
+            user_id=user_id,
+            train_df=train,
+            neighbors_dict=neighbors_dict,
             top_k=top_k,
         )
 
@@ -163,12 +191,12 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
             top_k=top_k,
         )
 
-        if not content_recs:
+        if not lambda_recs:
             continue
 
-        metrics["content_precision"].append(precision_at_k(content_recs, ground_truth, top_k))
-        metrics["content_recall"].append(recall_at_k(content_recs, ground_truth, top_k))
-        metrics["content_ndcg"].append(ndcg_at_k(content_recs, ground_truth, top_k))
+        metrics["content_precision"].append(precision_at_k(lambda_recs, ground_truth, top_k))
+        metrics["content_recall"].append(recall_at_k(lambda_recs, ground_truth, top_k))
+        metrics["content_ndcg"].append(ndcg_at_k(lambda_recs, ground_truth, top_k))
 
         metrics["baseline_precision"].append(precision_at_k(baseline_recs, ground_truth, top_k))
         metrics["baseline_recall"].append(recall_at_k(baseline_recs, ground_truth, top_k))
@@ -179,9 +207,10 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
     #calcul de la couverture du catalogue
     all_recommended = set()
     for user_id, user_ratings in ratings_df.groupby("userId"):
-        recs = recommend_for_user(
-            user_ratings,
-            neighbors_dict,
+        recs = call_lambda_handler_for_user(
+            user_id=user_id,
+            train_df=user_ratings,
+            neighbors_dict=neighbors_dict,
             top_k=top_k,
         )
         all_recommended.update(recs)
@@ -190,9 +219,9 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
 
     return {
         "evaluated_users": evaluated_users,
-        f"content_precision@{top_k}": float(np.mean(metrics["content_precision"])) if metrics["content_precision"] else 0.0,
-        f"content_recall@{top_k}": float(np.mean(metrics["content_recall"])) if metrics["content_recall"] else 0.0,
-        f"content_ndcg@{top_k}": float(np.mean(metrics["content_ndcg"])) if metrics["content_ndcg"] else 0.0,
+        f"lambda_precision@{top_k}": float(np.mean(metrics["content_precision"])) if metrics["content_precision"] else 0.0,
+        f"lambda_recall@{top_k}": float(np.mean(metrics["content_recall"])) if metrics["content_recall"] else 0.0,
+        f"lambda_ndcg@{top_k}": float(np.mean(metrics["content_ndcg"])) if metrics["content_ndcg"] else 0.0,
         f"baseline_precision@{top_k}": float(np.mean(metrics["baseline_precision"])) if metrics["baseline_precision"] else 0.0,
         f"baseline_recall@{top_k}": float(np.mean(metrics["baseline_recall"])) if metrics["baseline_recall"] else 0.0,
         f"baseline_ndcg@{top_k}": float(np.mean(metrics["baseline_ndcg"])) if metrics["baseline_ndcg"] else 0.0,
@@ -202,18 +231,18 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
 
 #Permet une interpretation simple des resultats obtenus
 def interpret(results, top_k):
-    cp = results[f"content_precision@{top_k}"]
+    cp = results[f"lambda_precision@{top_k}"]
     bp = results[f"baseline_precision@{top_k}"]
-    cn = results[f"content_ndcg@{top_k}"]
+    cn = results[f"lambda_ndcg@{top_k}"]
     bn = results[f"baseline_ndcg@{top_k}"]
 
     print("\nInterpretation")
     if cp > bp and cn > bn:
-        print("Ton algo content-based bat le baseline popularite sur cet echantillon.")
+        print("L'algo content-based bat le baseline popularite sur cet echantillon.")
     elif cp == bp and cn == bn:
-        print("Ton algo et le baseline donnent des resultats tres proches.")
+        print("L'algo et le baseline donnent des resultats tres proches.")
     else:
-        print("Le baseline popularite fait aussi bien ou mieux que ton algo.")
+        print("Le baseline popularite fait aussi bien ou mieux que l'algo.")
 
     if cp >= 0.20:
         print("Precision plutot bonne pour un prototype simple base uniquement sur les genres.")
@@ -256,32 +285,109 @@ for key, value in results.items():
 
 interpret(results, TOP_K)
 
+
+# Avec l'algorithme de base :
+# - on récupère les 5 films les mieux notés de l'utilisateur
+# - on récupère du fichier json les films similaires à ces dernier
+# - on retourne une liste de film contenant ces films similaires
+
 # === Resultats (genre)===
 # evaluated_users: 660
-# content_precision@10: 0.0005
-# content_recall@10: 0.0011
-# content_ndcg@10: 0.0015
+# lambda_precision@10: 0.0003
+# lambda_recall@10: 0.0006
+# lambda_ndcg@10: 0.0012
 # baseline_precision@10: 0.1121
 # baseline_recall@10: 0.1988
 # baseline_ndcg@10: 0.3721
-# catalog_coverage: 0.2346
+# catalog_coverage: 0.3708
 # common_movie_count: 2306
 
 # Interpretation
-# Le baseline popularite fait aussi bien ou mieux que ton algo.
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
 # Precision faible : les genres seuls sont probablement trop pauvres pour bien personnaliser
 
 # === Resultats (combined)===
 # evaluated_users: 660
-# content_precision@10: 0.0002
-# content_recall@10: 0.0000
-# content_ndcg@10: 0.0005
+# lambda_precision@10: 0.0003
+# lambda_recall@10: 0.0009
+# lambda_ndcg@10: 0.0009
 # baseline_precision@10: 0.1121
 # baseline_recall@10: 0.1988
 # baseline_ndcg@10: 0.3721
-# catalog_coverage: 0.4215
+# catalog_coverage: 0.5820
 # common_movie_count: 2306
 
 # Interpretation
-# Le baseline popularite fait aussi bien ou mieux que ton algo.
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres et keywords seuls sont probablement trop pauvres pour bien personnaliser.
+
+
+
+# Avec un deuxième algorithme :
+# Très similaire mais on retire les films similaire aux 5 films les moins bien noté de l'utilisateur, de la liste de films recommandés
+
+# === Resultats (genre) ===
+# evaluated_users: 641
+# lambda_precision@10: 0.0005
+# lambda_recall@10: 0.0006
+# lambda_ndcg@10: 0.0017
+# baseline_precision@10: 0.1144
+# baseline_recall@10: 0.1977
+# baseline_ndcg@10: 0.3770
+# catalog_coverage: 0.3807
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
 # Precision faible : les genres seuls sont probablement trop pauvres pour bien personnaliser.
+
+# == Resultats (combined) ===
+# evaluated_users: 642
+# lambda_precision@10: 0.0003
+# lambda_recall@10: 0.0009
+# lambda_ndcg@10: 0.0009
+# baseline_precision@10: 0.1142
+# baseline_recall@10: 0.1974
+# baseline_ndcg@10: 0.3764
+# catalog_coverage: 0.5846
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres et keywords seuls sont probablement trop pauvres pour bien personnaliser.
+
+
+
+# Avec un troisième algorithme :
+# Au lieu de prendre les 5 films les mieux noté et les 5 films les moins bien noté,
+# On prend tout les films qui ont une note >= 7 et les films qui ont une note <= 3.5
+
+# === Resultats (genre) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0006
+# lambda_recall@10: 0.0005
+# lambda_ndcg@10: 0.0031
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.3062
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres seuls sont probablement trop pauvres pour bien personnaliser.
+
+# === Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0003
+# lambda_recall@10: 0.0006
+# lambda_ndcg@10: 0.0009
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4584
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres et keywords seuls sont probablement trop pauvres pour bien personnaliser.
