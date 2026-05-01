@@ -4,54 +4,48 @@ import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 import SearchBar from '@/components/SearchBar.vue';
+import '@/assets/CssHomeView.css';
 
 const client = generateClient <Schema>();
-
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
 const currentPage = ref(1);
 const itemsPerPage = 70;
-
 const moviesByPage = ref<Record<number, Array<Schema['Movie']["type"]>>>({});
 const nextTokens = ref<Record<number, string | null>>({});
 
-
-
 async function loadMoviesPage(page: number) {
-   try {
-    // ne pas chargé si l'utilisateur recherche
-   // if (isSearching.value) return;
-     if(moviesByPage.value[page]) {
-        movies.value = moviesByPage.value[page];
-        return;
+  try {
+  // ne pas chargé si l'utilisateur recherche
+  // if (isSearching.value) return;
+    if(moviesByPage.value[page]) {
+      movies.value = moviesByPage.value[page];
+      return;
+    }
+    let token=null;
+
+    for (let i=1;i<page;i++){
+      token = nextTokens.value[i];
+      if(!token){
+        break;
       }
-
-      let token=null;
-
-      for (let i=1;i<page;i++){
-        token = nextTokens.value[i];
-        if(!token){
-            break;
-        }
-      }
-
-      const { data, nextToken} = await client.models.Movie.list({ limit: itemsPerPage, nextToken: token });
-        moviesByPage.value[page] = data ?? [];
-        nextTokens.value[page] = nextToken ?? null;
-        movies.value = moviesByPage.value[page];
-    } catch (error) {
-        console.error("Error fetching movies for page " ,error);
-    }  
+    }
+    const { data, nextToken} = await client.models.Movie.list({ limit: itemsPerPage, nextToken: token });
+      moviesByPage.value[page] = data ?? [];
+      nextTokens.value[page] = nextToken ?? null;
+      movies.value = moviesByPage.value[page];
+  } catch (error) {
+    console.error("Error fetching movies for page " ,error);
+  }  
 }
 
-
 onMounted(() => {
-    loadMoviesPage(1);
-    //loadAllMovies();  
+  loadMoviesPage(1);
+  //loadAllMovies();  
 });
 
 function handlePageChange(page: number) {
-    currentPage.value = page;
-    loadMoviesPage(page);
+  currentPage.value = page;
+  loadMoviesPage(page);
 }
 
 //recherche
@@ -159,7 +153,7 @@ function searchMovies(query: string) {
 }*/
 
 function getImageUrl(posterPath: any) {
-   const path = String(posterPath || '').trim();
+  const path = String(posterPath || '').trim();
   if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return '/defaultPoster.webp';
   if (posterPath.startsWith('/')) {
     return `https://image.tmdb.org/t/p/w500${path}`;
@@ -176,40 +170,37 @@ function handleImageError(event: Event) {
 
 </script>
 
-
 <template>
 <div class="page">
-    <h1>Welcome to Recomodo</h1>
-    <div class="Search">
+  <h1>Welcome to Recomodo</h1>
+  <div class="Search">
     <!-- <SearchBar @search="searchMovies"/> -->
     <SearchBar/>
-    </div>
-<div class="content">
-<div class="container">
+  </div>
+  <div class="content">
+  <div class="container">
     <RouterLink
-       v-for="movie in movies"
-        :key="movie.movieId"
-        :to=" { name: 'details', params: { id: movie.movieId } }"
-         
-        class="movie-card"
+      v-for="movie in movies"
+      :key="movie.movieId"
+      :to=" { name: 'details', params: { id: movie.movieId } }"
+      class="movie-card"
     >
-        <img
-            :src="'https://image.tmdb.org/t/p/w200' + movie.posterPath"
-           
-            :alt="movie.title"
-            @error="handleImageError"
-       />
-        <div class="movie-info">
-             <p class="movie-title">{{ movie.title }}</p>
-             <p class="movie-meta">★ {{ movie.voteAverage }}</p>
-        </div>
+      <img
+        :src="'https://image.tmdb.org/t/p/w200' + movie.posterPath"   
+        :alt="movie.title"
+        @error="handleImageError"
+      />
+      <div class="movie-info">
+        <p class="movie-title">{{ movie.title }}</p>
+        <p class="movie-meta">★ {{ movie.voteAverage }}</p>
+      </div>
     </RouterLink>
 </div>
 
 <div class="pagination-wrapper">
     <Pagination 
-        :currentPage="currentPage"
-        @page-changed="handlePageChange"/>
+    :currentPage="currentPage"
+    @page-changed="handlePageChange"/>
 </div>
 </div>
 </div>
