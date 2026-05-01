@@ -4,16 +4,13 @@ import { ref } from 'vue';
 const props = defineProps<{
     notation: number;
 }>();
-
 const emit = defineEmits ([
     "rate"
 ]);
-
 const currentNotation = ref(0);
 
 function getDisplayValue(star: number) {
     const displayValue = currentNotation.value || props.notation;
-
     if (displayValue >= star) {
         return 'full';
     }
@@ -44,8 +41,6 @@ function getDisplayValue(star: number) {
         > 
             ★
         </span>
-        
-   
     </div>
 </div>
 </template>

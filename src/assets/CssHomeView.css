@@ -1,0 +1,25 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.pagination-wrapper {
+  padding: 2rem 0;
+  justify-content: center;
+  display: flex;
+}
+
+.page h1{
+  color: white;
+  margin: 0;
+  padding-left: 4rem;
+  padding-top: 2rem;
+}
+
+.search{
+  display: flex;
+  align-self: flex-end;
+  position:fixed;
+  right:0rem;
+}
