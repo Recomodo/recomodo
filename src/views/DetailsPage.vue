@@ -174,54 +174,35 @@ const cast = ref<Array<Schema['Cast']["type"]>>([]);
 const recommandationsSimilar = ref<any[]>([]);
 
 onMounted(async () => {
-  console.log("ROUTE PARAMS: ", route.params);
   try {
+    const user = await getCurrentUser();
+    console.log("user",user);
+    currentUserId.value = user.userId; // ou user.attributes.sub selon votre configuration Cognito
+
     const {data} = await client.models.Movie.get({
       id: route.params.id as string});
       movie.value = data;
       cast.value = data?.cast || [];
       await loadSimilarMovies(data.id);
+
+    const { data: genresData } = await client.models.Genre.list();
+    genres.value = genresData ?? [];
+
+     const { data: ratings } = await client.models.Rating.list({
+      filter: {
+        movieId: { eq: movie.value.movieId as string },
+        userId: { eq: currentUserId.value } // Remplacez par l'ID de l'utilisateur connecté
+      }
+    });
+    console.log("hasvoted:", hasVoted.value, "ratings trouvés:", ratings.length, "userId", currentUserId.value)
+    if (ratings.length > 0) {
+      hasVoted.value = true;
+      userRating.value = ratings[0].rating;
+    }
+
   } catch (error) {
     console.error("Error fetching movie details:", error);
    
-  }
-});
-
-onMounted(async () => {
-    try {
-        const { data, errors } = await client.models.Genre.list();
-        genres.value = data ?? [];
-    } catch (error) {
-        console.error("Error fetching genres:", error);
-        genres.value = [];
-    }
-});
-
-onMounted(async()=>{
-  try {
-    const user=await getCurrentUser();
-    currentUserId.value=user.userId;
-    console.log("user id", currentUserId.value);
-  }catch(error){
-    console.error("Error fetching movie details:", error);
-  }
-});
-
-watch([movie, currentUserId], async ([newMovie, userId]) => {
-  if (!newMovie || !userId) return;
-
-  const { data } = await client.models.Rating.list({
-    filter : {
-      movieId: { eq : newMovie.id},
-      userId: { eq: userId}
-    }
-  });
-
-  if (data.length > 0) {
-    hasVoted.value=true;
-    userRating.value=data[0].rating;
-  }else{
-    hasVoted.value=false;
   }
 });
 
@@ -238,7 +219,7 @@ watch(() => route.params.id, async (newId) => {
 
     const { data: ratings } = await client.models.Rating.list ({
       filter : {
-        movieId : { eq: data.id},
+        movieId : { eq: movie.value.movieId as string},
         userId: { eq: currentUserId.value}
       }
     });
@@ -298,23 +279,31 @@ function getGenres(id:number|null|undefined){
 }
 
 async function handleRating(rating: number) {
-  console.log("CLICK");
   if (!movie.value || hasVoted.value || isSubmitting.value) return;
-  if (!currentUserId.value) {
-    console.log("no user");
-   return;
-  }
+  if (!currentUserId.value) return;
+
   isSubmitting.value = true;
 
   try {
-  
-    const res = await client.mutations.updateUserRating({
-      movieId: movie.value.id,
+    const { data: existingRatings } = await client.models.Rating.list({
+      filter: {
+        movieId: { eq: movie.value.movieId as string},
+        userId: { eq: currentUserId.value}
+      }
+    });
+
+    if (existingRatings.length  > 0) {
+      await client.models.Rating.update({
+        id: existingRatings[0].id,
+        rating
+      });
+    }else{
+      await client.mutations.updateUserRating({
+      movieId: movie.value.movieId,
       userId: currentUserId.value,
       rating
     });
-
-    console.log("RESULT", res);
+    }
 
     console.log("movieId envoyé",movie.value.id);
     console.log("userId", currentUserId.value);
