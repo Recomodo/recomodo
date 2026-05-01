@@ -14,7 +14,7 @@ import pandas as pd
 
 RATINGS_PATH = "data/dataset/rating_for_testing.csv"
 MOVIES_PATH = "data/dataset/movies_cleaned.csv"
-NEIGHBORS_PATH = "data/recommendation/movie_recommendations_combined.json"
+NEIGHBORS_PATH = "data/recommendation/movie_recommendations_combined40.json"
 TOP_K = 10
 RANDOM_STATE = 42
 #On considère que les films notés strictement au dessus de cette note sont "aimés" par l'utilisateur
@@ -391,3 +391,38 @@ interpret(results, TOP_K)
 # Interpretation
 # Le baseline popularite fait aussi bien ou mieux que l'algo.
 # Precision faible : les genres et keywords seuls sont probablement trop pauvres pour bien personnaliser.
+
+
+#Nouvel algorithme avec pondération sur les films suivant les notes donné par l'utilisateur
+#De plus, dans le pré-calcul, il y a maintenant 40 films similaires
+#combined est maintenant une combinaison des genres et du résumé du film
+
+# === Resultats (genre) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0008
+# lambda_recall@10: 0.0014
+# lambda_ndcg@10: 0.0030
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.2454
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres seuls sont probablement trop pauvres pour bien personnaliser.
+
+# === Resultats (combined) ===
+# evaluated_users: 660
+# lambda_precision@10: 0.0011
+# lambda_recall@10: 0.0010
+# lambda_ndcg@10: 0.0054
+# baseline_precision@10: 0.1121
+# baseline_recall@10: 0.1988
+# baseline_ndcg@10: 0.3721
+# catalog_coverage: 0.4753
+# common_movie_count: 2306
+
+# Interpretation
+# Le baseline popularite fait aussi bien ou mieux que l'algo.
+# Precision faible : les genres et le résumé seuls sont probablement trop pauvres pour bien personnaliser.

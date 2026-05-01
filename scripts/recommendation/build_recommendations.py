@@ -19,7 +19,7 @@ DATA_BUCKET_NAME = os.environ["DATA_BUCKET_NAME"]
 MOVIES_PARQUET_KEY = os.environ["MOVIES_PARQUET_KEY"]
 GENRES_PARQUET_KEY = os.environ["GENRES_PARQUET_KEY"]
 
-OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "movie_recommendations_genre.json")
+OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "data/recommendation/movie_recommendations_combined40.json")
 TOP_K = int(os.environ.get("TOP_K", "40"))
 
 s3 = session.client("s3")
@@ -42,6 +42,11 @@ def genres_list_to_string(movies_genres, genres_dict):
         genres_string.append(' '.join(temp))
     return genres_string
 
+def noramlize_text(value):
+    if pd.isna(value):
+        return ""
+    return str(value).strip().lower()
+
 
 def main() :
     #lecture des fichiers movies_clean.parquet et genres_clean.parquet
@@ -50,6 +55,7 @@ def main() :
 
     #uniformisation des types
     movies['movieId'] = movies['movieId'].astype(str)
+    movies['overview'] = movies['overview'].astype(str)
     genres['genreId'] = genres['genreId'].astype(str)
 
     #création d'un dictionnaire avec les id des genres en clé et les noms des genres en valeur
@@ -61,15 +67,20 @@ def main() :
     #récupération de la colonne genres, qui sont les id des genres associés à chaque film
     movies_genre = movies['genres'].fillna('[]').apply(ast.literal_eval).tolist()
     genres_string = genres_list_to_string(movies_genre, genres_dict)
-    keywords_string = movies["keywords"].fillna("").apply(lambda x: " ".join(k.strip().lower().replace(" ", "_") for k in str(x).split(",") if k.strip())).tolist()
+    
+    #récupération de la colonne keywords, qui contient les mot-clés des films
+    #keywords_string = movies["keywords"].fillna("").apply(lambda x: " ".join(k.strip().lower().replace(" ", "_") for k in str(x).split(",") if k.strip())).tolist()
+    
+    #récupération de la colonne overview, qui contient les résumé des films
+    overview_string = movies["overview"].apply(noramlize_text).tolist()
 
     #création d'une liste de string qui contient les genres et les mots-clés associés à chaque film, pour que le TfidfVectorizer puisse les utiliser pour calculer la similarité entre les films
-    combined_string = [ f"{genres_string[i]} {keywords_string[i]}" for i in range(len(movie_ids))]
+    combined_string = [ f"{genres_string[i]} {overview_string[i]}".strip() for i in range(len(movie_ids))]
 
 
     #création de la matrice TF-IDF à partir des genres et mots-clés des films
-    tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 2),min_df=1, stop_words='english')
-    tfidf_matrix = tf.fit_transform(genres_string)
+    tf = TfidfVectorizer(analyzer='word',ngram_range=(1, 1),min_df=2,max_df=0.8, stop_words='english')
+    tfidf_matrix = tf.fit_transform(combined_string)
 
     recommendations = {}
 

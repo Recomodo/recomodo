@@ -49,51 +49,56 @@ def get_user_ratings(user_id):
     )
     return response.get("Items", [])
 
-#on récupére les films les mieux notés de l'utilisateur
-def top_rated_movies(user_ratings,limit=5):
-    #sorted_ratings = sorted(user_ratings, key = lambda x : float(x.get("rating",0)), reverse = True)
-    top_movies = []
-    for i in user_ratings :
-        if i.get("rating") >= LIKED_THRESHOLD :
-            movie_id = i.get("movieId")
-            if movie_id is not None:
-                top_movies.append(str(movie_id))
-    return top_movies
-
-#on récupére les films les moins bien notés de l'utilisateur
-def bottom_rated_movies(user_ratings,limit=5):
-    #sorted_ratings = sorted(user_ratings, key = lambda x : float(x.get("rating",0)), reverse = False)
-    bottom_movies = []
-    for i in user_ratings :
-        if i.get("rating") <= DISLIKED_THRESHOLD :
-            movie_id = i.get("movieId")
-            if movie_id is not None:
-                bottom_movies.append(str(movie_id))
-    return bottom_movies
 
 #on récupère la liste finale des recommendations pour l'utilisateur
-def get_recommendations_for_user(top_movies_id, bottom_movies_id, already_rated_movies, recommendations_map):
-    recommendations = []
-    bottom_rec = []
+def get_recommendations_for_user(user_ratings, already_rated_movies, recommendations_map, limit=15):
+    scores = {}
     seen = {str(movie_id) for movie_id in already_rated_movies}
-    
-    #créé une liste des films similaires aux films les moins bien notés de l'utilisateur
-    for movie_id in bottom_movies_id:
-        bottom_rec.append(str(movie_id))
-        not_recs = recommendations_map.get(str(movie_id),[])
+
+    #Pour chaque film noté on calcul un score
+    for item in user_ratings:
+        movie_id = item.get("movieId")
+        rating = float(item.get("rating",0))
+
+        if movie_id is None:
+            continue
+
+        movie_id = str(movie_id)
+        #On récupère les films similaires au film noté
+        recs = recommendations_map.get(movie_id, [])
+
+        #Pondération positive sur les films similaires, si l'utilisateur à aimé le film
+        if rating >= LIKED_THRESHOLD:
+            user_weight = rating
+            for rank, rec in enumerate(recs, start=1):
+                rec = str(rec)
+
+                if rec in seen or rec == movie_id:
+                    continue
+
+                rank_weight = 1/rank
+                scores[rec] = scores.get(rec,0.0) + (user_weight*rank_weight)
         
-        for rec in not_recs:
-            bottom_rec.append(rec)
+        #Pondération négative sur les films similaires, si l'utilisateur n'a pas aimé le film
+        elif rating <= DISLIKED_THRESHOLD:
+            user_weight = 10-rating
+            for rank, rec in enumerate(recs, start=1):
+                rec = str(rec)
+
+                if rec in seen or rec == movie_id:
+                    continue
+
+                rank_weight = 1/rank
+                scores[rec] = scores.get(rec,0.0) - (user_weight*rank_weight)
     
-    for movie_id in top_movies_id:
-        recs = recommendations_map.get(str(movie_id), [])
+    #On récupère uniquement les films avec un score positif et on les tri dans l'ordre décroissant
+    ranked = sorted(
+        ((movie_id,score) for movie_id, score in scores.items() if score > 0),
+        key=lambda x: x[1],
+        reverse=True
 
-        for rec in recs:
-            if rec not in seen and rec not in recommendations and rec not in bottom_rec: #pour éviter les films déjà notés ou déja dans la liste ou les films similaires à ceux que l'utilisateur n'aime pas
-                recommendations.append(rec)
-                seen.add(rec)
-    return recommendations
-
+    )
+    return [movie_id for movie_id, _ in ranked[:limit]]
 
 def handler(event, context):
     user_id = extract_user_id(event)
@@ -110,14 +115,14 @@ def handler(event, context):
         }
     
     recommendations_map = load_recommendations_from_s3()
-    top_movies = top_rated_movies(user_ratings)
-    bottom_movies = bottom_rated_movies(user_ratings)
+    #top_movies = top_rated_movies(user_ratings)
+    #bottom_movies = bottom_rated_movies(user_ratings)
     already_rated_movies_ids = {
         str(item.get("movieId")) 
         for item in user_ratings 
         if item.get("movieId") is not None}
     
-    recommendations = get_recommendations_for_user(top_movies, bottom_movies, already_rated_movies_ids, recommendations_map)
+    recommendations = get_recommendations_for_user(user_ratings, already_rated_movies_ids, recommendations_map)
     return {
         "userId": user_id,
         "recommendations": recommendations
