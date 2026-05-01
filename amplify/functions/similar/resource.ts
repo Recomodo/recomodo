@@ -56,4 +56,3 @@ export const similar = defineFunction((scope) => {
 
   return lambda;
 });
-

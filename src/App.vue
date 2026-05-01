@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Authenticator, useAuthenticator } from '@aws-amplify/ui-vue'
 import "@aws-amplify/ui-vue/styles.css"
-import Nav from './components/Nav.vue'
+import Nav from '@/components/Nav.vue' 
 import Footer from '@/components/Footer.vue'
 import { generateClient } from 'aws-amplify/data'
 import type { Schema } from "../amplify/data/resource"
 import { watch, ref } from 'vue'
+import FirstSigninPage from '@/views/FirstSigninPage.vue'
 
 const client = generateClient<Schema>()
 const profile = ref<any>(undefined) // undefined = pas encore chargé, null = pas de profil (erreur ou pas connecté)
@@ -43,20 +44,21 @@ watch(() => auth.user, async (newUser) => {
 </script>
 
 <template>
-  <Nav/>
   <main>
     <Authenticator>
       <template v-slot="{ user, signOut }">
+        <Nav/>
         <p v-if="profile === undefined">Chargement...</p>
 
         <!-- Questionnaire si première connexion -->
-        <!-- <FirstSigninPage v-else-if="!profile.hasCompleted"/> -->
+        <FirstSigninPage v-else-if="!profile.hasCompleted"/>
 
         <!-- App normale -->
-        <RouterView v-else/>
 
+        <RouterView v-else/>
+        <!--<RouterView/>-->
+      <Footer/>
       </template>
     </Authenticator>
   </main>
-  <Footer/>
 </template>

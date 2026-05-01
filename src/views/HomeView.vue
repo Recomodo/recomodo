@@ -4,7 +4,6 @@ import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 import SearchBar from '@/components/SearchBar.vue';
-import FirstSigninPage from '@/views/FirstSigninPage.vue';
 
 const client = generateClient <Schema>();
 
@@ -20,7 +19,7 @@ const nextTokens = ref<Record<number, string | null>>({});
 async function loadMoviesPage(page: number) {
    try {
     // ne pas chargé si l'utilisateur recherche
-    if (isSearching.value) return;
+   // if (isSearching.value) return;
      if(moviesByPage.value[page]) {
         movies.value = moviesByPage.value[page];
         return;
@@ -47,6 +46,7 @@ async function loadMoviesPage(page: number) {
 
 onMounted(() => {
     loadMoviesPage(1);
+    //loadAllMovies();  
 });
 
 function handlePageChange(page: number) {
@@ -55,91 +55,149 @@ function handlePageChange(page: number) {
 }
 
 //recherche
+
+//algo le plus rapide mais plus de bugs
+/*
 const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
 const isSearching=ref(false);
-const seen = new Set<string>();
 
-async function searchMovies(query:string){
-    const q=query.toLowerCase().trim();
-    if(!q){
-        isSearching.value=false;
-        searchResults.value=[];
-        return;
-    }
+// Ajoutez ces 3 refs en plus de ceux existants
+const allMovies = ref<Array<Schema['Movie']["type"]>>([]);
+const isLoadingAll = ref(false);
+const allMoviesLoaded = ref(false);
 
-    isSearching.value=true;
-    let results: Array<Schema['Movie']["type"]> = [];
+// Chargement en arrière-plan de tous les films
+async function loadAllMovies() {
+  isLoadingAll.value = true;
+  let token: string | null = null;
+  const results: Array<Schema['Movie']["type"]> = [];
 
-    //recherche dans les pages déjà chargées parla pagination
-    Object.values(moviesByPage.value).forEach(page=>{
-        page.forEach(movie=>{
-            const title=movie.title?.toLowerCase() || "";
-            const keywords= movie.keywords?.toLowerCase() || "";
-
-            if(
-                keywords.includes(q) ||
-                title.includes(q)
-            ){
-                if ((keywords.includes(q) || title.includes(q)) && !seen.has(movie.movieId)) {
-                 seen.add(movie.movieId);
-                 results.push(movie);
-                }
-            }
-
-            
-        });
+  do {
+    const { data, nextToken } = await client.models.Movie.list({
+      limit: 500,
+      nextToken: token,
     });
+    results.push(...(data ?? []));
+    token = nextToken ?? null;
+  } while (token);
 
-    //si pas de résultats dans les pages déjà chargées ou resultats<20
-    let currentNextToken: string | null= nextTokens.value[currentPage.value] ?? null;
-    while(results.length<10 && currentNextToken){
-        const response =await client.models.Movie.list({
-            limit: itemsPerPage,
-            nextToken: currentNextToken
-        });
+  allMovies.value = results;
+  allMoviesLoaded.value = true;
+  isLoadingAll.value = false;
+}
 
-        const page=response.data ?? [];
-        page.forEach(movie=>{
-            const title=movie.title?.toLowerCase() || "";
-            const keywords=movie.keywords?.toLowerCase() || "";
-            if(
-                keywords.includes(q) ||
-                title.includes(q)
-            ){
-                if ((keywords.includes(q) || title.includes(q)) && !seen.has(movie.movieId)) {
-                   seen.add(movie.movieId);
-                   results.push(movie);
-                }
-            }
-        });
-        currentNextToken=response.nextToken ?? null;
-    } 
-    //limiter les résultats à 20
-    //searchResults.value=results.slice(0,20);
-    searchResults.value=results
-} 
+
+// Remplacer searchMovies — plus de async, plus d'appel réseau
+function searchMovies(query: string) {
+  const q = query.toLowerCase().trim();
+  if (!q) {
+    isSearching.value = false;
+    searchResults.value = [];
+    return;
+  }
+
+  isSearching.value = true;
+
+  searchResults.value = allMovies.value.filter(movie => {
+    const title = movie.title?.toLowerCase() ?? "";
+    const keywords = movie.keywords?.toLowerCase() ?? "";
+    return title.includes(q) || keywords.includes(q);
+  });
+
+}*/
+
+//algo2
+/*async function searchMovies(query: string) {
+  const q = query.toLowerCase().trim();
+  if (!q) {
+    isSearching.value = false;
+    searchResults.value = [];
+    return;
+  }
+
+  isSearching.value = true;
+
+  try {
+    const { data } = await client.models.Movie.list({
+      filter: {
+        or: [
+          { title: { contains: q } },
+          { keywords: { contains: q } },
+        ]
+      },
+      limit: 20,
+    });
+    searchResults.value = data ?? [];
+  } catch (error) {
+    console.error("Erreur recherche :", error);
+  }
+}*/
+/*async function searchMovies(query: string) {
+  const q = query.toLowerCase().trim();
+  if (!q) {
+    isSearching.value = false;
+    searchResults.value = [];
+    return;
+  }
+
+  isSearching.value = true;
+
+  try {
+    const { data } = await client.models.Movie.list({
+      filter: {
+        or: [
+          { title: { contains: q } },
+          { keywords: { contains: q } },
+        ]
+      },
+      limit: 20,
+    });
+    searchResults.value = data ?? [];
+  } catch (error) {
+    console.error("Erreur recherche :", error);
+  }
+}*/
+
+function getImageUrl(posterPath: any) {
+   const path = String(posterPath || '').trim();
+  if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return '/defaultPoster.webp';
+  if (posterPath.startsWith('/')) {
+    return `https://image.tmdb.org/t/p/w500${path}`;
+  }
+  return posterPath;
+}
+
+function handleImageError(event: Event) {
+  const target = event.target as HTMLImageElement | null;
+  if (target) {
+    target.src = '/defaultPoster.webp';
+  }
+}
 
 </script>
 
 
 <template>
 <div class="page">
-    <FirstSigninPage/>
     <h1>Welcome to Recomodo</h1>
-    <SearchBar @search="searchMovies"/>
+    <div class="Search">
+    <!-- <SearchBar @search="searchMovies"/> -->
+    <SearchBar/>
+    </div>
 <div class="content">
 <div class="container">
     <RouterLink
-       v-for="movie in isSearching? searchResults : movies"
+       v-for="movie in movies"
         :key="movie.movieId"
         :to=" { name: 'details', params: { id: movie.movieId } }"
          
         class="movie-card"
     >
         <img
-            :src="'https://image.tmdb.org/t/p/w500' + movie.posterPath"
+            :src="'https://image.tmdb.org/t/p/w200' + movie.posterPath"
            
             :alt="movie.title"
+            @error="handleImageError"
        />
         <div class="movie-info">
              <p class="movie-title">{{ movie.title }}</p>
@@ -148,7 +206,7 @@ async function searchMovies(query:string){
     </RouterLink>
 </div>
 
-<div v-if="!isSearching" class="pagination-wrapper">
+<div class="pagination-wrapper">
     <Pagination 
         :currentPage="currentPage"
         @page-changed="handlePageChange"/>
@@ -184,68 +242,11 @@ h1{
     padding-top: 2rem;
 }
 
-/* CARD */
-.movie-card {
-  text-decoration: none;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  width: 150px;
-  height: 265px;
-  overflow: hidden;
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 20px rgba(114, 55, 136, 0.6);
-  border: 1px solid #7a2a8a;
-  border-radius: 6px;
-}
-
-.movie-card:hover {
-  transform: scale(1.04);
-}
-
-.movie-card img {
-  width: 150px;
-  height: 220px;
-  object-fit: cover;
-  display: block;
-}
-
-.movie-info {
-  background: #3d0943;
-  padding: 4px 8px;
-  width: 100%;
-  height: 45px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-.movie-title {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.movie-meta {
-  margin: 3px 0 0 0;
-  font-size: 11px;
-  color: #f5c518;
-}
-.container{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 150px);
-  grid-auto-rows: 270px;
-  gap: 1.5rem;
-  padding: 2rem;
-  box-sizing: border-box;
-  width: 100%;
-  overflow-x: hidden;
-  max-width: 100%;
-
+.search{
+    display: flex;
+    align-self: flex-end;
+    position:fixed;
+    right:0rem;
 }
 
 

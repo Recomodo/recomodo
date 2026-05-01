@@ -2,6 +2,7 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";//on imp
 import {recommender} from "../functions/recommender/resource";
 import {similar} from "../functions/similar/resource";
 import { updateMovieRating } from "../functions/updateMovieRating/resource";
+import {getMovieByGenre} from "../functions/getMovieByGenre/resource";
 
 // On crée le schéma de la base de données
 const schema = a.schema({
@@ -11,8 +12,10 @@ const schema = a.schema({
     .model({
       movieId: a.string().required(),// ID unique du film
       title: a.string().required(),// titre du film
+      titlelower: a.string(),// titre du film en minuscules, pour les recherches insensibles à la casse
       overview: a.string(),// résumé du film  
       genres: a.integer().array(),// genres du film
+      mainGenre: a.integer(),// genre principal du film (le premier de la liste des genres) , utilisé pour firstSigninPage
       keywords: a.string(),// mots-clés associés au film, séparés par des virgules
       releaseDate: a.string(),//date de sortie du film, au format "YYYY-MM-DD"
       voteAverage: a.float(), //note moyenne du film, entre 0 et 10
@@ -100,6 +103,27 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(updateMovieRating)),
 
+  // Type de retour de la Lambda getMovieByGenre
+  GetMovieByGenreResponse: a.customType({
+    movieId: a.string(),
+    title: a.string(),
+    posterPath: a.string(),
+    voteAverage: a.string(),
+    genres: a.integer().array(),
+    mainGenre: a.integer(),
+    overview: a.string(),
+  }),
+
+  getMovieByGenre: a
+    .query()
+    .arguments({
+      genreId: a.integer().required(), 
+      excludedIds: a.string().array(),
+    })
+    .returns(a.ref("GetMovieByGenreResponse"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(getMovieByGenre)),
+
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -114,3 +138,31 @@ export const data = defineData({
     },
   },
 });
+
+
+/*== STEP 2 ===============================================================
+Go to your frontend source code. From your client-side code, generate a
+Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
+WORK IN THE FRONTEND CODE FILE.)
+
+Using JavaScript or Next.js React Server Components, Middleware, Server 
+Actions or Pages Router? Review how to generate Data clients for those use
+cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
+
+/*
+"use client"
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "@/amplify/data/resource";
+
+const client = generateClient<Schema>() // use this Data client for CRUDL requests
+*/
+
+/*== STEP 3 ===============================================================
+Fetch records from the database and use them in your frontend component.
+(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
+
+/* For example, in a React component, you can use this snippet in your
+  function's RETURN statement */
+// const { data: todos } = await client.models.Todo.list()
+
+// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>

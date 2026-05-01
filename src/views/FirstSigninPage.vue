@@ -13,6 +13,7 @@ import Rating from '@/components/Rating.vue';
 
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
+const profile = ref<any>(null);
 onMounted(async () => {
   const user = await getCurrentUser();
   email.value = user.signInDetails?.loginId ?? null;
@@ -25,19 +26,6 @@ const genres=ref<Array<Schema['Genre']["type"]>>([]);
 
 const moviesList=["11249","27205","155","101","293660","10625","620","185","313369","8587","10674","648","12477","28","348","803","10654","273248"]
 
-
-/*onMounted(async () => {
-    try {
-      const [moviesData,genresData] = await Promise.all([
-        client.models.Movie.list({ limit: 18 }),
-        client.models.Genre.list()
-      ]);
-      movies.value = moviesData.data ?? [];
-      genres.value = genresData.data ?? [];
-    } catch (error) {
-      console.error("Error fetching movies or genres:", error);
-    }
-});*/
 
 
 function getGenres(id:number|null|undefined) {
@@ -72,12 +60,16 @@ await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //s
     hasCompleted:true
   })
   }
-  redirected();
-}
-function redirected(){
-   router.push('/');
-}
 
+
+  location.href = '/'
+/*profile.value.hasCompleted = true;
+  redirected()
+}
+async function redirected(){
+   await router.push('/');
+}*/
+}
 onMounted(async () => {
     try {
       const { data, errors } = await client.models.Genre.list({
@@ -179,10 +171,13 @@ onMounted(async () => {
    flex-direction: column;
    justify-content: space-between;
    padding-block: 1rem;
+   /*flex-wrap:wrap;
+   overflow: visible;*/
 }
+
 .genres{
    display:flex;
-   flex-direction: row;
+   flex-direction:row;
 }
 
 .genre{
