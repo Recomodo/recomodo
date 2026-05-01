@@ -8,5 +8,8 @@
     "aws-cdk-lib": "2.249.0",
     "constructs": "10.6.0",
     "esbuild": "0.20.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1040.0"
   }
 }

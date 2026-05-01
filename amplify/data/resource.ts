@@ -3,6 +3,7 @@ import {recommender} from "../functions/recommender/resource";
 import {similar} from "../functions/similar/resource";
 import { updateMovieRating } from "../functions/updateMovieRating/resource";
 import {getMovieByGenre} from "../functions/getMovieByGenre/resource";
+import {deleteMyAccount} from "../functions/deleteAccount/resource";
 
 // On crée le schéma de la base de données
 const schema = a.schema({
@@ -124,7 +125,14 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(getMovieByGenre)),
 
-});
+  deleteMyAccount: a
+    .mutation()
+    .returns(a.boolean())
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(deleteMyAccount)),
+
+})
+.authorization((allow) => [allow.resource(deleteMyAccount)]);;
 
 export type Schema = ClientSchema<typeof schema>;
 

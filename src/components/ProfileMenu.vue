@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { signOut } from 'aws-amplify/auth';
-import { deleteUser } from 'aws-amplify/auth';
 import type {Schema} from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data';
 import{onMounted, ref, onBeforeUnmount} from "vue";
@@ -8,19 +7,29 @@ import { getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const client = generateClient<Schema>();
 
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
-  const userName= ref<string | null>(null);
-onMounted(async () => {
-  const user = await getCurrentUser();
-  email.value = user.signInDetails?.loginId ?? null;
-  identifiant.value = user.userId;
-  const profile  = await client.models.UserProfile.get({id: identifiant.value ?? ''});
-  userName.value = profile.data?.username ?? null;
-});
+const userName= ref<string | null>(null);
+const userRatings= ref<Array<Schema['Rating']["type"]>>([]);
+const isOpen = ref(false);
+const menuRef= ref<HTMLElement | null>(null);
 
-const client = generateClient<Schema>();
+
+onMounted(async () => {
+  try{
+    const user = await getCurrentUser();
+    email.value = user.signInDetails?.loginId ?? null;
+    identifiant.value = user.userId;
+    
+    const profile  = await client.models.UserProfile.get({id: identifiant.value ?? ''});
+    userName.value = profile.data?.username ?? null;
+  
+  }catch(error){
+    console.log(error);
+  }
+});
 
 async function signout(){
   try{
@@ -31,65 +40,78 @@ async function signout(){
   }
 }
 
-
-async function handleDeleteUser() {
-  try {
-    await raz();
-    await client.models.UserProfile.delete({id: identifiant.value ?? ''});
-    await deleteUser();
-    router.push('/')
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-const userRatings= ref<Array<Schema['Rating']["type"]>>([]);
 async function raz(){
   try{
     if (identifiant.value) {
       //await client.models.Rating.delete({userId: identifiant.value}) 
       // //ça supprime pas => je cherche les id unique puis je map
 
-      const {data} = await client.models.Rating.list({filter:{userId:{eq:identifiant.value}}})
+      const {data} = await client.models.Rating.list({filter:{userId:{eq:identifiant.value}}});
       userRatings.value = data ?? [];
       await Promise.all(userRatings.value.map(rating => client.models.Rating.delete({id: rating.id})));
       await client.models.UserProfile.update({
         id:identifiant.value,
         hasCompleted:false
-      })
-      location.href = '/'
+      });
     }
 
   }catch(error){
+    console.log(error);
+    throw error;
+  }
+}
+
+async function handleReset() {
+  try {
+    await raz();
+    router.push('/');
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function handleDeleteUser() {
+  try {
+    const { data, errors } = await client.mutations.deleteMyAccount();
+
+    if (errors?.length) {
+      console.log(errors);
+      return;
+    }
+
+    if (data) {
+      router.push('/');
+    }
+  } catch (error) {
     console.log(error);
   }
 }
 
 
-const isOpen = ref(false);
 function toggleMenu(){
     isOpen.value=!isOpen.value;
 }
-const menuRef= ref<HTMLElement | null>(null);
-    function handleClickOutside(e:MouseEvent){
-        if(menuRef.value && !menuRef.value.contains(e.target as Node)){
-            isOpen.value=false;
-        }
 
+function handleClickOutside(e:MouseEvent){
+    if(menuRef.value && !menuRef.value.contains(e.target as Node)){
+        isOpen.value=false;
     }
-    onMounted(()=> {
-        document.addEventListener("click",handleClickOutside);
-    })
-    onMounted(()=> {
-        document.removeEventListener("click",handleClickOutside);
-    })
+
+}
+
+onMounted(()=> {
+    document.addEventListener("click",handleClickOutside);
+})
+onBeforeUnmount(()=> {
+    document.removeEventListener("click",handleClickOutside);
+})
 
 </script>
 
 
 <template>
     <div class="profileContainer" ref="menuRef">
-        <div class="avatar" @click="toggleMenu ">
+        <div class="avatar" @click="toggleMenu">
             <font-awesome-icon icon="fa-solid fa-circle-user" size="lg" style="color: white;" />
         </div>
         <div v-if="isOpen" class="dropdown">
@@ -100,7 +122,7 @@ const menuRef= ref<HTMLElement | null>(null);
             <p class="email">Email : {{ email }}</p>
             <div class="gestion">
             <button  @click="signout()">Sign Out</button>
-            <button @click="raz()">Reset</button>
+            <button @click="handleReset()">Reset</button>
             <button @click="handleDeleteUser()">Delete account</button>
             </div>
         </div>

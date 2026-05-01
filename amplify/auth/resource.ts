@@ -1,4 +1,5 @@
 import { defineAuth } from '@aws-amplify/backend';
+import {deleteMyAccount} from '../functions/deleteAccount/resource';
 
 /**
  * Define and configure your auth resource
@@ -8,4 +9,7 @@ export const auth = defineAuth({
   loginWith: {
     email: true,
   },
+  access: (allow)=> [
+    allow.resource(deleteMyAccount).to(['manageUsers'])
+  ]
 });
