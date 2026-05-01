@@ -187,7 +187,6 @@ onMounted(async () => {
     }
     movie.value = data;
     cast.value = data.cast ?? '';
-<<<<<<< Dina/Frontend
 
     await loadSimilarMovies(data.id);
 
@@ -195,15 +194,6 @@ onMounted(async () => {
 
     console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
 
-=======
-
-    await loadSimilarMovies(data.id);
-
-    console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
-
-    console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
-
->>>>>>> main
     console.log("RESULT API court: ", data);
   } catch (error) {
     console.error("Error fetching movie details:", error);
@@ -336,15 +326,12 @@ async function handleRating(rating: number) {
   isSubmitting.value = true;
 
   try {
-<<<<<<< Dina/Frontend
     const { data: existingRatings } = await client.models.Rating.list({
       filter: {
         movieId: { eq: movie.value.movieId as string},
         userId: { eq: currentUserId.value}
       }
     });
-=======
->>>>>>> main
 
     if (existingRatings.length  > 0) {
       await client.models.Rating.update({
