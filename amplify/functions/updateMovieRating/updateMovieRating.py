@@ -2,6 +2,8 @@ import os
 import boto3
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
+from datetime import datetime, timezone
+
 
 #session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602") #configuration de la session boto3 pour accéder à DynamoDB, à remplacer par boto3 directement en prod
 
@@ -12,6 +14,9 @@ MOVIE_TABLE_NAME = os.environ.get("MOVIE_TABLE_NAME")
 RATING_USER_ID_INDEX = os.environ.get("RATING_USER_ID_INDEX")
 RATING_MOVIE_ID_INDEX = os.environ.get("RATING_MOVIE_ID_INDEX")
 MOVIE_MOVIE_ID_INDEX = os.environ.get("MOVIE_MOVIE_ID_INDEX")
+
+def now_iso():
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 #les arguments peuvent être à la racine de l'event ou dans une clé "arguments" 
 # selon comment le front appelle le Lambda 
@@ -83,14 +88,19 @@ def handler(event, context):
     )
 
     existing = [item for item in user_ratings if item["movieId"] == movie_id]
+    current_time = now_iso()
 
     if existing:
         # Mise à jour de la note existante si l'utilisateur a déjà noté ce film
         item = existing[0]
         rating_table.update_item(
             Key={"id": item["id"]},
-            UpdateExpression="SET rating = :r",
-            ExpressionAttributeValues={":r": Decimal(str(rating_value))},
+            UpdateExpression="SET rating = :r, updatedAt = :u",
+            ExpressionAttributeValues={
+                ":r": Decimal(str(rating_value)),
+                ":u": current_time
+            }
+
         )
     else:
         # Sinon création d'une nouvelle note
@@ -103,6 +113,8 @@ def handler(event, context):
                 "rating": Decimal(str(rating_value)),
                 "owner": user_id,  # champ requis par Amplify pour allow.owner()
                 "__typename": "Rating",
+                "createdAt": current_time,
+                "updatedAt": current_time
             }
         )
     
@@ -124,10 +136,10 @@ def handler(event, context):
     total_sum = (base_vote_average * base_vote_count) + user_vote_sum
     vote_average = round(total_sum / total_count, 1) if total_count > 0 else 0.0
 
-    # Mettre à jour voteAverage et voteCounT dans Movie 
+    # Mettre à jour voteAverage et voteCount dans Movie 
     movie_table.update_item(
         Key={"id": movie["id"]},
-        UpdateExpression="SET voteAverage = :avg, voteCount = :cnt, #iavg = :iavg, #icnt = :icnt", 
+        UpdateExpression="SET voteAverage = :avg, voteCount = :cnt, #iavg = :iavg, #icnt = :icnt, updatedAt = :u", 
         ExpressionAttributeNames={
             "#iavg": "initialVoteAverage",
             "#icnt": "initialVoteCount"
@@ -136,7 +148,8 @@ def handler(event, context):
             ":avg": Decimal(str(vote_average)),
             ":cnt": total_count,
             ":iavg": Decimal(str(base_vote_average)),
-            ":icnt": base_vote_count
+            ":icnt": base_vote_count,
+            ":u": current_time
         },
     )
 
