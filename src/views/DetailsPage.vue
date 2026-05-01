@@ -180,14 +180,7 @@ onMounted(async () => {
       id: route.params.id as string});
       movie.value = data;
       cast.value = data?.cast || [];
-
       await loadSimilarMovies(data.id);
-
-      console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
-
-      console.log("UUID DYNAMODB", data?.id, "| movieId entier=",data?.movieId);
-
-     console.log("RESULT API court: ", data);
   } catch (error) {
     console.error("Error fetching movie details:", error);
    
@@ -204,23 +197,31 @@ onMounted(async () => {
     }
 });
 
-onMounted(async () => {
+onMounted(async()=>{
   try {
-    const user = await getCurrentUser();
-    console.log("user",user);
-    currentUserId.value = user.userId; // ou user.attributes.sub selon votre configuration Cognito
-    const { data } = await client.models.Rating.list({
-      filter: {
-        movieId: { eq: route.params.id as string },
-        userId: { eq: currentUserId.value } // Remplacez par l'ID de l'utilisateur connecté
-      }
-    });
-    if (data.length > 0) {
-      hasVoted.value = true;
-      userRating.value = data[0].rating;
+    const user=await getCurrentUser();
+    currentUserId.value=user.userId;
+    console.log("user id", currentUserId.value);
+  }catch(error){
+    console.error("Error fetching movie details:", error);
+  }
+});
+
+watch([movie, currentUserId], async ([newMovie, userId]) => {
+  if (!newMovie || !userId) return;
+
+  const { data } = await client.models.Rating.list({
+    filter : {
+      movieId: { eq : newMovie.id},
+      userId: { eq: userId}
     }
-  } catch (error) {
-    console.error("Error fetching user rating:", error);
+  });
+
+  if (data.length > 0) {
+    hasVoted.value=true;
+    userRating.value=data[0].rating;
+  }else{
+    hasVoted.value=false;
   }
 });
 
@@ -237,7 +238,7 @@ watch(() => route.params.id, async (newId) => {
 
     const { data: ratings } = await client.models.Rating.list ({
       filter : {
-        movieId : { eq: newId as string},
+        movieId : { eq: data.id},
         userId: { eq: currentUserId.value}
       }
     });
@@ -297,20 +298,18 @@ function getGenres(id:number|null|undefined){
 }
 
 async function handleRating(rating: number) {
+  console.log("CLICK");
   if (!movie.value || hasVoted.value || isSubmitting.value) return;
-  if (!currentUserId.value) return;
-
+  if (!currentUserId.value) {
+    console.log("no user");
+   return;
+  }
   isSubmitting.value = true;
 
   try {
-    await client.models.Rating.create({
-      movieId: movie.value.id,
-      userId: currentUserId.value,
-      rating
-    });
-
+  
     const res = await client.mutations.updateUserRating({
-      movieId: movie.value.movieId,
+      movieId: movie.value.id,
       userId: currentUserId.value,
       rating
     });
