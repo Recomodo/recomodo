@@ -1,11 +1,11 @@
 <template>
 
-<input type="search" placeholder="Search...  🔍" id="titre_film" class="searchBar" v-model="titre"  @keydown.enter="emitSearch" > <!--v-model => titre.value="ce que l'utilisateur entre" --> <!--@input="onInput"-->
+<input type="search" placeholder="Search...  🔍" id="titre_film" class="searchBar" v-model="titre" @input="onInput" @keydown.enter="emitSearch" > <!--v-model => titre.value="ce que l'utilisateur entre" --> <!--@input="onInput"-->
 
 </template>
 
 <script setup lang="ts">
-
+import "@/assets/search.css";
 import {ref} from "vue";
 
 const titre=ref("");
@@ -27,14 +27,3 @@ function onInput() {
 }
 
 </script>
-<style>
-.searchBar{
-    border-radius: 7px;
-    padding-inline: 12px;
-    padding-block: 3px;
-}
-.searchBar:hover{
-    border-color: rgb(239, 162, 239);
-}
-
-</style>
