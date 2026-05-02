@@ -53,9 +53,6 @@ async function handleDeleteUser() {
 async function raz(){
   try{
     if (identifiant.value) {
-      //await client.models.Rating.delete({userId: identifiant.value}) 
-      // //ça supprime pas => je cherche les id unique puis je map
-
       const {data} = await client.models.Rating.list({filter:{userId:{eq:identifiant.value}}})
       userRatings.value = data ?? [];
       await Promise.all(userRatings.value.map(rating => client.models.Rating.delete({id: rating.id})));
@@ -86,7 +83,7 @@ const menuRef= ref<HTMLElement | null>(null);
     onMounted(()=> {
         document.addEventListener("click",handleClickOutside);
     })
-    onMounted(()=> {
+    onBeforeUnmount(()=> {
         document.removeEventListener("click",handleClickOutside);
     })
 
@@ -95,9 +92,6 @@ const menuRef= ref<HTMLElement | null>(null);
 
 <template>
     <div class="profileContainer" ref="menuRef">
-        <!--<div class="avatar" @click="toggleMenu ">
-            <font-awesome-icon icon="fa-solid fa-circle-user" size="lg" style="color: white;" />
-        </div>-->
         <div class="avatar" @click="toggleMenu">
           {{ userName?.charAt(0).toUpperCase() }}
         </div>

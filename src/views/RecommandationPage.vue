@@ -19,17 +19,13 @@ onMounted(async () => {
         const user = await getCurrentUser();
         identifiant.value = user.userId;
         const { data, errors } = await client.queries.getRecommendations({
-        //userId: identifiant.value ?? "",
-        userId:"tmdb_150",
+        userId: identifiant.value ?? "",
         })
       moviesIds.value=data?.recommendations;
 
       // récuperer les films complets
       const moviesData = await Promise.all(moviesIds.value.map((movieId:string) => client.models.Movie.get({ id: movieId})))
       movies.value = moviesData.map(res => res.data).filter(movie => movie !== undefined)
-      console.log("Recommendations fetched:", moviesIds.value);
-      console.log("data:", data);
-      console.log("errors:", errors);
     } catch (error) {
       console.error("Error fetching movies:", error);
     }

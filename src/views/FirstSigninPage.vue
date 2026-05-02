@@ -66,16 +66,10 @@ console.log("Ratings submitted:", ratings.value);
 
 
   location.href = '/'
-/*profile.value.hasCompleted = true;
-  redirected()
-}
-async function redirected(){
-   await router.push('/');
-}*/
 }
 onMounted(async () => {
     try {
-      const { data, errors } = await client.models.Genre.list({
+      const { data} = await client.models.Genre.list({
         limit: 20
       });
       genres.value=data ?? [];
@@ -125,14 +119,12 @@ try{
   if(index === -1)return;
   const currentMovie = movies.value[index];
   const genreId= currentMovie.mainGenre;
-  console.log("le main genre:",genreId);
 
   if(!genreId) return;
 
   const excludedIds=Array.from(seenMoviesIds.value);
-  
-  //console.log("ids exclus",excludedIds);
-  const{data, errors} = await client.queries.getMovieByGenre({
+
+    const{data, errors} = await client.queries.getMovieByGenre({
     genreId,
     excludedIds
   });
@@ -160,7 +152,6 @@ try{
     voteAverage: Number(data.voteAverage)
   };
 
-  //delete ratings.value[idMovieToChange]
 }catch (error){
   console.error("erreur changement de film:",error);
 }finally{
