@@ -1,10 +1,10 @@
 import pandas as pd
 import ast
 
-movies = pd.read_csv('scripts/dataset/movies_cleaned.csv')
+movies = pd.read_csv('data/dataset/movies_cleaned.csv')
 
-metadata = pd.read_csv('scripts/dataset/movies_metadata.csv', low_memory=False)
-credits = pd.read_csv('scripts/dataset/credits.csv')
+metadata = pd.read_csv('data/dataset/movies_metadata.csv', low_memory=False)
+credits = pd.read_csv('data/dataset/credits.csv')
 
 #RUNTIME
 metadata = metadata[['id', 'runtime']].copy()
@@ -43,7 +43,7 @@ incomplete = movies[
 
 # Export des IDs à supprimer dans DynamoDB
 ids_to_delete = incomplete['movieId'].drop_duplicates()
-ids_to_delete.to_csv('scripts/dataset/ids_to_delete.csv', index=False, header=True)
+ids_to_delete.to_csv('data/dataset/ids_to_delete.csv', index=False, header=True)
 print(f"  {len(ids_to_delete)} films incomplets → IDs exportés dans ids_to_delete.csv")
 
 # Suppression dans le csv 
@@ -54,5 +54,5 @@ after = len(movies)
 print(f"  {before - after} films supprimés de movies_cleaned.csv")
 
 # SAUVEGARDE
-movies.to_csv('scripts/dataset/movies_cleaned.csv', index=False)
+movies.to_csv('data/dataset/movies_cleaned.csv', index=False)
 print(f"Done ! {after} films enrichis avec runtime et cast.")

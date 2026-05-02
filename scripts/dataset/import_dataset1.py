@@ -75,7 +75,7 @@ print("  Table Genre vidée.")
 # IMPORT TABLE GENRE
  
  
-genres = pd.read_csv('scripts/dataset/genres_clean.csv')
+genres = pd.read_csv('data/dataset/genres_clean.csv')
  
 print("\nImport des genres...")
  
@@ -105,7 +105,7 @@ print(f"  Genres importés : {len(genres) - errors_genres}")
 print("\nImport des films...")
  
 print(f"Lecture du fichier des films depuis le CSV")
-movies = pd.read_csv('scripts/dataset/movies_cleaned.csv')
+movies = pd.read_csv('data/dataset/movies_cleaned.csv')
 print(f"{len(movies)} films à importer")
  
 errors_movies = 0

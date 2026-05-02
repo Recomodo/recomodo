@@ -15,12 +15,6 @@ NOM_TABLE_RATING = 'Rating-pmu5tm5u2vfw5gpeaqtiqqs2be-NONE'  # À adapter si bes
  
 table_rating = dynamodb.Table(NOM_TABLE_RATING)
  
-# CHARGEMENT DU FICHIER RATINGS
-# The Movies Dataset contient deux fichiers de ratings :
-#   - ratings.csv       : ~26 millions de lignes (très lourd)
-#   - ratings_small.csv : ~100 000 lignes (celui utilisé pour tester l'algorithme))
-#
-# Colonnes du fichier : userId, movieId, rating, timestamp
 # Note : les userId sont des entiers anonymisés (pas des Cognito IDs)
 # On les préfixe avec "tmdb_" pour les distinguer des vrais users
  # SUPPRESSION DE TOUS LES RATINGS EXISTANTS
@@ -48,7 +42,7 @@ print("  Table vidée.")
 
 print("Lecture du fichier ratings...")
  
-df = pd.read_csv('scripts/dataset/ratings_small.csv')
+df = pd.read_csv('data/dataset/ratings_small.csv')
  
 print(f"{len(df)} ratings à importer")
  
@@ -56,7 +50,7 @@ print(f"{len(df)} ratings à importer")
 # qui existent dans notre table Movie nettoyée
 
  
-movies = pd.read_csv('scripts/dataset/movies_cleaned.csv', usecols=['movieId']) #on ne charge que la colonne movieId pour gagner du temps et de la mémoire
+movies = pd.read_csv('data/dataset/movies_cleaned.csv', usecols=['movieId']) #on ne charge que la colonne movieId pour gagner du temps et de la mémoire
 movie_ids_valides = set(movies['movieId'].astype(str))#on convertit les movieId en string pour les comparer avec ceux du fichier ratings, qui sont aussi des string (car on les a convertis en string dans le script de nettoyage et dans Amplify)
  
 df['movieId'] = df['movieId'].astype(str)#on convertit les movieId en string pour les comparer avec ceux du fichier movies_cleaned.csv, qui sont aussi des string (car on les a convertis en string dans le script de nettoyage et dans Amplify)

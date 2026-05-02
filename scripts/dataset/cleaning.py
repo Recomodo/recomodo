@@ -28,12 +28,12 @@ import ast
 print("Chargement des fichiers...")
 
 movies = pd.read_csv(
-    "scripts/dataset/movies_metadata.csv",
+    "data/dataset/movies_metadata.csv",
     low_memory=False  # évite les warnings liés aux types mélangés
 )
 
-keywords = pd.read_csv("scripts/dataset/keywords.csv")
-credits = pd.read_csv("scripts/dataset/credits.csv")
+keywords = pd.read_csv("data/dataset/keywords.csv")
+credits = pd.read_csv("data/dataset/credits.csv")
 
 print(f"Nombre total de films chargés : {len(movies)}")
 
@@ -170,7 +170,7 @@ movies = movies[[
 # ==========================================================
 
 movies.to_csv(
-    "scripts/dataset/movies_cleaned.csv",
+    "data/dataset/movies_cleaned.csv",
     index=False
 )
 
@@ -192,7 +192,7 @@ for liste in movies["genres"]:
 
 # On récupère les noms depuis le dataset original
 for _, row in pd.read_csv(
-    "scripts/dataset/movies_metadata.csv",
+    "data/dataset/movies_metadata.csv",
     low_memory=False
 ).iterrows():
     try:
@@ -210,7 +210,7 @@ genre_df = pd.DataFrame([
 ])
 
 genre_df.to_csv(
-    "scripts/dataset/genres_clean.csv",
+    "data/dataset/genres_clean.csv",
     index=False
 )
 
