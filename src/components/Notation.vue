@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import '@/assets/CssNotation.css';
 
 const props = defineProps<{
     notation: number;
@@ -44,36 +45,3 @@ function getDisplayValue(star: number) {
     </div>
 </div>
 </template>
-
-<style scoped>
-.stars {
-    display: flex;
-    gap: 6px;
-    font-size: 2rem;
-    cursor: pointer;
-}
-
-.star-wrapper {
-    position: relative;
-    width: 32px;
-    height: 32px;
-}
-
-.star {
-    position: absolute;
-    top: 0;
-    left: 0;
-    color:white;
-    transition: 0.2s;
-}
-
-.full {
-    color: #f5c518;
-}
-.half {
-    color: #f5c518;
-    width: 44%;
-    overflow: hidden;
-    display: inline-block;
-}
-</style>
