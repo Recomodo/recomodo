@@ -233,18 +233,6 @@ function goToMovie(id: string){
 
 <template>
   <div  v-if="movie" class="movie-details-page">
-   <div class="movie-page">
-   <div class="movie-section" >
-    <!-- Background blur avec le poster -->
-    <div class="backdrop-container">
-      <img 
-        :src="getImageUrl(movie.posterPath)" 
-        :alt="movie.title"
-        class="backdrop-image"
-      />
-      <div class="backdrop-overlay"></div>
-    </div>
-
     <!-- Bouton retour -->
     <button @click="goBack" class="back-button">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -253,11 +241,20 @@ function goToMovie(id: string){
       Back
     </button>
 
+   <div class="movie-page">
+   <div class="movie-section" >
+
     <!-- Contenu principal -->
     <div class="movie-content">
       <!-- Poster -->
       <div class="poster-section">
         <div class="poster-wrapper">
+          <img
+            :src="getImageUrl(movie.posterPath)"
+            :alt="movie.title"
+            class="poster-backdrop"
+            aria-hidden="true"
+          />
           <img 
             :src="getImageUrl(movie.posterPath)" 
             :alt="movie.title"

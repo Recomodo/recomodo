@@ -16,6 +16,8 @@ html, body{
   flex-wrap: wrap;
   background-size: cover;
   display: block;
+  background: radial-gradient(circle at top, rgba(37, 99, 235, 0.2), transparent 40%),
+  linear-gradient(180deg, #10131f 0%, #06070c 55%, #020308 100%);
 }
 
 .movie-page {
@@ -42,30 +44,6 @@ html, body{
   height: 500px;
   z-index: 0;
   width: 100%;
-}
-
-.backdrop-image {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  object-fit: contain;
-  object-position: left bottom;
-  filter: blur(10px) brightness(0.5);
-  transform: scale(1.1) translateX(7.5%) translateY(31%);
-  display: block;
-  transform-origin: top;
-  opacity:0.8;
-  top: 0;
-  left: 0;
-}
-
-.backdrop-image-bg {
-  position:absolute;
-  width: 100%;
-  height:100%;
-  object-fit: cover;
-  filter: blur(10px) brightness(0.5);
-  transform: scale(1.1);
 }
 
 /* Bouton retour */
@@ -118,8 +96,21 @@ html, body{
   width: 320px;
 }
 
+.poster-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translate(20px, 20px) scale(1.08);
+  filter: blur(26px) brightness(0.55) saturate(1.1);
+  opacity: 0.95;
+  border-radius: 18px;
+}
+
 .movie-poster {
   width: 100%;
+  position: relative;
   border-radius: 16px;
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
@@ -150,7 +141,7 @@ html, body{
   align-items: center;
   gap: 0.4rem;
   padding: 0.6rem 1rem;
-  background: linear-gradient(135deg, rgb(222, 106, 222) 0%, rgb(222, 106, 222) 100%);
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   border-radius: 50px;
   color: rgb(222, 106, 222);
   font-weight: 700;
@@ -223,7 +214,6 @@ html, body{
 .section-title {
   font-size: 1.125rem;
   font-weight: 600;
-  /*color: #71717a;*/
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.75rem;

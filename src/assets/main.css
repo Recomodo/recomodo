@@ -9,6 +9,7 @@ body {
 
 main {
   min-width: 100vh;
+  width: 100%;
 }
 
 button {
@@ -62,7 +63,7 @@ a {
 
 /*css de mon footer*/
 footer {
-    background-color: #15001d;
-    color: #E8DEF8;
-    border-top: #E8DEF8 solid 1px;
+  background-color: #15001d;
+  color: #E8DEF8;
+  border-top: #E8DEF8 solid 1px;
 }
