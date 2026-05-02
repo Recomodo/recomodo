@@ -60,7 +60,7 @@ const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
 const isSearching=ref(false);
 
 async function searchMovies(query:string) {
-  const q=query.trim();
+  const q=query.toLocaleLowerCase().trim();
     let results:any[]=[];
     let nextToken:string | null=null;
   if(!q){
@@ -84,6 +84,9 @@ do{
     nextToken=newNextToken?? null;
     console.log(data);
   }while(nextToken)
+searchResults.value=results;
+}
+
 
 function getImageUrl(posterPath: any) {
    const path = String(posterPath || '').trim();
@@ -101,8 +104,7 @@ function handleImageError(event: Event) {
   }
 }
 
-searchResults.value=results;
-}
+
 </script>
 
 
