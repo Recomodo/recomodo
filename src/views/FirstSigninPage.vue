@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import "@/assets/FirstSignIn.css";
+import {handleImageError} from "@/utils/defaultPoster";
 //récuperer le liste des genres dans un tableau
 import { ref, onMounted ,computed} from 'vue';
 import { useRouter } from 'vue-router';
@@ -66,16 +67,10 @@ console.log("Ratings submitted:", ratings.value);
 
 
   location.href = '/'
-/*profile.value.hasCompleted = true;
-  redirected()
-}
-async function redirected(){
-   await router.push('/');
-}*/
 }
 onMounted(async () => {
     try {
-      const { data, errors } = await client.models.Genre.list({
+      const { data} = await client.models.Genre.list({
         limit: 20
       });
       genres.value=data ?? [];
@@ -125,14 +120,12 @@ try{
   if(index === -1)return;
   const currentMovie = movies.value[index];
   const genreId= currentMovie.mainGenre;
-  console.log("le main genre:",genreId);
 
   if(!genreId) return;
 
   const excludedIds=Array.from(seenMoviesIds.value);
-  
-  //console.log("ids exclus",excludedIds);
-  const{data, errors} = await client.queries.getMovieByGenre({
+
+    const{data, errors} = await client.queries.getMovieByGenre({
     genreId,
     excludedIds
   });
@@ -160,29 +153,28 @@ try{
     voteAverage: Number(data.voteAverage)
   };
 
-  //delete ratings.value[idMovieToChange]
 }catch (error){
   console.error("erreur changement de film:",error);
 }finally{
   loadingMovie.value[idMovieToChange]=false;
 }
-
-
 }
 
 </script>
 
 
 <template>
-   
+<div class="pageContainer"> 
    <p class="pform">Please rate at least 10 movies from the list for a better recommendation</p>
-<div class="formContainer">
+ <div class="formContainer">
   
   <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
     <div>
       <button class="autre" :disabled="ratings[movie.movieId]>0" @click="changeMovie(movie.movieId)"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" /></button>
-    <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
-         :alt="movie.title ?? ''" />
+    <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath 
+         :'/defaultPoster.webp'"
+         :alt="movie.title"
+         @error="handleImageError" />
   </div>
          <div class="formSubContainer">
     <div class="discriptionForm">
@@ -199,12 +191,17 @@ try{
      </div>
      </div>
   </div>
+ </div>
+  <div class="submit">
     <p v-if="ratingsCount<10" style="color: brown;">
       Minimum 10 films requis ({{ ratingsCount }}/10)
     </p>
+    <span>
     <button :disabled="ratingsCount<10" @click="submit">
       Submit
     </button>
+  </span>
+  </div>
 </div> 
 
 </template>
