@@ -5,7 +5,7 @@ import ast
 
 print("Chargement de movies_cleaned.csv...")
 
-movies = pd.read_csv("scripts/dataset/movies_cleaned.csv")
+movies = pd.read_csv("data/dataset/movies_cleaned.csv")
 
 nombre_initial = len(movies)
 print(f"Nombre initial de films : {nombre_initial}")
@@ -67,7 +67,7 @@ print(f"Films incomplets supprimés : {films_incomplets}")
 nombre_final = len(movies)
 films_supprimes = nombre_initial - nombre_final
 
-print("\n======== RÉSUMÉ ========")
+
 print(f"Films avec genres vides supprimés : {films_genres_vides}")
 print(f"Films avec keywords vides supprimés : {films_keywords_vides}")
 print(f"Total supprimés : {films_supprimes}")
@@ -77,7 +77,6 @@ print(f"Nombre final de films : {nombre_final}")
 
 # Sauvegarde
 
-movies.to_csv("scripts/dataset/movies_cleaned.csv", index=False)
+movies.to_csv("data/dataset/movies_cleaned.csv", index=False)
 
 print("\nFichier movies_cleaned.csv généré avec succès.")
-print("Script terminé correctement.")
