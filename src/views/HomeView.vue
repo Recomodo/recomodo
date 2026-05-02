@@ -101,6 +101,8 @@ function handleImageError(event: Event) {
   }
 }
 
+searchResults.value=results;
+}
 </script>
 
 
