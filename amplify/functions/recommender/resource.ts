@@ -20,7 +20,8 @@ export const recommender = defineFunction((scope) => {
       RATINGS_TABLE_NAME: "Rating-ijhwxiff7nbgfe7pbxjat2dtxi-NONE",
       RATINGS_USER_ID_INDEX: "byUserId",
       DATA_BUCKET_NAME: "amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm",
-      MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_genre.json",
+      MOVIES_RECOMMENDATIONS_KEY: "recomodo/movie_recommendations_combined100.json",
+      POPULARITY_KEY: "recomodo/movie_popularity.json"
     },
     code: Code.fromAsset(functionDir, {
       bundling: {
@@ -52,7 +53,8 @@ export const recommender = defineFunction((scope) => {
     new PolicyStatement({
       actions: ["s3:GetObject"],
       resources: [
-        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm/recomodo/movie_recommendations_genre.json",
+        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm/recomodo/movie_recommendations_combined100.json",
+        "arn:aws:s3:::amplify-d3v79e9tgrgj6d-ma-recomodostoragebucket2db-xqzggitjajtm/recomodo/movie_popularity.json",
       ],
     })
   );
