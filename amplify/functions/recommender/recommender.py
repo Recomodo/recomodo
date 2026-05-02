@@ -42,7 +42,7 @@ def load_popularity_from_s3():
     global _popularity_cache
     if _popularity_cache is None:
         response = s3.get_object(Bucket=DATA_BUCKET_NAME, Key=POPULARITY_KEY)
-        _popularity_cache = json.load(response["Body"].read().decode("utf-8"))
+        _popularity_cache = json.loads(response["Body"].read().decode("utf-8"))
     return _popularity_cache
 
 #on récupère l'id du user qui demande la recommandation
@@ -203,6 +203,88 @@ def handler(event, context):
 
 # if __name__ == "__main__":
 #     test_event = {
-#     "arguments": {"userId": "a119909e-f031-701f-7b70-f0471de2d079"}
+#     "arguments": {"userId": "tmdb_102"}
 #     }
 #     print(handler(test_event, None))
+
+# if __name__ == "__main__":
+#     import time
+
+#     test_event = {
+#         "arguments": {"userId": "tmdb_102"}
+#     }
+
+#     print("=== Benchmark recommender ===")
+
+#     # ----------------------------
+#     # 1. Test a froid
+#     # ----------------------------
+#     cold_durations = []
+
+#     for i in range(5):
+#         _recommendations_cache = None
+#         _popularity_cache = None
+
+#         start = time.perf_counter()
+#         result = handler(test_event, None)
+#         end = time.perf_counter()
+
+#         duration = end - start
+#         cold_durations.append(duration)
+#         print(f"Run a froid {i + 1}: {duration:.6f} s")
+
+#     avg_cold = sum(cold_durations) / len(cold_durations)
+#     print(f"Temps moyen a froid : {avg_cold:.6f} s")
+
+#     print()
+
+#     # ----------------------------
+#     # 2. Chargement initial du cache
+#     # ----------------------------
+#     _recommendations_cache = None
+#     _popularity_cache = None
+#     handler(test_event, None)
+
+#     # ----------------------------
+#     # 3. Test a chaud
+#     # ----------------------------
+#     warm_durations = []
+
+#     for i in range(10):
+#         start = time.perf_counter()
+#         result = handler(test_event, None)
+#         end = time.perf_counter()
+
+#         duration = end - start
+#         warm_durations.append(duration)
+#         print(f"Run a chaud {i + 1}: {duration:.6f} s")
+
+#     avg_warm = sum(warm_durations) / len(warm_durations)
+#     print(f"Temps moyen a chaud : {avg_warm:.6f} s")
+
+#     print()
+#     print("Dernier resultat :")
+#     print(result)
+
+# === Benchmark recommender ===
+# Run a froid 1: 51.522323 s
+# Run a froid 2: 79.455794 s
+# Run a froid 3: 2.231118 s
+# Run a froid 4: 2.089934 s
+# Run a froid 5: 1.864625 s
+# Temps moyen a froid : 27.432759 s
+
+# Run a chaud 1: 0.063331 s
+# Run a chaud 2: 0.045381 s
+# Run a chaud 3: 0.106805 s
+# Run a chaud 4: 0.048242 s
+# Run a chaud 5: 0.048139 s
+# Run a chaud 6: 0.041831 s
+# Run a chaud 7: 0.044668 s
+# Run a chaud 8: 0.046592 s
+# Run a chaud 9: 0.041342 s
+# Run a chaud 10: 0.040301 s
+# Temps moyen a chaud : 0.052663 s
+
+# Dernier resultat :
+# {'userId': 'tmdb_102', 'recommendations': ['4993', '110', '1580', '364', '380', '8961', '223', '4886', '3114', '349', '4995', '4011', '2324', '500', '6']}
