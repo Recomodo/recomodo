@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "@/assets/filmCard.css";
 import {ref, computed , onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
@@ -46,8 +47,7 @@ async function loadMoviesPage(page: number) {
 
 
 onMounted(() => {
-    loadMoviesPage(1);
-    //loadAllMovies();  
+    loadMoviesPage(1); 
 });
 
 function handlePageChange(page: number) {
@@ -56,86 +56,9 @@ function handlePageChange(page: number) {
 }
 
 //recherche
-
-//algo le plus rapide mais plus de bugs
-
 const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
 const isSearching=ref(false);
-/*
-// Ajoutez ces 3 refs en plus de ceux existants
-const allMovies = ref<Array<Schema['Movie']["type"]>>([]);
-const isLoadingAll = ref(false);
-const allMoviesLoaded = ref(false);
 
-// Chargement en arrière-plan de tous les films
-async function loadAllMovies() {
-  isLoadingAll.value = true;
-  let token: string | null = null;
-  const results: Array<Schema['Movie']["type"]> = [];
-
-  do {
-    const { data, nextToken } = await client.models.Movie.list({
-      limit: 500,
-      nextToken: token,
-    });
-    results.push(...(data ?? []));
-    token = nextToken ?? null;
-  } while (token);
-
-  allMovies.value = results;
-  allMoviesLoaded.value = true;
-  isLoadingAll.value = false;
-}
-
-
-// Remplacer searchMovies — plus de async, plus d'appel réseau
-function searchMovies(query: string) {
-  const q = query.toLowerCase().trim();
-  if (!q) {
-    isSearching.value = false;
-    searchResults.value = [];
-    return;
-  }
-
-  isSearching.value = true;
-
-  searchResults.value = allMovies.value.filter(movie => {
-    const title = movie.title?.toLowerCase() ?? "";
-    const keywords = movie.keywords?.toLowerCase() ?? "";
-    return title.includes(q) || keywords.includes(q);
-  });
-
-}*/
-
-
-//algo3
-/*async function searchMovies(query:string) {
-  let results:any[]=[];
-  let nextToken:string | null=null;
-  const q=query.trim();
-  if(!q){
-    isSearching.value=false;
-    searchResults.value=[];
-    return;
-  }
-  isSearching.value=true;
-
-do{
-    const {data,nextToken:newNextToken}:{data:any[]; nextToken?:string|null;} =await client.models.Movie.list({
-      filter:{
-        or:[{title: {contains:q}},
-          {keywords:{contains:q}},
-        ]
-      },
-      nextToken,
-    });
-    results = [...results, ...(data ?? [])];
-    nextToken=newNextToken?? null;
-    console.log(data);
-  }while(nextToken)
-
-searchResults.value=results;
-}*/
 async function searchMovies(query:string) {
   const q=query.trim();
     let results:any[]=[];
@@ -149,8 +72,12 @@ async function searchMovies(query:string) {
 do{
     const {data,nextToken:newNextToken}:{data:any[]; nextToken?:string|null;} =await client.models.Movie.list({
       filter:{
-        title: {beginsWith:q},
+        or:[
+        {title: {contains:q}},
+        {keywords: {contains:q}},
+      ]
       },
+      limit:2000,
       nextToken,
     });
     results = [...results, ...(data ?? [])];
@@ -184,14 +111,13 @@ function handleImageError(event: Event) {
     <h1>Welcome to Recomodo</h1>
     </div>
     <div class="Search">
-    <!-- <SearchBar @search="searchMovies"/> -->
-    <SearchBar/>
+    <SearchBar @search="searchMovies"/>
     </div>
   </div>
 <div class="content">
 <div class="container">
     <RouterLink
-       v-for="movie in movies"
+       v-for="movie in isSearching? searchResults:movies"
         :key="movie.movieId"
         :to=" { name: 'details', params: { id: movie.movieId } }"
          
@@ -210,7 +136,7 @@ function handleImageError(event: Event) {
     </RouterLink>
 </div>
 
-<div class="pagination-wrapper">
+<div v-if="!isSearching" class="pagination-wrapper">
     <Pagination 
         :currentPage="currentPage"
         @page-changed="handlePageChange"/>
