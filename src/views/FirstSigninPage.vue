@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import "@/assets/FirstSignIn.css";
+import {handleImageError} from "@/utils/defaultPoster";
 //récuperer le liste des genres dans un tableau
 import { ref, onMounted ,computed} from 'vue';
 import { useRouter } from 'vue-router';
@@ -157,8 +158,6 @@ try{
 }finally{
   loadingMovie.value[idMovieToChange]=false;
 }
-
-
 }
 
 </script>
@@ -172,8 +171,10 @@ try{
   <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
     <div>
       <button class="autre" :disabled="ratings[movie.movieId]>0" @click="changeMovie(movie.movieId)"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" /></button>
-    <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
-         :alt="movie.title ?? ''" />
+    <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath 
+         :'/defaultPoster.webp'"
+         :alt="movie.title"
+         @error="handleImageError" />
   </div>
          <div class="formSubContainer">
     <div class="discriptionForm">

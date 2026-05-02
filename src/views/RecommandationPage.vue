@@ -5,6 +5,7 @@ import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
 import { generateClient } from 'aws-amplify/data';
 import { getCurrentUser} from 'aws-amplify/auth';
+import {handleImageError} from "@/utils/defaultPoster";
 
 const router = useRouter(); 
 
@@ -47,7 +48,8 @@ function filmDetails(movieId:string){
 <div class="container">
 <div  class="movie-card"v-for="(movie) in movies" :key="movie.movieId" @click="filmDetails(movie.movieId)">
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
-         :alt="movie.title ?? ''" />
+         :alt="movie.title ?? ''" 
+         @error="handleImageError"/>
     <div class="movie-info">
        <span class="movie-title">{{ movie.title }}</span>
        <span class="movie-meta">{{ movie.voteAverage }}<font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: #f5c518;" /></span>
