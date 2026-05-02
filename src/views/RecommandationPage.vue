@@ -21,11 +21,13 @@ onMounted(async () => {
         const { data, errors } = await client.queries.getRecommendations({
         userId: identifiant.value ?? "",
         })
+        console.log("erreurs:",errors);
       moviesIds.value=data?.recommendations;
 
       // récuperer les films complets
       const moviesData = await Promise.all(moviesIds.value.map((movieId:string) => client.models.Movie.get({ id: movieId})))
       movies.value = moviesData.map(res => res.data).filter(movie => movie !== undefined)
+
     } catch (error) {
       console.error("Error fetching movies:", error);
     }
@@ -53,12 +55,3 @@ function filmDetails(movieId:string){
    </div>
 </div>
 </template>
-
-<style scoped>
-.title{
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-</style>

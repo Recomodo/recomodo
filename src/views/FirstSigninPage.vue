@@ -165,9 +165,9 @@ try{
 
 
 <template>
-   
+<div class="pageContainer"> 
    <p class="pform">Please rate at least 10 movies from the list for a better recommendation</p>
-<div class="formContainer">
+ <div class="formContainer">
   
   <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
     <div>
@@ -190,12 +190,17 @@ try{
      </div>
      </div>
   </div>
+ </div>
+  <div class="submit">
     <p v-if="ratingsCount<10" style="color: brown;">
       Minimum 10 films requis ({{ ratingsCount }}/10)
     </p>
+    <span>
     <button :disabled="ratingsCount<10" @click="submit">
       Submit
     </button>
+  </span>
+  </div>
 </div> 
 
 </template>
