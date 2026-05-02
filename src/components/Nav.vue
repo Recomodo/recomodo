@@ -9,7 +9,6 @@
             <router-link to="/recommendations"><b :class="{ active: activeLink === '/recommendations' }" class="nav_link">Recommendations</b></router-link>
             </div>
             <profile-menu/>
-            <!--<router-link to="/profile"><font-awesome-icon icon="fa-solid fa-circle-user" size="lg" style="color: white;" /></router-link>-->
         </div>
     </nav>
 </template>
