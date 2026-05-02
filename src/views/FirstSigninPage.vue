@@ -47,7 +47,6 @@ const ratingsCount = computed(() =>
 )
 
 async function submit() {
-  console.log("Ratings submitted:", ratings.value);
   // envoi avec api aux base dynamodb
   // ensuite redirection vers la page d'accueil
 await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //stocker les valeurs des notes 
@@ -57,7 +56,6 @@ await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //s
     rating
   })
 ));
-console.log("Ratings submitted:", ratings.value);
   if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
@@ -111,7 +109,6 @@ const seenMoviesIds=ref<Set<string>>(new Set());
   })
 
 async function changeMovie(idMovieToChange:string){
-  console.log("l'id du film à changer:",idMovieToChange);
 //appeler la lambda 
 try{
   loadingMovie.value[idMovieToChange]=true;
@@ -135,7 +132,6 @@ try{
     seenMoviesIds.value.add(data.movieId);
   }
 
-  console.log("l'id du film retourné par lambda:",data);
   console.log("erreur getMovieByGenre:",errors)
   if(errors || !data || !data.movieId){
     console.warn("aucun film trouvé");
