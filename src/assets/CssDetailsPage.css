@@ -14,10 +14,6 @@ html, body{
   overflow-x: hidden;
   width:100%;
   flex-wrap: wrap;
-  background-size: cover;
-  display: block;
-  background: radial-gradient(circle at top, rgba(37, 99, 235, 0.2), transparent 40%),
-  linear-gradient(180deg, #10131f 0%, #06070c 55%, #020308 100%);
 }
 
 .movie-page {
