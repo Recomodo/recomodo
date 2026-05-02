@@ -52,7 +52,8 @@ async function raz(){
       await client.models.UserProfile.update({
         id:identifiant.value,
         hasCompleted:false
-      });
+      })
+      location.href = '/'
     }
 
   }catch(error){
