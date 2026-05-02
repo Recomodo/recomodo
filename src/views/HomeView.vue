@@ -6,6 +6,8 @@ import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 import SearchBar from '@/components/SearchBar.vue';
 import { textSpanContainsPosition } from 'typescript';
+import {handleImageError} from "@/utils/defaultPoster";
+
 
 const client = generateClient <Schema>();
 
@@ -97,12 +99,6 @@ function getImageUrl(posterPath: any) {
   return posterPath;
 }
 
-function handleImageError(event: Event) {
-  const target = event.target as HTMLImageElement | null;
-  if (target) {
-    target.src = '/defaultPoster.webp';
-  }
-}
 
 
 </script>
