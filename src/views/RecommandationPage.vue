@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import "@/assets/filmCard.css"
-import { useRouter } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
 import { generateClient } from 'aws-amplify/data';
@@ -20,7 +20,8 @@ onMounted(async () => {
         const user = await getCurrentUser();
         identifiant.value = user.userId;
         const { data, errors } = await client.queries.getRecommendations({
-        userId: identifiant.value ?? "",
+        //userId: identifiant.value ?? "",
+        userId:'c1b9904e-4011-7084-80c5-e437c3afefcc',
         })
         console.log("erreurs:",errors);
       moviesIds.value=data?.recommendations;
@@ -46,14 +47,16 @@ function filmDetails(movieId:string){
 
 <template>
 <div class="container">
-<div  class="movie-card"v-for="(movie) in movies" :key="movie.movieId" @click="filmDetails(movie.movieId)">
+   <router-link v-for="movie in movies" :key="movie.movieId" :to=" { name :'details', params:{ id:movie.movieId }}" 
+   class="movie-card">
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
-         :alt="movie.title ?? ''" 
-         @error="handleImageError"/>
+      :alt="movie.title ?? ''" 
+      @error="handleImageError"/>
     <div class="movie-info">
-       <span class="movie-title">{{ movie.title }}</span>
-       <span class="movie-meta">{{ movie.voteAverage }}<font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: #f5c518;" /></span>
-    </div>   
-   </div>
+      <p class="movie-title">{{ movie.title }}</p>
+      <p class="movie-meta">★ {{ movie.voteAverage }}</p>
+    </div>     
+
+  </router-link>
 </div>
 </template>
