@@ -15,6 +15,7 @@
 </template>
 
 <script setup>
+import "@/assets/nav.css";
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import ProfileMenu from './ProfileMenu.vue';
@@ -22,14 +23,3 @@ import ProfileMenu from './ProfileMenu.vue';
 const route = useRoute();
 const activeLink = computed(() => route.path);
 </script>
-
-<style >
-.nav_link{
-    color: #9c03be;
-}
-/*
-.nav_link.active{
-    color: #ff00fb;
-}*/
-
-</style>

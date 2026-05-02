@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "@/assets/FirstSignIn.css";
 //récuperer le liste des genres dans un tableau
 import { ref, onMounted ,computed} from 'vue';
 import { useRouter } from 'vue-router';
@@ -10,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
 
 import Rating from '@/components/Rating.vue';
+import Notation from '@/components/Notation.vue';
 
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
@@ -37,6 +39,7 @@ function getGenres(id:number|null|undefined) {
       
    }
 }
+
 const ratings = ref<Record<string, number>>({})
 const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
@@ -53,7 +56,7 @@ await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //s
     rating
   })
 ));
-
+console.log("Ratings submitted:", ratings.value);
   if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
@@ -97,6 +100,76 @@ onMounted(async () => {
       console.error("Error fetching movies:", error);
     }
 });
+
+
+
+
+// changer de films dans le cas ou il ne l'a pas vu 
+
+const loadingMovie=ref<Record<string,boolean>>({});
+const seenMoviesIds=ref<Set<string>>(new Set());
+
+  movies.value.forEach(m=>{
+    if(m.movieId){
+      seenMoviesIds.value.add(m.movieId);
+    }
+  })
+
+async function changeMovie(idMovieToChange:string){
+  console.log("l'id du film à changer:",idMovieToChange);
+//appeler la lambda 
+try{
+  loadingMovie.value[idMovieToChange]=true;
+  seenMoviesIds.value.add(idMovieToChange);
+  const index = movies.value.findIndex(m=>m.movieId === idMovieToChange);
+  if(index === -1)return;
+  const currentMovie = movies.value[index];
+  const genreId= currentMovie.mainGenre;
+  console.log("le main genre:",genreId);
+
+  if(!genreId) return;
+
+  const excludedIds=Array.from(seenMoviesIds.value);
+  
+  //console.log("ids exclus",excludedIds);
+  const{data, errors} = await client.queries.getMovieByGenre({
+    genreId,
+    excludedIds
+  });
+
+  //ajout de l'id du nouveau film dans exclus
+  if(data?.movieId){
+    seenMoviesIds.value.add(data.movieId);
+  }
+
+  console.log("l'id du film retourné par lambda:",data);
+  console.log("erreur getMovieByGenre:",errors)
+  if(errors || !data || !data.movieId){
+    console.warn("aucun film trouvé");
+    return;
+  }
+  if (!data.movieId || !data.title) {
+  console.warn("Film invalide reçu de la lambda");
+  return;
+}
+  movies.value[index]={
+    ...currentMovie,
+    ...data,
+    movieId:data.movieId,
+    title:data.title,
+    voteAverage: Number(data.voteAverage)
+  };
+
+  //delete ratings.value[idMovieToChange]
+}catch (error){
+  console.error("erreur changement de film:",error);
+}finally{
+  loadingMovie.value[idMovieToChange]=false;
+}
+
+
+}
+
 </script>
 
 
@@ -104,12 +177,16 @@ onMounted(async () => {
    
    <p class="pform">Please rate at least 10 movies from the list for a better recommendation</p>
 <div class="formContainer">
+  
   <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
+    <div>
+      <button class="autre" :disabled="ratings[movie.movieId]>0" @click="changeMovie(movie.movieId)"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" /></button>
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
          :alt="movie.title ?? ''" />
+  </div>
          <div class="formSubContainer">
     <div class="discriptionForm">
-       <p>{{ movie.title }}</p>
+       <p class="title">{{ movie.title }}</p>
        <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
     </div> 
     <div class="genres" v-if="movie.genres">
@@ -131,79 +208,3 @@ onMounted(async () => {
 </div> 
 
 </template>
-
-<style scoped>
-
-.formContainer{
-   display: flex;
-   flex-direction: row;
-   flex-wrap:wrap;
-   gap:40px;
-   padding-inline: 2rem;         /*inline padding*/
-   justify-content: center;
-}
-.blockMovie{
-   display: flex;
-   flex-direction: row;
-   justify-content: space-around;
-   background-color: rgb(61, 9, 67);
-   border-radius: 14px;
-   box-shadow: 20px 20px 20px rgba(239, 162, 239, 0.219);
-   height: 200px;
-   width : 550px;
-}
-
-.blockMovie img{
-   height: 150px;
-   width: 100px;
-   display: flex;
-   align-self: center;
-
-}
-.discriptionForm{
-   display: flex; 
-   width:100%;
-   justify-content: space-between;
-}
-
-.formSubContainer{
-   display: flex;
-   flex-direction: column;
-   justify-content: space-between;
-   padding-block: 1rem;
-   /*flex-wrap:wrap;
-   overflow: visible;*/
-}
-
-.genres{
-   display:flex;
-   flex-direction:row;
-}
-
-.genre{
-   display: inline;
-   color: rgb(239, 162, 239);
-   background-color: rgba(128, 0, 122, 0.153);
-   border-color:rgb(239, 162, 239);
-   border: 1px solid;
-   border-radius: 12px;
-   padding: 2px 6px;
-}
-
-button:disabled{
-   background-color: rgba(32, 32, 32, 0.568);
-   border: 1px solid rgba(32, 32, 32, 0.468);
-   cursor: not-allowed;
-}
-button{
-   background-color: rgb(61, 9, 67);
-   border: 1px solid rgb(61, 9, 67);
-   cursor: pointer;
-}
-
-.pform{
-  color: rgb(239, 162, 239);
-  font-weight: 600;
-}
-
-</style>
