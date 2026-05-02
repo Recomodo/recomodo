@@ -1,0 +1,8 @@
+.searchBar{
+    border-radius: 7px;
+    padding-inline: 12px;
+    padding-block: 3px;
+}
+.searchBar:hover{
+    border-color: rgb(239, 162, 239);
+}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "@/assets/filmCard.css"
 import { useRouter } from 'vue-router';
 import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
@@ -18,7 +19,7 @@ onMounted(async () => {
         const user = await getCurrentUser();
         identifiant.value = user.userId;
         const { data, errors } = await client.queries.getRecommendations({
-        //userId: identifiant.value ??
+        //userId: identifiant.value ?? "",
         userId:"tmdb_150",
         })
       moviesIds.value=data?.recommendations;
@@ -64,6 +65,4 @@ function filmDetails(movieId:string){
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-
 </style>
