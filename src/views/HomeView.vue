@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import "@/assets/filmCard.css";
+import "@/assets/search.css";
 import '@/assets/CssHomeView.css';
 import {ref, computed , onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';

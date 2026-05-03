@@ -17,9 +17,11 @@
   padding-top: 2rem;
 }
 
-.search{
+.haut-page {
   display: flex;
-  align-self: flex-end;
-  position:fixed;
-  right:0rem;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items:flex-end;
+  padding-inline: 2.3rem;
+  padding-block:2rem;
 }
