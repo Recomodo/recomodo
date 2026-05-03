@@ -90,7 +90,7 @@ function getImageUrl(posterPath: any) {
   const path = String(posterPath || '').trim();
   if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return '/defaultPoster.webp';
   if (posterPath.startsWith('/')) {
-    return `https://image.tmdb.org/t/p/w500${path}`;
+    return `https://image.tmdb.org/t/p/w200${path}`;
   }
   return posterPath;
 }
@@ -117,7 +117,7 @@ function getImageUrl(posterPath: any) {
         class="movie-card"
     >
       <img
-        :src="movie.posterPath? 'https://image.tmdb.org/t/p/w200' + movie.posterPath : '/defaultPoster.webq'"   
+        :src="getImageUrl(movie.posterPath)"   
         :alt="movie.title"
         @error="handleImageError"
       />
