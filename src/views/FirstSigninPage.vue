@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import "@/assets/FirstSignIn.css";
 import {handleImageError} from "@/utils/defaultPoster";
-//récuperer le liste des genres dans un tableau
 import { ref, onMounted ,computed} from 'vue';
-import { useRouter } from 'vue-router';
-const router = useRouter();
-//api
 import type {Schema} from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
-
-import Rating from '@/components/Rating.vue';
 import Notation from '@/components/Notation.vue';
+import Rating from "@/components/Rating.vue";
 
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
@@ -62,9 +57,7 @@ await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //s
     hasCompleted:true
   })
   }
-
-
-  location.href = '/'
+location.href = '/'
 }
 onMounted(async () => {
     try {
@@ -162,32 +155,35 @@ try{
 <template>
 <div class="pageContainer"> 
    <p class="pform">Please rate at least 10 movies from the list for a better recommendation</p>
- <div class="formContainer">
+  <div class="formContainer">
   
-  <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
-    <div>
-      <button class="autre" :disabled="ratings[movie.movieId]>0" @click="changeMovie(movie.movieId)"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" /></button>
-    <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath 
+    <div  class="blockMovie"v-for="(movie,index) in movies" :key="movie.movieId">
+      <div>
+        <button class="autre" :disabled="ratings[movie.movieId]>0" @click="changeMovie(movie.movieId)"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" /></button>
+       <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath 
          :'/defaultPoster.webp'"
          :alt="movie.title"
          @error="handleImageError" />
-  </div>
-         <div class="formSubContainer">
-    <div class="discriptionForm">
-       <p class="title">{{ movie.title }}</p>
-       <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
-    </div> 
-    <div class="genres" v-if="movie.genres">
-      <div class="genre"  v-for="genreId in movie.genres" :key="genreId ?? ''">
-      {{getGenres(genreId)}}
       </div>
+      <div class="formSubContainer">
+        <div class="discriptionForm">
+         <p class="title">{{ movie.title }}</p>
+         <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
+        </div> 
+      <div class="genres" v-if="movie.genres">
+        <div class="genre"  v-for="genreId in movie.genres" :key="genreId ?? ''">
+          {{getGenres(genreId)}}
+        </div>
+      </div>
+      <div class="rating">
+          <Rating 
+          :notation="ratings[movie.movieId] || 0"
+          @rate="(val) => ratings[movie.movieId] = val"
+          />
     </div>
-    <div class="rating">
-     <Rating v-model="ratings[movie.movieId]" />
-     </div>
-     </div>
   </div>
- </div>
+</div>
+</div>
   <div class="submit">
     <p v-if="ratingsCount<10" style="color: brown;">
       Minimum 10 films requis ({{ ratingsCount }}/10)
@@ -196,7 +192,7 @@ try{
     <button :disabled="ratingsCount<10" @click="submit">
       Submit
     </button>
-  </span>
+   </span>
   </div>
 </div> 
 
