@@ -72,7 +72,7 @@ async function raz(){
         id:identifiant.value,
         hasCompleted:false
       })
-      //location.href = '/'
+      location.href = '/'
     }
 
   }catch(error){

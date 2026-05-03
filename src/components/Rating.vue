@@ -44,6 +44,7 @@ function getDisplayValue(star: number) {
         :class="getDisplayValue(star)"
         >★</span>
     </div>
+    {{ finalNotation }}
 </div>
 </template>
 
