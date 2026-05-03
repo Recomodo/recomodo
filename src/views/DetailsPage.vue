@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import '@/assets/CssDetailsPage.css';
+import '@/assets/CssNotation.css';
 import type { Schema } from "../../amplify/data/resource";
 import Notation from '@/components/Notation.vue';
 import { onMounted , ref , watch , nextTick} from 'vue';
@@ -6,9 +8,6 @@ import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
 import path from "path";
-import '@/assets/CssDetailsPage.css';
-import '@/assets/CssNotation.css';
-
 
 const genres = ref<Array<Schema['Genre']["type"]>>([]);
 const route = useRoute();
