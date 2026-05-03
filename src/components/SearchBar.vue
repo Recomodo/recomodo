@@ -1,5 +1,5 @@
 <template>
-  <input type="search" placeholder="Search...  🔍" id="titre_film" class="searchBar" v-model="titre" @input="onInput" @keydown.enter="emitSearch" > <!--v-model => titre.value="ce que l'utilisateur entre" -->
+  <input type="search" placeholder="Search...  🔍" id="titre_film" class="searchBar" v-model="titre" @keydown.enter="emitSearch" > <!--v-model => titre.value="ce que l'utilisateur entre" -->
 </template>
 
 <script setup lang="ts">
