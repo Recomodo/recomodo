@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import '@/assets/CssNotation.css';
 
 const props = defineProps<{
     notation: number;
