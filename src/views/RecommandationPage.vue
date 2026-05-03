@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import "@/assets/filmCard.css"
-import { RouterLink, useRouter } from 'vue-router';
+import { RouterLink} from 'vue-router';
 import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
 import { generateClient } from 'aws-amplify/data';
 import { getCurrentUser} from 'aws-amplify/auth';
 import {handleImageError} from "@/utils/defaultPoster";
-
-const router = useRouter(); 
-
 
 const client = generateClient<Schema>();
 const moviesIds = ref<any>([]);
@@ -20,8 +17,7 @@ onMounted(async () => {
         const user = await getCurrentUser();
         identifiant.value = user.userId;
         const { data, errors } = await client.queries.getRecommendations({
-        //userId: identifiant.value ?? "",
-        userId:'c1b9904e-4011-7084-80c5-e437c3afefcc',
+        userId: identifiant.value ?? "",
         })
         console.log("erreurs:",errors);
       moviesIds.value=data?.recommendations;
@@ -34,13 +30,6 @@ onMounted(async () => {
       console.error("Error fetching movies:", error);
     }
 }); 
-
-
-function filmDetails(movieId:string){
-    router.push(`/movie/details/${movieId}`);
-}
-
-
 
 </script>
 
