@@ -42,8 +42,9 @@
    display: flex;
    flex-direction: column;
    justify-content: space-between;
+   height: 80%;
    padding-block: 1rem;
-   width: 60%;
+   width: 65%;
 }
 
 .genres{
@@ -103,3 +104,4 @@ button{
    display: flex;
    justify-content: center;
 }
+
