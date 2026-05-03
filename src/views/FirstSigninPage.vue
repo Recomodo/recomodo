@@ -8,8 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
 import "@/assets/rating.css";
 import Rating from "@/components/Rating.vue";
-const hasVoted = ref(false);
-const isSubmitting = ref(false);
+
 const userRating = ref(0);
 
 const email = ref<string | null>(null);
@@ -44,7 +43,7 @@ const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
 )
 
-async function handleRating(movie: Schema["Movie"]["type"], rating: number) {
+/*async function handleRating(movie: Schema["Movie"]["type"], rating: number) {
 hasVoted.value=false;
 isSubmitting.value=false;
 userRating.value=0;
@@ -89,12 +88,49 @@ userRating.value=0;
   } finally {
     isSubmitting.value = false;
   }
-}
+}*/
 
+//handle rating 2 adapter au tableaux
+
+
+/*async function handleRating(movie: Schema["Movie"]["type"], rating: number) {
+  if (!movie.movieId || !identifiant.value) return;
+
+  try {
+    // 1. sauvegarde UI locale
+    ratings.value[movie.movieId] = rating;
+
+    const index = movies.value.findIndex(m => m.movieId === movie.movieId);
+    if (index === -1) return;
+
+    // 2. appel backend (UNE SEULE source de vérité)
+    const { data } = await client.mutations.updateUserRating({
+      movieId: movie.movieId,
+      userId: identifiant.value,
+      rating
+    });
+
+    if (!data?.success) {
+      console.error(data?.message);
+      return;
+    }
+  } catch (error) {
+    console.error("Error submitting rating:", error);
+  }
+}*/
 
 async function submit() {
   // envoi avec api aux base dynamodb
   // ensuite redirection vers la page d'accueil
+  await Promise.all(
+  Object.entries(ratings.value).map(([movieId, rating]) =>
+  client.mutations.updateUserRating({
+      movieId:movieId,
+      userId:identifiant.value ?? "",
+      rating
+    })
+  )
+  );
 
   if (identifiant.value){
   await client.models.UserProfile.update({
@@ -213,7 +249,6 @@ try{
       <div class="formSubContainer">
         <div class="discriptionForm">
          <p class="title">{{ movie.title }}</p>
-         <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
         </div> 
       <div class="Genres" v-if="movie.genres">
         <div class="Genre"  v-for="genreId in movie.genres" :key="genreId ?? ''">
@@ -221,7 +256,8 @@ try{
         </div>
       </div>
       <div class="rating">
-        <Rating :notation="userRating" @rate = "handleRating" :class=" { disabled : hasVoted}"/>
+        <Rating :notation="ratings[movie.movieId] || 0"
+        @rate="(val) => ratings[movie.movieId] = val" />
 
     </div>
   </div>
