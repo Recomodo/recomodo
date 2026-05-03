@@ -8,7 +8,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
 import "@/assets/rating.css";
 import Rating from "@/components/Rating.vue";
-
+const hasVoted = ref(false);
+const isSubmitting = ref(false);
+const userRating = ref(0);
 
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
@@ -42,21 +44,58 @@ const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
 )
 
+async function handleRating(movie: Schema["Movie"]["type"], rating: number) {
+hasVoted.value=false;
+isSubmitting.value=false;
+userRating.value=0;
+
+  if (!movie || hasVoted.value || isSubmitting.value) return;
+  if (!identifiant.value) return;
+  isSubmitting.value = true;
+  try {
+    const { data: existingRatings } = await client.models.Rating.list({
+      filter: {
+        movieId: { eq: movie.movieId as string},
+        userId: { eq: identifiant.value}
+      }
+    });
+
+    if (existingRatings.length  > 0) {
+      await client.models.Rating.update({
+        id: existingRatings[0].id,
+        rating
+      });
+    }else{
+      await client.mutations.updateUserRating({
+      movieId: movie.movieId,
+      userId: identifiant.value,
+      rating
+    });
+    }
+
+    const { data: updatedMovie } = await client.models.Movie.get({ 
+      id: movie.id 
+    });
+    
+    if (updatedMovie) {
+      movie = updatedMovie;
+    }
+
+    userRating.value = rating;
+    hasVoted.value   = true;
+
+  } catch (error) {
+    console.error("Error submitting rating:", error);
+  } finally {
+    isSubmitting.value = false;
+  }
+}
+
+
 async function submit() {
   // envoi avec api aux base dynamodb
   // ensuite redirection vers la page d'accueil
-await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //stocker les valeurs des notes 
-  /*client.models.Rating.create({
-    userId: identifiant.value ?? "",
-    movieId,
-    rating
-  })*/
-  client.mutations.updateUserRating({
-    userId: identifiant.value ?? "",
-    movieId,
-    rating
-  })
-));
+
   if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
@@ -182,10 +221,8 @@ try{
         </div>
       </div>
       <div class="rating">
-          <Rating
-          :notation="ratings[movie.movieId] || 0"
-          @rate="(val) => ratings[movie.movieId] = val"
-          />
+        <Rating :notation="userRating" @rate = "handleRating" :class=" { disabled : hasVoted}"/>
+
     </div>
   </div>
 </div>
