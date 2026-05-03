@@ -9,6 +9,7 @@ import { getCurrentUser } from 'aws-amplify/auth';
 import "@/assets/rating.css";
 import Rating from "@/components/Rating.vue";
 
+
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
 const profile = ref<any>(null);
@@ -41,16 +42,50 @@ const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
 )
 
+async function ratingUpdate(movie:Schema["Movie"]["type"], rating: number){
+  if(!identifiant.value || !movie.movieId) return;
+
+  try{
+    ratings.value[movie.movieId] = rating;
+
+    const index = movies.value.findIndex(m=>m.movieId === movie.movieId);
+    if(index === -1) return;
+
+    const {data} = await client.mutations.updateUserRating({
+      userId: identifiant.value,
+      movieId:movie.movieId,
+      rating
+    });
+    if(!data?.success){
+      console.error("erreur:",data?.message);
+      return;
+    }
+    const current = movies.value[index];
+    //test
+    console.log("Rating envoyé:", {
+  movieId: movie.movieId,
+  rating
+});
+
+console.log("Réponse lambda:", data);
+
+  }catch(error){
+    console.error("erreur rating:",error);
+  }
+}
+
+
+
 async function submit() {
   // envoi avec api aux base dynamodb
   // ensuite redirection vers la page d'accueil
-await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //stocker les valeurs des notes 
+/*await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //stocker les valeurs des notes 
   client.models.Rating.create({
     userId: identifiant.value ?? "",
     movieId,
     rating
   })
-));
+));*/
   if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
@@ -178,7 +213,7 @@ try{
       <div class="rating">
           <Rating
           :notation="ratings[movie.movieId] || 0"
-          @rate="(val) => ratings[movie.movieId] = val"
+          @rate="(val) => ratingUpdate(movie,val)"
           />
     </div>
   </div>
