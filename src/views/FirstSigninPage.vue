@@ -6,7 +6,8 @@ import type {Schema} from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
-import Notation from '@/components/Notation.vue';
+import Notation from "@/components/Notation.vue";
+import "@/assets/rating.css";
 import Rating from "@/components/Rating.vue";
 
 const email = ref<string | null>(null);
@@ -170,13 +171,13 @@ try{
          <p class="title">{{ movie.title }}</p>
          <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
         </div> 
-      <div class="genres" v-if="movie.genres">
-        <div class="genre"  v-for="genreId in movie.genres" :key="genreId ?? ''">
+      <div class="Genres" v-if="movie.genres">
+        <div class="Genre"  v-for="genreId in movie.genres" :key="genreId ?? ''">
           {{getGenres(genreId)}}
         </div>
       </div>
       <div class="rating">
-          <Rating 
+          <Rating
           :notation="ratings[movie.movieId] || 0"
           @rate="(val) => ratings[movie.movieId] = val"
           />
