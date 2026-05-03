@@ -27,6 +27,7 @@ function getDisplayValue(star: number) {
 </script>
 
 <template>
+<div class="starsContainer">
 <div class="stars">
     <div
         v-for="star in 10"
@@ -45,6 +46,8 @@ function getDisplayValue(star: number) {
         :class="getDisplayValue(star)"
         >★</span>
     </div>
-    {{ finalNotation }}
+    
+</div>
+<div class="note">{{ finalNotation }}★</div>
 </div>
 </template>
