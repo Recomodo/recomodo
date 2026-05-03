@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import "@/assets/rating.css";
 
 const props = defineProps<{
     notation: number;
+    
 }>();
 
 const emit = defineEmits ([
@@ -27,7 +27,6 @@ function getDisplayValue(star: number) {
 </script>
 
 <template>
-<div class="starsContainer">
 <div class="stars">
     <div
         v-for="star in 10"
@@ -46,7 +45,36 @@ function getDisplayValue(star: number) {
         :class="getDisplayValue(star)"
         >★</span>
     </div>
-</div>
-    <span class="note">{{ finalNotation }}</span>
+    {{ finalNotation }}
 </div>
 </template>
+
+<style scoped>
+.stars {
+    display: flex;
+    font-size: 1.6rem;
+    cursor: pointer;
+}
+
+.star-wrapper {
+    position: relative;
+    width: 22px;
+}
+
+.star {
+    position: absolute;
+    color:white;
+    transition: 0.2s;
+}
+
+.full {
+    color: #f5c518;
+}
+.half {
+    color: #f5c518;
+    width: 50%;
+    overflow: hidden;
+    display: inline-block;
+}
+
+</style>
