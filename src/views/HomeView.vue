@@ -95,8 +95,6 @@ function getImageUrl(posterPath: any) {
   return posterPath;
 }
 
-
-
 </script>
 
 <template>
@@ -119,7 +117,7 @@ function getImageUrl(posterPath: any) {
         class="movie-card"
     >
       <img
-        :src="'https://image.tmdb.org/t/p/w200' + movie.posterPath"   
+        :src="movie.posterPath? 'https://image.tmdb.org/t/p/w200' + movie.posterPath : '/defaultPoster.webq'"   
         :alt="movie.title"
         @error="handleImageError"
       />
