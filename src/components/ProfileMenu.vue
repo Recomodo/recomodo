@@ -34,6 +34,8 @@ async function signout(){
 const userRatings= ref<Array<Schema['Rating']["type"]>>([]);
 
 async function handleDeleteUser() {
+  const confirmed = confirm("Are you sure you want to delete your account? This action is irreversible.");
+  if(!confirmed) return;
   try {
     if (identifiant.value) {
       const {data} = await client.models.Rating.list({filter:{userId:{eq:identifiant.value}}})
@@ -72,7 +74,7 @@ async function raz(){
         id:identifiant.value,
         hasCompleted:false
       })
-      //location.href = '/'
+      location.href = '/'
     }
 
   }catch(error){

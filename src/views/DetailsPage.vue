@@ -7,6 +7,8 @@ import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
 import path from "path";
 import '@/assets/CssDetailsPage.css';
+import '@/assets/CssNotation.css';
+
 
 const genres = ref<Array<Schema['Genre']["type"]>>([]);
 const route = useRoute();

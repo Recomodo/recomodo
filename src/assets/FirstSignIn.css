@@ -42,19 +42,19 @@
    display: flex;
    flex-direction: column;
    justify-content: space-between;
-   height: 80%;
+   height: 90%;
    padding-block: 1rem;
    width: 65%;
 }
 
-.genres{
+.Genres{
    display:flex;
    flex-direction:row;
    flex-wrap: wrap;
    gap:6px;
 }
 
-.genre{
+.Genre{
    display: flex;
    color: rgb(239, 162, 239);
    background-color: rgba(128, 0, 122, 0.153);
