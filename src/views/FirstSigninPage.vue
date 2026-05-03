@@ -6,7 +6,6 @@ import type {Schema} from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
-import Notation from "@/components/Notation.vue";
 import "@/assets/rating.css";
 import Rating from "@/components/Rating.vue";
 
@@ -187,7 +186,7 @@ try{
 </div>
   <div class="submit">
     <p v-if="ratingsCount<10" style="color: brown;">
-      Minimum 10 films requis ({{ ratingsCount }}/10)
+      Minimum 10 movies required ({{ ratingsCount }}/10)
     </p>
     <span>
     <button :disabled="ratingsCount<10" @click="submit">
