@@ -1,0 +1,35 @@
+.starsContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.stars {
+    display: flex;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+.note{
+    padding-top: 3px;
+    padding-right:3px;
+}
+
+.star-wrapper {
+    width: 22px;
+    height:22px;
+}
+
+.star {
+    color:white;
+    transition: 0.2s;
+}
+
+.full {
+    color: #f5c518;
+}
+.half {
+    color: #f5c518;
+    width: 38%;
+    overflow: hidden;
+    display: inline-block;
+}

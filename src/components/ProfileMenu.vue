@@ -34,6 +34,8 @@ async function signout(){
 const userRatings= ref<Array<Schema['Rating']["type"]>>([]);
 
 async function handleDeleteUser() {
+  const confirmed = confirm("Are you sure you want to delete your account? This action is irreversible.");
+  if(!confirmed) return;
   try {
     if (identifiant.value) {
       const {data} = await client.models.Rating.list({filter:{userId:{eq:identifiant.value}}})
@@ -51,10 +53,22 @@ async function handleDeleteUser() {
 
 
 async function raz(){
+      let results:any[]=[];
+    let nextToken:string | null=null;
   try{
     if (identifiant.value) {
-      const {data} = await client.models.Rating.list({filter:{userId:{eq:identifiant.value}}})
-      userRatings.value = data ?? [];
+      do{
+      const {data,nextToken:newNextToken}:{data:any[]; nextToken?:string|null;} =await client.models.Rating.list({filter:{userId:{eq:identifiant.value}},
+      limit:1000,
+       nextToken,
+      });
+    results = [...results, ...(data ?? [])];
+    nextToken=newNextToken?? null;
+    console.log(data);
+    }while(nextToken)
+
+      userRatings.value = results;
+      console.log(results);
       await Promise.all(userRatings.value.map(rating => client.models.Rating.delete({id: rating.id})));
       await client.models.UserProfile.update({
         id:identifiant.value,

@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import "@/assets/filmCard.css"
-import { useRouter } from 'vue-router';
+import { RouterLink} from 'vue-router';
 import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
 import { generateClient } from 'aws-amplify/data';
 import { getCurrentUser} from 'aws-amplify/auth';
 import {handleImageError} from "@/utils/defaultPoster";
-
-const router = useRouter(); 
-
 
 const client = generateClient<Schema>();
 const moviesIds = ref<any>([]);
@@ -34,26 +31,21 @@ onMounted(async () => {
     }
 }); 
 
-
-function filmDetails(movieId:string){
-    router.push(`/movie/details/${movieId}`);
-}
-
-
-
 </script>
 
 
 <template>
 <div class="container">
-<div  class="movie-card"v-for="(movie) in movies" :key="movie.movieId" @click="filmDetails(movie.movieId)">
+   <router-link v-for="movie in movies" :key="movie.movieId" :to=" { name :'details', params:{ id:movie.movieId }}" 
+   class="movie-card">
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
-         :alt="movie.title ?? ''" 
-         @error="handleImageError"/>
+      :alt="movie.title ?? ''" 
+      @error="handleImageError"/>
     <div class="movie-info">
-       <span class="movie-title">{{ movie.title }}</span>
-       <span class="movie-meta">{{ movie.voteAverage }}<font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: #f5c518;" /></span>
-    </div>   
-   </div>
+      <p class="movie-title">{{ movie.title }}</p>
+      <p class="movie-meta">★ {{ movie.voteAverage }}</p>
+    </div>     
+
+  </router-link>
 </div>
 </template>
