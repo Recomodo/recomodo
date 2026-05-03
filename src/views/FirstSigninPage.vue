@@ -12,11 +12,7 @@ import Rating from "@/components/Rating.vue";
 
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
-
-
-const isSubmitting = ref(false);
-
-
+const profile = ref<any>(null);
 onMounted(async () => {
   const user = await getCurrentUser();
   email.value = user.signInDetails?.loginId ?? null;
@@ -46,56 +42,21 @@ const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
 )
 
-const updatedStats = ref<Record<string, { voteAverage: number, voteCount: number }>>({})
-async function handleRating(movieId: string, rating: number) {
-  if (ratings.value[movieId] > 0 || isSubmitting.value) return;
-  if (!identifiant.value) return;
-
-  isSubmitting.value = true;
-  try {
-    const { data: existingRatings } = await client.models.Rating.list({
-      filter: {
-        movieId: { eq: movieId },
-        userId: { eq: identifiant.value }
-      }
-    });
-
-    if (existingRatings.length > 0) {
-      await client.models.Rating.update({
-        id: existingRatings[0].id,
-        rating
-      });
-    } else {
-      await client.mutations.updateUserRating({
-        movieId,
-        userId: identifiant.value,
-        rating
-      });
-    }
-
-    // Récupérer le film mis à jour
-    const movie = movies.value.find(m => m.movieId === movieId);
-    if (movie) {
-      const { data: updatedMovie } = await client.models.Movie.get({ id: movie.id });
-      if (updatedMovie) {
-        updatedStats.value[movieId] = {
-          voteAverage: updatedMovie.voteAverage ?? 0,
-          voteCount: updatedMovie.voteCount ?? 0
-        };
-      }
-    }
-
-    ratings.value[movieId] = rating;
-
-  } catch (error) {
-    console.error("Error submitting rating:", error);
-  } finally {
-    isSubmitting.value = false;
-  }
-}
-
-
 async function submit() {
+  // envoi avec api aux base dynamodb
+  // ensuite redirection vers la page d'accueil
+await Promise.all(Object.entries(ratings.value).map(([movieId, rating]) =>   //stocker les valeurs des notes 
+  /*client.models.Rating.create({
+    userId: identifiant.value ?? "",
+    movieId,
+    rating
+  })*/
+  client.mutations.updateUserRating({
+    userId: identifiant.value ?? "",
+    movieId,
+    rating
+  })
+));
   if (identifiant.value){
   await client.models.UserProfile.update({
     id: identifiant.value,
@@ -213,11 +174,7 @@ try{
       <div class="formSubContainer">
         <div class="discriptionForm">
          <p class="title">{{ movie.title }}</p>
-         <!--<p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>-->
-         <p>
-          {{ (updatedStats[movie.movieId]?.voteAverage ?? movie.voteAverage)?.toFixed(1) }}
-          <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" />
-         </p>
+         <p>{{ movie.voteAverage }} <font-awesome-icon icon="fa-solid fa-star" size="xs" style="color: white;" /></p>
         </div> 
       <div class="Genres" v-if="movie.genres">
         <div class="Genre"  v-for="genreId in movie.genres" :key="genreId ?? ''">
@@ -226,11 +183,9 @@ try{
       </div>
       <div class="rating">
           <Rating
-  :notation="ratings[movie.movieId] || 0"
- @rate="(val) => handleRating(movie.movieId, val)"
-  :disabled="ratings[movie.movieId] > 0"
-/>         
-
+          :notation="ratings[movie.movieId] || 0"
+          @rate="(val) => ratings[movie.movieId] = val"
+          />
     </div>
   </div>
 </div>
