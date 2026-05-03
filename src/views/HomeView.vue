@@ -136,39 +136,3 @@ function getImageUrl(posterPath: any) {
 </div>
 </div>
 </template>
-
-<style scoped>
-.page {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    
-    
-}
-
-.pagination-wrapper {
-    /*margin-top: auto;*/
-    padding: 2rem 0;
-    justify-content: center;
-    display: flex;
-}
-
-html, body {
-    height: 100%;
-}
-
-h1{
-    color: white;
-    margin: 0;
-}
-
-.haut-page{
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items:flex-end;
-  padding-inline: 2.3rem;
-  padding-block:2rem;
-}
-
-</style>
