@@ -31,3 +31,43 @@
 .nav_link{
     color: #9c03be;
 }
+
+@media (max-width: 900px) {
+  .navbar_links {
+    gap: 1rem;
+  }
+
+  .container_links {
+    gap: 1.2rem;
+    padding-inline: 1.1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    align-items: center;
+    padding-block: 6px;
+    gap: 0.5rem;
+  }
+
+  .navbar_logo img {
+    width: 6.8rem;
+    padding-top: 0;
+  }
+
+  .navbar_links {
+    gap: 0.55rem;
+    margin-block: 4px;
+  }
+
+  .container_links {
+    gap: 0.55rem;
+    border-radius: 10px;
+    padding-inline: 0.65rem;
+    padding-block: 1px;
+  }
+
+  .nav_link {
+    font-size: 0.85rem;
+  }
+}
