@@ -8,7 +8,7 @@ import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
 import path from "path";
-import defaultPoster from '@/assets/defaultPoster.webp';
+import defaultPoster from '../assets/defaultPoster.webp';
 
 const genres = ref<Array<Schema['Genre']["type"]>>([]);
 const route = useRoute();
