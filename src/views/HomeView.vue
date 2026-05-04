@@ -94,7 +94,7 @@ function getImageUrl(posterPath: any) {
   return path;
 }
 
-function handleImageError(event: Event) {
+function detectImageError(event: Event) {
   const target = event.target as HTMLImageElement;
   target.onerror = null; // Empêche une boucle infinie en cas de problème avec l'image de remplacement
   target.src = '/defaultPoster.webp';
@@ -124,7 +124,7 @@ function handleImageError(event: Event) {
       <img
         :src="getImageUrl(movie.posterPath)"   
         :alt="movie.title"
-        @error="handleImageError"
+        @error="detectImageError"
       />
       <div class="movie-info">
         <p class="movie-title">{{ movie.title }}</p>
