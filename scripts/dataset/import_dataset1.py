@@ -122,7 +122,7 @@ for index, row in movies.iterrows():
 
                 'title': str(row['title']),
 
-                'titlelower': str(row['title']).lower(), # titre en minuscules
+                'titleLower': str(row['title']).lower(), # titre en minuscules
                 
                 'overview': str(row['overview']),
  

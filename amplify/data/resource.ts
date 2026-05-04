@@ -12,7 +12,7 @@ const schema = a.schema({
     .model({
       movieId: a.string().required(),// ID unique du film
       title: a.string().required(),// titre du film
-      titlelower: a.string(),// titre du film en minuscules, pour les recherches insensibles à la casse
+      titleLower: a.string(),// titre du film en minuscules, pour les recherches insensibles à la casse
       overview: a.string(),// résumé du film  
       genres: a.integer().array(),// genres du film
       mainGenre: a.integer(),// genre principal du film (le premier de la liste des genres) , utilisé pour firstSigninPage
