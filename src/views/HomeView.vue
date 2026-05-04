@@ -8,8 +8,6 @@ import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 import SearchBar from '@/components/SearchBar.vue';
-import { textSpanContainsPosition } from 'typescript';
-
 
 const client = generateClient <Schema>();
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
@@ -87,7 +85,7 @@ searchResults.value=results;
 
 function getImageUrl(posterPath: any) {
   const path = String(posterPath || '').trim();
-  if (!path || path === 'null' || path === 'undefined' || path === '') return '/defaultPoster.webp';
+  if (!path || path === 'null' || path === 'undefined' || path === '') return '/DEFAULTPOSTERJPG.jpg';
   if (path.startsWith('/')) {
     return `https://image.tmdb.org/t/p/w200${path}`;
   }
@@ -97,7 +95,7 @@ function getImageUrl(posterPath: any) {
 function detectImageError(event: Event) {
   const target = event.target as HTMLImageElement;
   target.onerror = null; // Empêche une boucle infinie en cas de problème avec l'image de remplacement
-  target.src = '/defaultPoster.webp';
+  target.src = '/DEFAULTPOSTERJPG.jpg';
 }
 
 </script>
