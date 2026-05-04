@@ -49,3 +49,6 @@ coverage
 amplify_outputs*
 amplifyconfiguration*
 aws-exports.js
+.npm/_update-notifier-last-checked
+.npm/_cacache/content-v2/sha512/06/dd/1edb82eae35386e37abbe743641cb3ddae28c2d0ba3207c33424f408d167ae463460d44dfd18e3fa4da30bc049d95c8e3cd4d3af6f8aebbc3000605319db
+.npm/_cacache/index-v5/04/5a/2b5d7a7c407d85d746baa0f5c9388a333e35a717a8a0a81943daa6cb1364
