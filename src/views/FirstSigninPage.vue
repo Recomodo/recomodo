@@ -8,6 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { getCurrentUser } from 'aws-amplify/auth';
 import "@/assets/rating.css";
 import Rating from "@/components/Rating.vue";
+import posterdef from "@/assets/posterDEF.jpg";
+
 
 const userRating = ref(0);
 
@@ -242,7 +244,7 @@ try{
       <div>
         <button class="autre" :disabled="ratings[movie.movieId]>0" @click="changeMovie(movie.movieId)"><font-awesome-icon icon="fa-solid fa-arrows-rotate" style="color:white;" /></button>
        <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath 
-         :'/defaultPoster.webp'"
+         :posterdef"
          :alt="movie.title"
          @error="handleImageError" />
       </div>
