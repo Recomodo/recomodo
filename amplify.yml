@@ -4,22 +4,15 @@ backend:
     preBuild:
       commands:
         - nvm use 20
-        - npm install -g npm@10.5.2
-        - npm -v
     build:
       commands:
-        - cd amplify
-        - npm install --legacy-peer-deps --cache /tmp/.npm || (echo "=== /tmp/.npm/_logs ===" && ls -lah /tmp/.npm/_logs && echo "=== latest log ===" && cat /tmp/.npm/_logs/* && exit 1)
-        - cd ..
+        - npm install --prefix amplify --cache .npm --prefer-offline
         - npx --prefix amplify ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
-        
 frontend:
   phases:
     preBuild:
       commands:
         - nvm use 20
-        - npm install -g npm@10.5.2
-        - npm -v
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
