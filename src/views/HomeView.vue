@@ -9,7 +9,6 @@ import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 import SearchBar from '@/components/SearchBar.vue';
 import { textSpanContainsPosition } from 'typescript';
-import {handleImageError} from '@/utils/defaultPoster';
 
 
 const client = generateClient <Schema>();
@@ -88,11 +87,17 @@ searchResults.value=results;
 
 function getImageUrl(posterPath: any) {
   const path = String(posterPath || '').trim();
-  if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return '/defaultPoster.webp';
-  if (posterPath.startsWith('/')) {
+  if (!path || path === 'null' || path === 'undefined' || path === '') return '/defaultPoster.webp';
+  if (path.startsWith('/')) {
     return `https://image.tmdb.org/t/p/w200${path}`;
   }
-  return posterPath;
+  return path;
+}
+
+function detectImageError(event: Event) {
+  const target = event.target as HTMLImageElement;
+  target.onerror = null; // Empêche une boucle infinie en cas de problème avec l'image de remplacement
+  target.src = '/defaultPoster.webp';
 }
 
 </script>
@@ -119,7 +124,7 @@ function getImageUrl(posterPath: any) {
       <img
         :src="getImageUrl(movie.posterPath)"   
         :alt="movie.title"
-        @error="handleImageError"
+        @error="detectImageError"
       />
       <div class="movie-info">
         <p class="movie-title">{{ movie.title }}</p>

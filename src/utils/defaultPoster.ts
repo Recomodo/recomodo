@@ -4,4 +4,9 @@ export function handleImageError(event: Event) {
   if (target) {
     target.src = posterDEF;
   }
+  if(target.dataset.fallbackbackup === 'true') {
+    return;
+  }
+  target.dataset.fallbackbackup = 'true';
+  target.src = DEFAULT_POSTER;
 }

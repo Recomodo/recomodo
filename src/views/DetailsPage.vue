@@ -118,7 +118,7 @@ function getImageUrl(posterPath: any) {
   if (posterPath.startsWith('/')) {
     return `https://image.tmdb.org/t/p/w200${path}`;
   }
-  return posterPath;
+  return path;
 }
 
 function getYear(dateString: any) {
