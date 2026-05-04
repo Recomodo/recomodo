@@ -93,7 +93,10 @@ function getImageUrl(posterPath: any) {
 }
 
 function detectImageError(event: Event) {
-  const target = event.target as HTMLImageElement;
+  const target = event.target as HTMLImageElement | null;
+  if (!target) {
+    return;
+  }
   target.onerror = null; // Empêche une boucle infinie en cas de problème avec l'image de remplacement
   target.src = '/DEFAULTPOSTERJPG.jpg';
 }
