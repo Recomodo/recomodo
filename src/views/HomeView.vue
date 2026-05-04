@@ -3,7 +3,7 @@ import "@/assets/filmCard.css";
 import "@/assets/search.css";
 import '@/assets/CssHomeView.css';
 import '@/assets/CssPagination.css';
-import defaultPoster from '@/assets/defaultPoster.webp';
+import defaultPoster from '../assets/defaultPoster.webp';
 import {ref, computed , onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
