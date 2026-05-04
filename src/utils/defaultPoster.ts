@@ -1,8 +1,8 @@
-const DEFAULT_POSTER='/defaultPoster.webp';
+import posterDEF from '@/assets/posterDEF.jpg'
 export function handleImageError(event: Event) {
   const target = event.target as HTMLImageElement | null;
-  if (!target) {
-    return;
+  if (target) {
+    target.src = posterDEF;
   }
   if(target.dataset.fallbackbackup === 'true') {
     return;
