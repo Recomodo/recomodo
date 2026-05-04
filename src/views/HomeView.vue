@@ -8,6 +8,7 @@ import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
 import SearchBar from '@/components/SearchBar.vue';
+import { handleImageError } from '@/utils/defaultPoster';
 
 const client = generateClient <Schema>();
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
@@ -92,15 +93,6 @@ function getImageUrl(posterPath: any) {
   return path;
 }
 
-function detectImageError(event: Event) {
-  const target = event.target as HTMLImageElement | null;
-  if (!target) {
-    return;
-  }
-  target.onerror = null; // Empêche une boucle infinie en cas de problème avec l'image de remplacement
-  target.src = '/DEFAULTPOSTERJPG.jpg';
-}
-
 </script>
 
 <template>
@@ -125,7 +117,7 @@ function detectImageError(event: Event) {
       <img
         :src="getImageUrl(movie.posterPath)"   
         :alt="movie.title"
-        @error="detectImageError"
+        @error="handleImageError"
       />
       <div class="movie-info">
         <p class="movie-title">{{ movie.title }}</p>
