@@ -8,6 +8,7 @@ import { generateClient } from 'aws-amplify/api';
 import { useRoute , useRouter } from 'vue-router';
 import { getCurrentUser } from "aws-amplify/auth";
 import path from "path";
+import defaultPoster from '@/assets/defaultPoster.webp';
 
 const genres = ref<Array<Schema['Genre']["type"]>>([]);
 const route = useRoute();
@@ -114,11 +115,11 @@ function goBack() {
 
 function getImageUrl(posterPath: any) {
   const path = String(posterPath || '').trim();
-  if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return '/defaultPoster.webp';
+  if (!posterPath || posterPath === 'null' || posterPath === 'undefined' || posterPath === '') return defaultPoster;
   if (posterPath.startsWith('/')) {
     return `https://image.tmdb.org/t/p/w200${path}`;
   }
-  return posterPath;
+  return path;
 }
 
 function getYear(dateString: any) {
