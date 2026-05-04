@@ -6,3 +6,14 @@
 .searchBar:hover{
     border-color: rgb(239, 162, 239);
 }
+.condition-2{
+    padding-left: 2.5rem;
+    padding-top: 3rem;
+    font-size: larger;
+    color: brown;
+}
+.condition{
+    padding-left: 2.5rem;
+    padding-top: 3rem;
+    font-size: larger;
+}

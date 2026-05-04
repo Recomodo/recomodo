@@ -3,7 +3,7 @@ import "@/assets/filmCard.css";
 import "@/assets/search.css";
 import '@/assets/CssHomeView.css';
 import '@/assets/CssPagination.css';
-import {ref, computed , onMounted} from 'vue';
+import {ref, onMounted} from 'vue';
 import Pagination from '../components/Pagination.vue';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/api';
@@ -15,6 +15,9 @@ const currentPage = ref(1);
 const itemsPerPage = 70;
 const moviesByPage = ref<Record<number, Array<Schema['Movie']["type"]>>>({});
 const nextTokens = ref<Record<number, string | null>>({});
+const isLoading= ref(false);
+const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
+const isSearching=ref(false);
 
 async function loadMoviesPage(page: number) {
   try {
@@ -51,8 +54,7 @@ function handlePageChange(page: number) {
 }
 
 //recherche
-const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
-const isSearching=ref(false);
+
 
 async function searchMovies(query:string) {
   const q=query.toLowerCase().trim();
@@ -64,6 +66,8 @@ async function searchMovies(query:string) {
     return;
   }
   isSearching.value=true;
+  isLoading.value=true;
+  try{
 do{
     const {data,nextToken:newNextToken}:{data:any[]; nextToken?:string|null;} =await client.models.Movie.list({
       filter:{
@@ -80,8 +84,12 @@ do{
     console.log(data);
   }while(nextToken)
 searchResults.value=results;
+}catch(error){
+  console.log("erreur recherche:",error);
+}finally{
+  isLoading.value=false;
 }
-
+}
 
 function getImageUrl(posterPath: any) {
   const path = String(posterPath || '').trim();
@@ -114,7 +122,13 @@ function detectImageError(event: Event) {
     </div>
   </div>
 <div class="content">
-<div class="container">
+  <div v-if="isLoading" class="condition">
+    Loading...<font-awesome-icon icon="fa-solid fa-hourglass" style="color: white;" />
+  </div>
+  <div v-else-if="isSearching && searchResults.length === 0" class="condition-2">
+    No such a movie found <font-awesome-icon icon="fa-solid fa-xmark" style="color: brown;" />
+  </div>
+<div v-else class="container">
     <RouterLink
        v-for="movie in isSearching? searchResults:movies"
         :key="movie.movieId"

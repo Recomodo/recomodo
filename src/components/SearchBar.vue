@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import "@/assets/search.css";
-import {ref} from "vue";
+import {ref,watch} from "vue";
 
 const titre=ref("");
 const emit = defineEmits<{
@@ -16,12 +16,16 @@ function emitSearch(){
     emit("search", titre.value)
 }
 let timeout: ReturnType<typeof setTimeout>;
+watch(titre, (val) => {
+  clearTimeout(timeout);
+  if (!val.trim()) {
+    emit("search", ""); // remet la homepage immédiatement
+    return;
+  }
+  timeout = setTimeout(() => {
+    emit("search", val);
+  }, 400);
+});
 
-function onInput() {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-        emit("search", titre.value);
-    }, 400);
-}
 
 </script>
