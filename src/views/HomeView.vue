@@ -71,7 +71,7 @@ do{
     const {data,nextToken:newNextToken}:{data:any[]; nextToken?:string|null;} =await client.models.Movie.list({
       filter:{
         or:[
-        {title: {contains:q}},
+        {titlelower: {contains:q}},
         {keywords: {contains:q}},
       ]
       },
