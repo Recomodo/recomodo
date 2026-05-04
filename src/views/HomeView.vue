@@ -58,7 +58,7 @@ const searchResults=ref<Array<Schema['Movie']["type"]>>([]);
 const isSearching=ref(false);
 
 async function searchMovies(query:string) {
-  const q=query.toLocaleLowerCase().trim();
+  const q=query.toLowerCase().trim();
     let results:any[]=[];
     let nextToken:string | null=null;
   if(!q){
