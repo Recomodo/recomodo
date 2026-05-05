@@ -10,24 +10,20 @@ import "@/assets/rating.css";
 import Rating from "@/components/Rating.vue";
 import posterdef from "@/assets/posterDEF.jpg";
 
-
-const userRating = ref(0);
-
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
-const profile = ref<any>(null);
+const client = generateClient<Schema>();
+const movies = ref<Array<Schema['Movie']["type"]>>([]);
+const genres=ref<Array<Schema['Genre']["type"]>>([]);
+const moviesList=["11249","27205","155","101","293660","10625","620","185","313369","8587","10674","648","12477","28","348","803","10654","273248"]
+
+
+
 onMounted(async () => {
   const user = await getCurrentUser();
   email.value = user.signInDetails?.loginId ?? null;
   identifiant.value = user.userId;
 });
-
-const client = generateClient<Schema>();
-const movies = ref<Array<Schema['Movie']["type"]>>([]);
-const genres=ref<Array<Schema['Genre']["type"]>>([]);
-
-const moviesList=["11249","27205","155","101","293660","10625","620","185","313369","8587","10674","648","12477","28","348","803","10654","273248"]
-
 
 
 function getGenres(id:number|null|undefined) {
@@ -45,84 +41,9 @@ const ratingsCount = computed(() =>
   Object.values(ratings.value).filter(r => r > 0).length
 )
 
-/*async function handleRating(movie: Schema["Movie"]["type"], rating: number) {
-hasVoted.value=false;
-isSubmitting.value=false;
-userRating.value=0;
-
-  if (!movie || hasVoted.value || isSubmitting.value) return;
-  if (!identifiant.value) return;
-  isSubmitting.value = true;
-  try {
-    const { data: existingRatings } = await client.models.Rating.list({
-      filter: {
-        movieId: { eq: movie.movieId as string},
-        userId: { eq: identifiant.value}
-      }
-    });
-
-    if (existingRatings.length  > 0) {
-      await client.models.Rating.update({
-        id: existingRatings[0].id,
-        rating
-      });
-    }else{
-      await client.mutations.updateUserRating({
-      movieId: movie.movieId,
-      userId: identifiant.value,
-      rating
-    });
-    }
-
-    const { data: updatedMovie } = await client.models.Movie.get({ 
-      id: movie.id 
-    });
-    
-    if (updatedMovie) {
-      movie = updatedMovie;
-    }
-
-    userRating.value = rating;
-    hasVoted.value   = true;
-
-  } catch (error) {
-    console.error("Error submitting rating:", error);
-  } finally {
-    isSubmitting.value = false;
-  }
-}*/
-
-//handle rating 2 adapter au tableaux
-
-
-/*async function handleRating(movie: Schema["Movie"]["type"], rating: number) {
-  if (!movie.movieId || !identifiant.value) return;
-
-  try {
-    // 1. sauvegarde UI locale
-    ratings.value[movie.movieId] = rating;
-
-    const index = movies.value.findIndex(m => m.movieId === movie.movieId);
-    if (index === -1) return;
-
-    // 2. appel backend (UNE SEULE source de vérité)
-    const { data } = await client.mutations.updateUserRating({
-      movieId: movie.movieId,
-      userId: identifiant.value,
-      rating
-    });
-
-    if (!data?.success) {
-      console.error(data?.message);
-      return;
-    }
-  } catch (error) {
-    console.error("Error submitting rating:", error);
-  }
-}*/
 
 async function submit() {
-  // envoi avec api aux base dynamodb
+  // appel de la lambda
   // ensuite redirection vers la page d'accueil
   await Promise.all(
   Object.entries(ratings.value).map(([movieId, rating]) =>

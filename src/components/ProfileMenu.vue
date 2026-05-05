@@ -9,10 +9,12 @@ import { getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-
 const email = ref<string | null>(null);
 const identifiant = ref<string | null>(null);
-  const userName= ref<string | null>(null);
+const userName= ref<string | null>(null);
+const client = generateClient<Schema>();
+const userRatings= ref<Array<Schema['Rating']["type"]>>([]);
+
 onMounted(async () => {
   const user = await getCurrentUser();
   email.value = user.signInDetails?.loginId ?? null;
@@ -20,8 +22,6 @@ onMounted(async () => {
   const profile  = await client.models.UserProfile.get({id: identifiant.value ?? ''});
   userName.value = profile.data?.username ?? null;
 });
-
-const client = generateClient<Schema>();
 
 async function signout(){
   try{
@@ -31,7 +31,7 @@ async function signout(){
     console.log(error);
   }
 }
-const userRatings= ref<Array<Schema['Rating']["type"]>>([]);
+
 
 async function handleDeleteUser() {
   const confirmed = confirm("Are you sure you want to delete your account? This action is irreversible.");
