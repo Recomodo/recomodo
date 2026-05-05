@@ -5,6 +5,7 @@ backend:
       commands:
         - nvm use 20
         - node -v
+        - npm ci --cache .npm --prefer-onlin
         - npm ci --prefix amplify --cache .npm --prefer-online
     build:
       commands:
@@ -16,7 +17,6 @@ frontend:
       commands:
         - nvm use 20
         - node -v
-        - npm ci --cache .npm --prefer-online
     build:
       commands:
         - npm run build
