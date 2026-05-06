@@ -22,8 +22,6 @@ const isSearching=ref(false);
 
 async function loadMoviesPage(page: number) {
   try {
-  // ne pas chargé si l'utilisateur recherche
-  // if (isSearching.value) return;
     if(moviesByPage.value[page]) {
       movies.value = moviesByPage.value[page];
       return;
@@ -82,9 +80,19 @@ do{
     });
     results = [...results, ...(data ?? [])];
     nextToken=newNextToken?? null;
-    console.log(data);
+    
   }while(nextToken)
-searchResults.value=results;
+searchResults.value=results.sort((a, b)=>{
+  const aExact=a.titleLower===q;
+  const bExact=b.titleLower===q;
+  const aTitle=a.titleLower?.includes(q);
+  const bTitle=b.titleLower?.includes(q);
+  if(aExact && !bExact) return -1;
+  if(!aExact && bExact) return 1;
+  if(aTitle && !bTitle) return -1;
+  if(!aTitle && bTitle) return 1;
+  return 0;
+});
 }catch(error){
   console.log("erreur recherche:",error);
 }finally{

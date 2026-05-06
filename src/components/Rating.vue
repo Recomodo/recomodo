@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+const currentNotation = ref(0);
+const finalNotation=ref(0);
+
 const props = defineProps<{
     notation: number;
 
@@ -9,9 +12,6 @@ const props = defineProps<{
 const emit = defineEmits ([
     "rate"
 ]);
-
-const currentNotation = ref(0);
-const finalNotation=ref(0);
 
 function getDisplayValue(star: number) {
     const displayValue = currentNotation.value || props.notation;
