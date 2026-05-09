@@ -5,8 +5,6 @@ from decimal import Decimal
 from datetime import datetime, timezone
 
 
-#session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602") #configuration de la session boto3 pour accéder à DynamoDB, à remplacer par boto3 directement en prod
-
 dynamodb = boto3.resource("dynamodb")
 
 RATING_TABLE_NAME = os.environ.get("RATING_TABLE_NAME")
@@ -154,25 +152,3 @@ def handler(event, context):
     )
 
     return {"success": True, "message": "Note enregistrée et film mis à jour"}
-
-
-
-# if __name__ == "__main__":
-#     test_event = {
-#         "arguments": {
-#             "userId": "tmdb_430",
-#             "movieId": "587",
-#             "rating": 7.5
-#         }
-#     }
-
-#     print("===== TEST LOCAL updateMovieRating =====")
-#     print("RATING_TABLE_NAME =", RATING_TABLE_NAME)
-#     print("MOVIE_TABLE_NAME =", MOVIE_TABLE_NAME)
-#     print("RATING_USER_ID_INDEX =", RATING_USER_ID_INDEX)
-#     print("RATING_MOVIE_ID_INDEX =", RATING_MOVIE_ID_INDEX)
-#     print("MOVIE_MOVIE_ID_INDEX =", MOVIE_MOVIE_ID_INDEX)
-#     print("EVENT =", test_event)
-
-#     result = handler(test_event, None)
-#     print("RESULT =", result)

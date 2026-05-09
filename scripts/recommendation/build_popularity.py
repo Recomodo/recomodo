@@ -16,13 +16,13 @@ if not required_columns.issubset(ratings_df.columns):
 
 ratings_df["movieId"] = ratings_df["movieId"].astype(str)
 
-# On garde uniquement les films "aimes"
+# On garde uniquement les films aimés
 liked_df = ratings_df[ratings_df["rating"] > LIKED_THRESHOLD].copy()
 
 if liked_df.empty:
-    raise ValueError("Aucun film aime trouve dans le fichier ratings.")
+    raise ValueError("Aucun film aimé trouvé dans le fichier ratings.")
 
-# Popularite brute = nombre de fois ou le film a ete aime
+# Popularite brute = nombre de fois ou le film a é été aimé
 movie_popularity = liked_df.groupby("movieId").size()
 
 min_val = movie_popularity.min()
