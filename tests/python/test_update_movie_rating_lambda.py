@@ -1,3 +1,13 @@
+# Prompt utilisé avec L'IA :
+# "En utilisant aws_fakes.py, écris un ensemble de tests unitaires
+# pour la Lambda updateMovieRating.py en couvrant les cas suivants :
+# extraire les arguments depuis la racine ou depuis event['arguments'],
+# récupérer toutes les pages DynamoDB via query_all_items, rejeter
+# les arguments manquants, mettre à jour une note existante et
+# recalculer voteAverage, créer une nouvelle note quand l'utilisateur
+# n'a jamais noté le film, et retourner une erreur quand le film
+# est introuvable."
+
 import unittest
 import unittest.mock # Permet d'utiliser unittest.mock.ANY pour ignorer des valeurs imprévisibles (ex: timestamps)
 from decimal import Decimal

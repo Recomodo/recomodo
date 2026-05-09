@@ -1,3 +1,11 @@
+# Prompt utilisé avec l'IA :
+# "Voici le code source de mes Lambdas Python (getMovieByGenre.py,
+# updateMovieRating.py) et la structure de mon projet AWS Amplify.
+# Génère un fichier utilitaire qui me permette d'écrire des tests
+# unitaires sans connexion réelle à AWS, en simulant DynamoDB et S3,
+# en fournissant un faux environnement de variables et en chargeant
+# dynamiquement les modules Python à tester."
+
 import importlib.util
 import json
 import os
