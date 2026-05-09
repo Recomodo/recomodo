@@ -69,6 +69,7 @@ import pandas as pd
 RATINGS_PATH = "data/dataset/rating_for_testing.csv"
 MOVIES_PATH = "data/dataset/movies_cleaned.csv"
 NEIGHBORS_PATH = "data/recommendation/movie_recommendations_combined100.json"
+POPULARITY_PATH = "data/recommendation/movie_popularity.json"
 TOP_K = 10
 RANDOM_STATE = 42
 #On considère que les films notés strictement au dessus de cette note sont "aimés" par l'utilisateur
@@ -79,7 +80,8 @@ os.environ.setdefault("AWS_DEFAULT_REGION", "eu-west-3")
 os.environ.setdefault("RATINGS_TABLE_NAME", "dummy-ratings-table")
 os.environ.setdefault("RATINGS_USER_ID_INDEX", "dummy-user-index")
 os.environ.setdefault("DATA_BUCKET_NAME", "dummy-bucket")
-os.environ.setdefault("MOVIES_RECOMMENDATIONS_KEY", "dummy-key")
+os.environ.setdefault("MOVIES_RECOMMENDATIONS_KEY", "dummy-movies-recommendations-key")
+os.environ.setdefault("MOVIE_POPULARITY_KEY", "dummy-movies-popularity-key")
 
 #Chemin vers le dossier contenant recommender.py
 LAMBDA_DIR = Path("amplify/functions/recommender").resolve()
@@ -132,10 +134,18 @@ def load_neighbors(json_path):
 
     return neighbors
 
+def load_popularity(json_path):
+    with open(json_path, "r", encoding="utf-8") as f:
+        raw_popularity = json.load(f)
+
+    return {str(movie_id): float(score) for movie_id, score in raw_popularity.items()}
+
+
 #Appel la vraie Lambda en remplaçant temporairement :
 # - get_user_ratings() par une version locale basée sur train_df
 # - load_recommendations_from_s3() par une version locale basée sur le JSON
-def call_lambda_handler_for_user(user_id, train_df, neighbors_dict, top_k=10):
+# - load_popularity_from_s3() par une version locale basée sur le JSON
+def call_lambda_handler_for_user(user_id, train_df, recommendation_map, popularity_map, top_k=10):
     user_ratings = []
     user_rows = train_df[train_df["userId"] == user_id]
 
@@ -154,14 +164,19 @@ def call_lambda_handler_for_user(user_id, train_df, neighbors_dict, top_k=10):
         return []
 
     def fake_load_recommendations_from_s3():
-        return neighbors_dict
+        return recommendation_map
+
+    def fake_load_popularity_from_s3():
+        return popularity_map
 
     original_get_user_ratings = recommender.get_user_ratings
     original_load_recommendations = recommender.load_recommendations_from_s3
+    original_load_popularity = recommender.load_popularity_from_s3
 
     try:
         recommender.get_user_ratings = fake_get_user_ratings
         recommender.load_recommendations_from_s3 = fake_load_recommendations_from_s3
+        recommender.load_popularity_from_s3 = fake_load_popularity_from_s3
 
         event = {"userId": user_id}
         result = recommender.handler(event, None)
@@ -169,6 +184,7 @@ def call_lambda_handler_for_user(user_id, train_df, neighbors_dict, top_k=10):
     finally:
         recommender.get_user_ratings = original_get_user_ratings
         recommender.load_recommendations_from_s3 = original_load_recommendations
+        recommender.load_popularity_from_s3 = original_load_popularity
 
 #Comparaison avec une recommandation par popularité
 #Point de référence simple
@@ -184,12 +200,12 @@ def popularity_baseline(train_df, excluded_movie_ids, top_k=10):
     return recs[:top_k]
 
 
-def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
+def evaluate(ratings_df, movies_df, recommendation_map, popularity_map, top_k=10):
     ratings_df["movieId"] = ratings_df["movieId"].astype(str)
     ratings_df["userId"] = ratings_df["userId"].astype(str)
     movies_df["movieId"] = movies_df["movieId"].astype(str)
 
-    json_movie_ids = set(neighbors_dict.keys())
+    json_movie_ids = set(recommendation_map.keys())
 
     common_ids = set(ratings_df["movieId"]).intersection(set(movies_df["movieId"])).intersection(json_movie_ids)
 
@@ -202,9 +218,9 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
     movies_df = movies_df[movies_df["movieId"].isin(common_ids)].copy()
 
     metrics = {
-        "content_precision": [],
-        "content_recall": [],
-        "content_ndcg": [],
+        "lambda_precision": [],
+        "lambda_recall": [],
+        "lambda_ndcg": [],
         "baseline_precision": [],
         "baseline_recall": [],
         "baseline_ndcg": [],
@@ -235,7 +251,8 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
         lambda_recs = call_lambda_handler_for_user(
             user_id=user_id,
             train_df=train,
-            neighbors_dict=neighbors_dict,
+            recommendation_map=recommendation_map,
+            popularity_map=popularity_map,
             top_k=top_k,
         )
 
@@ -248,9 +265,9 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
         if not lambda_recs:
             continue
 
-        metrics["content_precision"].append(precision_at_k(lambda_recs, ground_truth, top_k))
-        metrics["content_recall"].append(recall_at_k(lambda_recs, ground_truth, top_k))
-        metrics["content_ndcg"].append(ndcg_at_k(lambda_recs, ground_truth, top_k))
+        metrics["lambda_precision"].append(precision_at_k(lambda_recs, ground_truth, top_k))
+        metrics["lambda_recall"].append(recall_at_k(lambda_recs, ground_truth, top_k))
+        metrics["lambda_ndcg"].append(ndcg_at_k(lambda_recs, ground_truth, top_k))
 
         metrics["baseline_precision"].append(precision_at_k(baseline_recs, ground_truth, top_k))
         metrics["baseline_recall"].append(recall_at_k(baseline_recs, ground_truth, top_k))
@@ -264,7 +281,8 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
         recs = call_lambda_handler_for_user(
             user_id=user_id,
             train_df=user_ratings,
-            neighbors_dict=neighbors_dict,
+            recommendation_map=recommendation_map,
+            popularity_map=popularity_map,
             top_k=top_k,
         )
         all_recommended.update(recs)
@@ -273,9 +291,9 @@ def evaluate(ratings_df, movies_df, neighbors_dict, top_k=10):
 
     return {
         "evaluated_users": evaluated_users,
-        f"lambda_precision@{top_k}": float(np.mean(metrics["content_precision"])) if metrics["content_precision"] else 0.0,
-        f"lambda_recall@{top_k}": float(np.mean(metrics["content_recall"])) if metrics["content_recall"] else 0.0,
-        f"lambda_ndcg@{top_k}": float(np.mean(metrics["content_ndcg"])) if metrics["content_ndcg"] else 0.0,
+        f"lambda_precision@{top_k}": float(np.mean(metrics["lambda_precision"])) if metrics["lambda_precision"] else 0.0,
+        f"lambda_recall@{top_k}": float(np.mean(metrics["lambda_recall"])) if metrics["lambda_recall"] else 0.0,
+        f"lambda_ndcg@{top_k}": float(np.mean(metrics["lambda_ndcg"])) if metrics["lambda_ndcg"] else 0.0,
         f"baseline_precision@{top_k}": float(np.mean(metrics["baseline_precision"])) if metrics["baseline_precision"] else 0.0,
         f"baseline_recall@{top_k}": float(np.mean(metrics["baseline_recall"])) if metrics["baseline_recall"] else 0.0,
         f"baseline_ndcg@{top_k}": float(np.mean(metrics["baseline_ndcg"])) if metrics["baseline_ndcg"] else 0.0,
@@ -312,7 +330,8 @@ def interpret(results, top_k):
 print("Lecture des fichiers...")
 ratings_df = pd.read_csv(RATINGS_PATH)
 movies_df = pd.read_csv(MOVIES_PATH)
-neighbors_dict = load_neighbors(NEIGHBORS_PATH)
+recommendation_map = load_neighbors(NEIGHBORS_PATH)
+popularity_map = load_popularity(POPULARITY_PATH)
 
 required_ratings = {"userId", "movieId", "rating"}
 required_movies = {"movieId"}
@@ -326,7 +345,8 @@ if not required_movies.issubset(movies_df.columns):
 results = evaluate(
     ratings_df=ratings_df,
     movies_df=movies_df,
-    neighbors_dict=neighbors_dict,
+    recommendation_map=recommendation_map,
+    popularity_map=popularity_map,
     top_k=TOP_K,
 )
 
