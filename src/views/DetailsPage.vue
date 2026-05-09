@@ -88,6 +88,8 @@ watch(() => route.params.id, async (newId) => {
     movie.value =  data;
     cast.value = data.cast ?? '';
 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     await loadSimilarMovies(data.id);
 
     const { data: ratings } = await client.models.Rating.list ({

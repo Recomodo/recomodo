@@ -50,6 +50,7 @@ onMounted(() => {
 function handlePageChange(page: number) {
   currentPage.value = page;
   loadMoviesPage(page);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 //recherche
