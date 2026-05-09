@@ -82,7 +82,9 @@ def main() :
     genres_string = genres_list_to_string(movies_genre, genres_dict)
     #récupération de la colonne overview, qui contient les résumé des films
     overview_string = movies["overview"].apply(noramlize_text).tolist()
+    #récupération de la colonne director, qui contient les noms des réalisateurs
     director_string = movies["director"].apply(person_name_to_token).tolist()
+    #récupération de la colonne cast, qui contient les noms des acteurs
     cast_string = movies["cast"].apply(people_list_to_string).tolist()
 
     #Création d'une string pondérée qui contient les genres, le résumé, le réalisateur et le cast d'un film

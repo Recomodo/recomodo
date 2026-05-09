@@ -4,9 +4,6 @@ import boto3
 from boto3.dynamodb.conditions import Key
 
 #Configuration de la session boto3 pour accéder à DynamoDB 
-# ATTENTION : NE PAS UTILISER CETTE CONFIGURATION EN PRODUCTION, ELLE EST UNIQUEMENT DESTINÉE À DES FINS DE TESTS LOCAUX
-#session = boto3.Session(profile_name="Recomodo-AdminAccess-Amplify-080941085602")
-
 dynamodb = boto3.resource("dynamodb") #remplacer session par boto3 pour le prod
 s3 = boto3.client("s3") #remplacer session par boto3 pour le prod
 
@@ -200,91 +197,3 @@ def handler(event, context):
         "userId": user_id,
         "recommendations": recommendations
     }
-
-# if __name__ == "__main__":
-#     test_event = {
-#     "arguments": {"userId": "tmdb_102"}
-#     }
-#     print(handler(test_event, None))
-
-# if __name__ == "__main__":
-#     import time
-
-#     test_event = {
-#         "arguments": {"userId": "tmdb_102"}
-#     }
-
-#     print("=== Benchmark recommender ===")
-
-#     # ----------------------------
-#     # 1. Test a froid
-#     # ----------------------------
-#     cold_durations = []
-
-#     for i in range(5):
-#         _recommendations_cache = None
-#         _popularity_cache = None
-
-#         start = time.perf_counter()
-#         result = handler(test_event, None)
-#         end = time.perf_counter()
-
-#         duration = end - start
-#         cold_durations.append(duration)
-#         print(f"Run a froid {i + 1}: {duration:.6f} s")
-
-#     avg_cold = sum(cold_durations) / len(cold_durations)
-#     print(f"Temps moyen a froid : {avg_cold:.6f} s")
-
-#     print()
-
-#     # ----------------------------
-#     # 2. Chargement initial du cache
-#     # ----------------------------
-#     _recommendations_cache = None
-#     _popularity_cache = None
-#     handler(test_event, None)
-
-#     # ----------------------------
-#     # 3. Test a chaud
-#     # ----------------------------
-#     warm_durations = []
-
-#     for i in range(10):
-#         start = time.perf_counter()
-#         result = handler(test_event, None)
-#         end = time.perf_counter()
-
-#         duration = end - start
-#         warm_durations.append(duration)
-#         print(f"Run a chaud {i + 1}: {duration:.6f} s")
-
-#     avg_warm = sum(warm_durations) / len(warm_durations)
-#     print(f"Temps moyen a chaud : {avg_warm:.6f} s")
-
-#     print()
-#     print("Dernier resultat :")
-#     print(result)
-
-# === Benchmark recommender ===
-# Run a froid 1: 51.522323 s
-# Run a froid 2: 79.455794 s
-# Run a froid 3: 2.231118 s
-# Run a froid 4: 2.089934 s
-# Run a froid 5: 1.864625 s
-# Temps moyen a froid : 27.432759 s
-
-# Run a chaud 1: 0.063331 s
-# Run a chaud 2: 0.045381 s
-# Run a chaud 3: 0.106805 s
-# Run a chaud 4: 0.048242 s
-# Run a chaud 5: 0.048139 s
-# Run a chaud 6: 0.041831 s
-# Run a chaud 7: 0.044668 s
-# Run a chaud 8: 0.046592 s
-# Run a chaud 9: 0.041342 s
-# Run a chaud 10: 0.040301 s
-# Temps moyen a chaud : 0.052663 s
-
-# Dernier resultat :
-# {'userId': 'tmdb_102', 'recommendations': ['4993', '110', '1580', '364', '380', '8961', '223', '4886', '3114', '349', '4995', '4011', '2324', '500', '6']}

@@ -52,10 +52,3 @@ def handler(event, context):
         "movieId": movie_id,
         "similar": similar
     }
-
-# if __name__ == "__main__":
-#     # Test local du handler avec un event de test
-#     test_event = {
-#         "arguments": {"movieId": "3635"}
-#     }
-#     print(handler(test_event, None))
