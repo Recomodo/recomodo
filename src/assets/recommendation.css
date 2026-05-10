@@ -9,8 +9,9 @@
     padding-top: 3rem;
     font-size: larger;
 }
-body{
-    height: 100%;
+.condition-2 p{
+    color: gray;
+    font-size: small;
 }
 .page {
   display: flex;
