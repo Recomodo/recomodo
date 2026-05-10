@@ -17,22 +17,22 @@ function getDisplayValue(star: number) {
     const displayValue = currentNotation.value || props.notation;
 
     if (displayValue >= star) {
-        return 'full';
+        return 'Full';
     }
     if (displayValue >= star - 0.5) {
-        return 'half';
+        return 'Half';
     }
     return 'empty';
 }
 </script>
 
 <template>
-<div class="starsContainer">
-<div class="stars">
+<div class="StarsContainer">
+<div class="Stars">
     <div
         v-for="star in 10"
         :key="star"
-        class="star-wrapper"
+        class="Star-wrapper"
         @mousemove="(e) => {
             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
             const isHalf = e.clientX - rect.left <rect.width / 2;
@@ -42,12 +42,12 @@ function getDisplayValue(star: number) {
         @click="() => { finalNotation = currentNotation; $emit('rate', currentNotation) }"
     >
         <span 
-        class="star"
+        class="Star"
         :class="getDisplayValue(star)"
         >★</span>
     </div>
     
 </div>
-<div class="note">{{ finalNotation }}★</div>
+<div class="Note">{{ finalNotation }}★</div>
 </div>
 </template>
