@@ -158,25 +158,11 @@ async function handleRating(rating: number) {
   if (!currentUserId.value) return;
   isSubmitting.value = true;
   try {
-    const { data: existingRatings } = await client.models.Rating.list({
-      filter: {
-        movieId: { eq: movie.value.movieId as string},
-        userId: { eq: currentUserId.value}
-      }
-    });
-
-    if (existingRatings.length  > 0) {
-      await client.models.Rating.update({
-        id: existingRatings[0].id,
-        rating
-      });
-    }else{
-      await client.mutations.updateUserRating({
+    await client.mutations.updateUserRating({
       movieId: movie.value.movieId,
       userId: currentUserId.value,
       rating
     });
-    }
 
     const { data: updatedMovie } = await client.models.Movie.get({ 
       id: movie.value.id 
