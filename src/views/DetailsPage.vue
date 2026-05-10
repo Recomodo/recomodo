@@ -154,7 +154,7 @@ function getGenres(id:number|null|undefined){
 }
 
 async function handleRating(rating: number) {
-  if (!movie.value || hasVoted.value || isSubmitting.value) return;
+  if (!movie.value || isSubmitting.value) return;
   if (!currentUserId.value) return;
   isSubmitting.value = true;
   try {
@@ -223,7 +223,6 @@ async function loadSimilarMovies(movieId: string) {
 }
 
 function goToMovie(id: string){
-  console.log("goToMovie id :",id);
   router.push({name: 'details',params: {id}});
 }
 </script>
@@ -259,7 +258,7 @@ function goToMovie(id: string){
             class="movie-poster"
           />
           <div class="notation_number">
-            <Notation :notation="userRating" @rate = "handleRating" :class=" { disabled : hasVoted}"/>
+            <Notation :notation="userRating" @rate = "handleRating" :class=" { disabled : isSubmitting}"/>
             <p class="UserRatingValue">{{ userRating }}</p>
           </div>
         </div>
