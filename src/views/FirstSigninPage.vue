@@ -157,6 +157,7 @@ try{
 
 
 <template>
+<div class="page">
 <div class="pageContainer"> 
    <p class="pform">Please rate at least 10 movies from the list for a better recommendation</p>
   <div class="formContainer">
@@ -197,5 +198,5 @@ try{
    </span>
   </div>
 </div> 
-
+</div>
 </template>
