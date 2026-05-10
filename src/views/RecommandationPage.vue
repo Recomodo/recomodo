@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import "@/assets/filmCard.css"
+import "@/assets/filmCard.css";
+import "@/assets/recommendation.css";
 import { RouterLink} from 'vue-router';
 import type { Schema } from '../../amplify/data/resource';
 import { onMounted, ref } from 'vue';
@@ -11,6 +12,7 @@ const client = generateClient<Schema>();
 const moviesIds = ref<any>([]);
 const movies = ref<Array<Schema['Movie']["type"]>>([]);
 const identifiant = ref<string | null>(null);
+const loading= ref(true);
         
 onMounted(async () => {
     try {
@@ -28,6 +30,8 @@ onMounted(async () => {
 
     } catch (error) {
       console.error("Error fetching movies:", error);
+    } finally{
+      loading.value=false;
     }
 }); 
 
@@ -35,7 +39,15 @@ onMounted(async () => {
 
 
 <template>
-<div class="container">
+  <div class="page">
+  <div v-if="loading" class="condition">
+    Loading...<font-awesome-icon icon="fa-solid fa-hourglass" style="color: white;" />
+  </div>
+  <div v-else-if="movies.length===0" class="condition-2">
+      No recommendation for you <font-awesome-icon icon="fa-solid fa-xmark" style="color: brown;" />
+      <p>try rating more movies</p>
+  </div>
+<div v-else class="container">
    <router-link v-for="movie in movies" :key="movie.movieId" :to=" { name :'details', params:{ id:movie.movieId }}" 
    class="movie-card">
     <img :src="movie.posterPath? 'https://image.tmdb.org/t/p/w500' + movie.posterPath :''"
@@ -47,5 +59,6 @@ onMounted(async () => {
     </div>     
 
   </router-link>
+</div>
 </div>
 </template>
